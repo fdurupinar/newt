@@ -57,7 +57,7 @@ appUtilities.defaultGeneralProperties = {
   rearrangeAfterExpandCollapse: true,
   animateOnDrawingChanges: true,
   adjustNodeLabelFontSizeAutomatically: false,
-  mapColorScheme: 'opposed_red_blue'
+  mapColorScheme: 'black_white'
 };
 
 appUtilities.currentGeneralProperties = jquery.extend(true, {}, appUtilities.defaultGeneralProperties);
@@ -267,9 +267,6 @@ appUtilities.mapColorSchemes = mapColorSchemes = {
       'necessary stimulation': '#ffffff',
       'logic arc': '#ffffff',
       'equivalence arc': '#ffffff',
-      'and operator': '#ffffff',
-      'or operator': '#ffffff',
-      'not operator': '#ffffff',
       'and': '#ffffff',
       'or': '#ffffff',
       'not': '#ffffff',
@@ -302,9 +299,6 @@ appUtilities.mapColorSchemes = mapColorSchemes = {
       'necessary stimulation': '#ffffff',
       'logic arc': '#ffffff',
       'equivalence arc': '#ffffff',
-      'and operator': '#ffffff',
-      'or operator': '#ffffff',
-      'not operator': '#ffffff',
       'and': '#ffffff',
       'or': '#ffffff',
       'not': '#ffffff',
@@ -337,9 +331,6 @@ appUtilities.mapColorSchemes = mapColorSchemes = {
       'necessary stimulation': '#ffffff',
       'logic arc': '#ffffff',
       'equivalence arc': '#ffffff',
-      'and operator': '#ffffff',
-      'or operator': '#ffffff',
-      'not operator': '#ffffff',
       'and': '#ffffff',
       'or': '#ffffff',
       'not': '#ffffff',
@@ -372,9 +363,6 @@ appUtilities.mapColorSchemes = mapColorSchemes = {
       'necessary stimulation': '#ffffff',
       'logic arc': '#ffffff',
       'equivalence arc': '#ffffff',
-      'and operator': '#ffffff',
-      'or operator': '#ffffff',
-      'not operator': '#ffffff',
       'and': '#ffffff',
       'or': '#ffffff',
       'not': '#ffffff',
@@ -407,9 +395,6 @@ appUtilities.mapColorSchemes = mapColorSchemes = {
       'necessary stimulation': '#ffffff',
       'logic arc': '#ffffff',
       'equivalence arc': '#ffffff',
-      'and operator': '#ffffff',
-      'or operator': '#ffffff',
-      'not operator': '#ffffff',
       'and': '#ffffff',
       'or': '#ffffff',
       'not': '#ffffff',
@@ -442,9 +427,6 @@ appUtilities.mapColorSchemes = mapColorSchemes = {
       'necessary stimulation': '#ffffff',
       'logic arc': '#ffffff',
       'equivalence arc': '#ffffff',
-      'and operator': '#ffffff',
-      'or operator': '#ffffff',
-      'not operator': '#ffffff',
       'and': '#ffffff',
       'or': '#ffffff',
       'not': '#ffffff',
@@ -477,9 +459,6 @@ appUtilities.mapColorSchemes = mapColorSchemes = {
       'necessary stimulation': '#ffffff',
       'logic arc': '#ffffff',
       'equivalence arc': '#ffffff',
-      'and operator': '#ffffff',
-      'or operator': '#ffffff',
-      'not operator': '#ffffff',
       'and': '#ffffff',
       'or': '#ffffff',
       'not': '#ffffff',
@@ -512,9 +491,6 @@ appUtilities.mapColorSchemes = mapColorSchemes = {
       'necessary stimulation': '#ffffff',
       'logic arc': '#ffffff',
       'equivalence arc': '#ffffff',
-      'and operator': '#ffffff',
-      'or operator': '#ffffff',
-      'not operator': '#ffffff',
       'and': '#ffffff',
       'or': '#ffffff',
       'not': '#ffffff',
@@ -547,9 +523,6 @@ appUtilities.mapColorSchemes = mapColorSchemes = {
       'necessary stimulation': '#ffffff',
       'logic arc': '#ffffff',
       'equivalence arc': '#ffffff',
-      'and operator': '#ffffff',
-      'or operator': '#ffffff',
-      'not operator': '#ffffff',
       'and': '#ffffff',
       'or': '#ffffff',
       'not': '#ffffff',
@@ -566,18 +539,26 @@ for(var scheme in mapColorSchemes){
   mapColorSchemes[scheme]['values']['complex multimer'] = mapColorSchemes[scheme]['values']['complex'];
 }
 
+// go through eles, mapping the id of these elements to values that were mapped to their data().class
+// classMap is of the form: {ele.data().class: value}
+// return object of the form: {ele.id: value}
+appUtilities.mapEleClassToId = function(eles, classMap) {
+  result = {};
+  for( var i = 0; i < eles.length; i++ ){
+    ele = eles[i];
+    result[ele.id()] = classMap[ele.data().class];
+  }
+  return result;
+}
+
 // change the global style of the map by applying the current color scheme
 appUtilities.applyMapColorScheme = function() {
-  console.log("Change map color scheme");
+  var ur = cy.undoRedo();
+  eles = cy.nodes();
+  idMap = appUtilities.mapEleClassToId(eles, mapColorSchemes[appUtilities.currentGeneralProperties.mapColorScheme]['values']);
 
   // edit style of the current map elements
-  var eles = cy.nodes();
-  for( var i = 0; i < eles.length; i++ ){
-    nodeClass = eles[i].data().class;
-    classBgColor = mapColorSchemes[appUtilities.currentGeneralProperties.mapColorScheme]['values'][nodeClass];
-    eles[i].style('background-color', classBgColor);
-    eles[i].style('background-opacity', 1);
-  }
+  ur.do('changeCss', {'eles': eles, 'name': 'background-color', 'valueMap': idMap});
 
   // set to be the default as well
   for(var nodeClass in mapColorSchemes[appUtilities.currentGeneralProperties.mapColorScheme]['values']){
@@ -585,7 +566,6 @@ appUtilities.applyMapColorScheme = function() {
     // nodeClass may not be defined in the defaultProperties (for edges, for example)
     if(nodeClass in chise.elementUtilities.defaultProperties){
       chise.elementUtilities.defaultProperties[nodeClass]['background-color'] = classBgColor;
-      chise.elementUtilities.defaultProperties[nodeClass]['background-opacity'] = 1;
     }
   }
 }
