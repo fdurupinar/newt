@@ -449,10 +449,9 @@ menu:not([title]):before{
 }
 
 .property-table {
-	margin: 0px;
+	margin: 2px;
 	border: 1px solid rgb(204, 204, 204);
-	display: inline-block;
-	vertical-align: top;
+	display: block;
 }
 
 .sbgn-modal-dialog .modal-header {
@@ -533,7 +532,7 @@ menu:not([title]):before{
     margin: 0px;
     padding: 0px;
     text-align: center;
-    background-color: gray;
+    background-color: rgb(195,195,195);
 }
 
 .panel-title {
@@ -605,6 +604,11 @@ hr.inspector-divider {
 
 .selected-mode.inactive-palette-element {
     border-style: dotted;
+    border-width: 1px;
+}
+
+.selected-mode.inactive-palette-element img{
+    padding: 2px;
 }
 
 .chise-tab a {
