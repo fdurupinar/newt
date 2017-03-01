@@ -570,4 +570,28 @@ appUtilities.applyMapColorScheme = function() {
   }
 }
 
+/*
+  apply style with the properties specified in elementUtilities.defaultProperties
+  used to override things that may be defined at a lower level in the dependency chain at loading
+  do not use the 'labelsize' property as it is not a valid cytoscape one
+*/
+appUtilities.applyDefaultStyle = function(){
+  console.log("apply default style");
+  defaultProperties = chise.elementUtilities.defaultProperties;
+  for(sbgnclass in defaultProperties){
+    for(property in defaultProperties[sbgnclass]){
+      if(property == 'labelsize'){ // not proper cytoscape style, skip it
+        continue;
+      }
+      if(chise.elementUtilities.isEdgeClass(sbgnclass)){
+        cy.style().selector('edge[class = "'+sbgnclass+'"]').style(property, defaultProperties[sbgnclass][property]);
+      }
+      else{
+        cy.style().selector('node[class = "'+sbgnclass+'"]').style(property, defaultProperties[sbgnclass][property]);
+      }
+    }
+  }
+}
+
+
 module.exports = appUtilities;

@@ -17,6 +17,7 @@ module.exports = function () {
       cytoscapeExtensionsAndContextMenu();
       bindCyEvents();
       cy.style().selector('core').style({'active-bg-opacity': 0});
+      appUtilities.applyDefaultStyle();
     });
   });
   
