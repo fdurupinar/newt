@@ -498,18 +498,20 @@ function addStateOrInfoboxTest (id, obj) {
       var initialUnitsSize = node.data('statesandinfos').length;
       chise.addStateOrInfoBox(node, obj);
 
-      function performAssertions() {
-        expect(statesandinfos.length, "A new auxiliary unit is successfully added").to.be.equal(initialUnitsSize + 1);
+      function performAssertions(statesandinfos, inModel) {
+        var inModelStr = inModel ? 'In model ' : '';
+
+        expect(statesandinfos.length, inModelStr + "a new auxiliary unit is successfully added").to.be.equal(initialUnitsSize + 1);
         var newUnit = statesandinfos[statesandinfos.length - 1];
-        expect(newUnit.clazz, "New unit has the expected unit type").to.be.equal(obj.clazz);
-        expect(JSON.stringify(newUnit.bbox), "New unit has the expected sizes").to.be.equal(JSON.stringify(obj.bbox));
+        expect(newUnit.clazz, inModelStr + "new unit has the expected unit type").to.be.equal(obj.clazz);
+        expect(JSON.stringify(newUnit.bbox), inModelStr + "new unit has the expected sizes").to.be.equal(JSON.stringify(obj.bbox));
 
         if (obj.state) {
-          expect(JSON.stringify(newUnit.state), "New unit has the expected state object").to.be.equal(JSON.stringify(obj.state));
+          expect(JSON.stringify(newUnit.state), inModelStr + "new unit has the expected state object").to.be.equal(JSON.stringify(obj.state));
         }
 
         if (obj.label) {
-          expect(JSON.stringify(newUnit.label), "New unit has the expected label object").to.be.equal(JSON.stringify(obj.label));
+          expect(JSON.stringify(newUnit.label), inModelStr + "new unit has the expected label object").to.be.equal(JSON.stringify(obj.label));
         }
       }
 
@@ -518,7 +520,7 @@ function addStateOrInfoboxTest (id, obj) {
       var modelStatesandinfos = modelManager.getModelNodeAttribute("data.statesandinfos", node.id());
 
       performAssertions(statesandinfos);
-      performAssertions(modelStatesandinfos);
+      performAssertions(modelStatesandinfos, true);
     });
   });
 }
@@ -531,23 +533,24 @@ function changeStateOrInfoBoxTest (id, index, value, type) {
       var node = window.cy.getElementById(id);
       chise.changeStateOrInfoBox(node, index, value, type);
 
-      function perfromAssertions(unit) {
+      function performAssertions(unit, inModel) {
+        var inModelStr = inModel ? 'In model ' : '';
         // If type is not set we assume that it is a unit of information
         if (type) {
-          expect(unit.state[type], "State variable is updated by " + type + " field.").to.be.equal(value);
+          expect(unit.state[type], inModelStr + "state variable is updated by " + type + " field.").to.be.equal(value);
         }
         else {
-          expect(unit.label['text'], "Unit of information label text is updated correctly.").to.be.equal(value)
+          expect(unit.label['text'], inModelStr + "unit of information label text is updated correctly.").to.be.equal(value)
         }
       }
 
       // Get the updated unit to check if it is updated correctly
       var unit = node.data('statesandinfos')[index];
-      perfromAssertions(unit);
+      performAssertions(unit);
 
       var modelManager = window.testModelManager;
       var modelUnit = modelManager.getModelNodeAttribute("data.statesandinfos", node.id())[index];
-      perfromAssertions(modelUnit);
+      performAssertions(modelUnit, true);
     });
   });
 }
