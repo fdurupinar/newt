@@ -12,6 +12,9 @@ TripsGeneralInterfaceAgent.prototype = new Agent();
 
 
 
+
+
+
 function TripsGeneralInterfaceAgent(agentName, id) {
     this.agentName = agentName;
     this.agentId = id;
@@ -20,6 +23,9 @@ function TripsGeneralInterfaceAgent(agentName, id) {
     this.tripsUttNum = 1;
 
 
+
+
+//test end
 }
 /***
  *

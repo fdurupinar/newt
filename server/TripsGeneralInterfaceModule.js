@@ -15,6 +15,7 @@ class TripsGeneralInterfaceModule extends TripsInterfaceModule {
     constructor(agentId, agentName, socket, model, askHuman){
 
 
+
         super('Sbgnviz-Interface-Agent', agentId, agentName, socket, model);
 
         var self = this;
@@ -165,7 +166,7 @@ class TripsGeneralInterfaceModule extends TripsInterfaceModule {
 
                     //The socket connection is between the interface and the agent, so we cannot directly emit messages
                     //we must ask the client with the browser to do it for us
-                    askHuman(agentId, self.room, "addImage", imgData, function (val) {
+                    askHuman(self.agentId, self.room, "addImage", imgData, function (val) {
 
 
                         // self.tm.replyToMsg(text, {0: 'reply', content: {0: 'success'}});

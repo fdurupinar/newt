@@ -67,6 +67,7 @@ function run(app, options, cb) {
 
             //Call this to get profile ids for each cancer study on cBioPortal server
                 var cancerDataOrganizer = require('./cancerDataOrganizer.js')();
+
             //    cancerDataOrganizer.getCancerStudies(); //initialize at the beginning
 
 //            require('./serverSideSocketListener.js').start(io, model, cancerDataOrganizer);

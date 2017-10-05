@@ -2,6 +2,8 @@ var readline = require('readline');
 var stream = require('stream');
 var fs = require('fs');
 
+
+
 var useBiopax = true;
 
 module.exports.start = function(io, model, cancerDataOrganizer){
@@ -111,7 +113,7 @@ module.exports.start = function(io, model, cancerDataOrganizer){
 
                     if((geneList && (geneList[geneName1] || geneList[geneName2])) || !geneList){
 
-;
+
                         pnnlArr.push({
                             id1: geneName1,
                             id2: geneName2,
@@ -632,6 +634,9 @@ module.exports.start = function(io, model, cancerDataOrganizer){
 
         socket.on('agentConnectToTripsRequest', function(param, callback){
 
+
+
+
             if(param.isInterfaceAgent){
                 if(!tripsGeneralInterfaceInstance || !tripsGeneralInterfaceInstance.isConnectedToTrips()) {
                     var TripsGeneralInterfaceModule = require('./TripsGeneralInterfaceModule.js');
@@ -806,6 +811,11 @@ module.exports.start = function(io, model, cancerDataOrganizer){
                         io.in(socket.room).emit('imageFile', data.img);
                 });
 
+
+
+
+
+
             });
             //
             // try {
@@ -913,8 +923,6 @@ module.exports.start = function(io, model, cancerDataOrganizer){
         socket.on('disconnect', function() {
 
             try {
-
-
 
 
                 if(socket.room) {

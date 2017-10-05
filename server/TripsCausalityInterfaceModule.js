@@ -16,7 +16,7 @@ class TripsCausalityInterfaceModule extends TripsInterfaceModule{
 
            super('Causality-Interface-Agent',agentId, agentName, socket,  model);
 
-
+           
        }
 
     /***
@@ -134,8 +134,10 @@ class TripsCausalityInterfaceModule extends TripsInterfaceModule{
                     };
 
 
+                    console.log("Find causality query");
                     //Request this information from the causalityAgent
                     self.socket.emit('findCausality', param, function (causality) {
+
                         var indraJson;
 
                         if (!causality || !causality.rel)

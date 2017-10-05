@@ -15,6 +15,8 @@ app.loadViews(__dirname + '/views');
 //app.serverUse(module, 'derby-stylus');
 
 
+var tripsMode = true;
+
 var testMode = true;
 var ONE_DAY = 1000 * 60 * 60 * 24;
 
@@ -313,6 +315,9 @@ app.proto.create = function (model) {
 
 
 
+
+
+
     agentSocket = require('./public/collaborative-app/agentSocket-handler')(this, modelManager, socket);
     agentSocket.listen();
 
@@ -391,7 +396,10 @@ app.proto.create = function (model) {
     this.atBottom = true;
 
 
-    this.connectTripsAgent();
+    //if there is already one connection, don't open another
+
+    if(tripsMode)
+       this.connectTripsAgent();
 
     //TODO: Delete this
     //this.updateMessage(); //init first one
@@ -421,13 +429,11 @@ app.proto.loadCyFromModel = function(){
 
     if (jsonArr!= null) {
 
-
         //Updates data fields and sets style fields to default
         chise.updateGraph({
             nodes: jsonArr.nodes,
             edges: jsonArr.edges
         });
-
 
         //Update position fields separately
         cy.nodes().forEach(function(node){
@@ -1024,8 +1030,9 @@ app.proto.runUnitTests = function(){
     //  require("./public/test/testsModelManager.js")(modelManager, userId);
 
 
-     require("./public/test/testsUserOperations.js")(modelManager);
-    require("./public/test/testOptions.js")(); //to print out results
+
+    require("./public/test/testsUserOperations.js")(modelManager);
+   require("./public/test/testOptions.js")(); //to print out results
 
 }
 
@@ -1036,15 +1043,19 @@ app.proto.connectTripsAgent = function(){
 
 //    We can't run causality agent directly in node because it uses browser's database functionality
 
-    var TripsInterfaceAgent = require("./agent-interaction/TripsGeneralInterfaceAgent.js");
-    var agent = new TripsInterfaceAgent("Bob", "Bob123");
-    agent.connectToServer("http://localhost:3000/", function (socket) {
-        agent.loadModel(function() {
-            agent.init();
-            agent.loadChatHistory(function(){
+
+        var TripsGeneralInterfaceAgent = require("./agent-interaction/TripsGeneralInterfaceAgent.js");
+        var agent = new TripsGeneralInterfaceAgent("Bob", "Bob123");
+
+
+        agent.connectToServer("http://localhost:3000/", function (socket) {
+            agent.loadModel(function () {
+                agent.init();
+                agent.loadChatHistory(function () {
+                });
             });
         });
-    });
+    //}
 
 
 
