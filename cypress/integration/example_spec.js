@@ -545,10 +545,9 @@ function changeStateOrInfoBoxTest (id, index, value, type) {
       var unit = node.data('statesandinfos')[index];
       perfromAssertions(unit);
 
-      // TODO unsuccessful test
-      // var modelManager = window.testModelManager;
-      // var modelUnit = modelManager.getModelNodeAttribute("data.statesandinfos", node.id())[index];
-      // perfromAssertions(modelUnit);
+      var modelManager = window.testModelManager;
+      var modelUnit = modelManager.getModelNodeAttribute("data.statesandinfos", node.id())[index];
+      perfromAssertions(modelUnit);
     });
   });
 }
@@ -568,9 +567,8 @@ function removeStateOrInfoBoxTest (id, index) {
       var checkIndex = node.data('statesandinfos').indexOf(unitToRemove);
       expect(checkIndex, "Auxiliary unit is removed successfully").to.be.equal(-1);
 
-      // TODO unsuccessful test
-      // var modelCheckIndex = modelManager.getModelNodeAttribute("data.statesandinfos", node.id()).indexOf(modelUnitToRemove);
-      // expect(modelCheckIndex, "Auxiliary unit is removed successfully from the model").to.be.equal(-1);
+      var modelCheckIndex = modelManager.getModelNodeAttribute("data.statesandinfos", node.id()).indexOf(modelUnitToRemove);
+      expect(modelCheckIndex, "Auxiliary unit is removed successfully from the model").to.be.equal(-1);
     });
   });
 }
@@ -723,13 +721,12 @@ function setPortsOrderingTest(selector, ordering) {
 
       expect(commonOrdering, "Ports ordering is set for all nodes").to.be.equal(ordering);
 
-      // TODO unsuccessful test
-      // var modelManager = window.testModelManager;
-      //
-      // nodes.forEach(function(node){
-      //   var modelOrdering = modelManager.getModelNodeAttribute('data.portsordering', node.id());
-      //   expect(modelOrdering, "In model ports ordering is updated correctly for node#" + node.id()).to.be.equal(ordering);
-      // });
+      var modelManager = window.testModelManager;
+
+      nodes.forEach(function(node){
+        var modelOrdering = modelManager.getModelNodeAttribute('data.portsordering', node.id());
+        expect(modelOrdering, "In model ports ordering is updated correctly for node#" + node.id()).to.be.equal(ordering);
+      });
     });
   });
 }

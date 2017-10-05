@@ -103,7 +103,9 @@ module.exports = function(modelManager, socket, userId){
 
 
         else if (actionName === "changeNodeLabel" ||actionName === "resizeNodes"||
-            actionName === "addStateOrInfoBox" || actionName === "setMultimerStatus" || actionName === "setCloneMarkerStatus") {
+            actionName === "addStateOrInfoBox" || actionName === "setMultimerStatus" ||
+            actionName === "setCloneMarkerStatus" || actionName === "changeStateOrInfoBox" ||
+            actionName === "removeStateOrInfoBox" || actionName === "setPortsOrdering") {
 
             var modelElList = [];
             var paramList = []
