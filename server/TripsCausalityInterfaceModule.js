@@ -44,6 +44,7 @@ class TripsCausalityInterfaceModule extends TripsInterfaceModule{
             stringJson = '"'+  stringJson.replace(/["]/g, "\\\"") + '"';
 
 
+            var response;
             if(indraJson.length > 0) {
                 response = {0: 'reply', content: {0: 'success', paths: stringJson}};
 
@@ -190,16 +191,17 @@ class TripsCausalityInterfaceModule extends TripsInterfaceModule{
                 self.getTermName(contentObj.target, function (target) {
 
                     var queryToRequestMap = {
-                        phosphorylation: "phosphorylates",
-                        dephosphorylation: "dephosphorylates",
-                        activate: "upregulates-expression",
-                        increase: "upregulates-expression",
-                        inhibit: "downregulates-expression",
-                        decrease: "downregulates-expression"
-                    }
+                        '\"phosphorylation\"': "phosphorylates",
+                        '\"dephosphorylation\"': "dephosphorylates",
+                        '\"activate\"': "upregulates-expression",
+                        '\"increase\"': "upregulates-expression",
+                        '\"inhibit\"': "downregulates-expression",
+                        '\"decrease\"': "downregulates-expression"
+                    };
 
 
                     var requestType = queryToRequestMap[contentObj.type] || "modulates";
+
 
                     self.requestCausalityElementsFromAgent(target, requestType, function (response) {
                         self.tm.replyToMsg(text, response);
@@ -221,12 +223,12 @@ class TripsCausalityInterfaceModule extends TripsInterfaceModule{
                 self.getTermName(contentObj.source, function (source) {
 
                     var queryToRequestMap = {
-                        phosphorylation: "is-dephoshorylated-by",
-                        dephosphorylation: "is-dephoshorylated-by",
-                        activate: "expression-is-upregulated-by",
-                        increase: "expression-is-upregulated-by",
-                        inhibit: "expression-is-downregulated-by",
-                        decrease: "expression-is-downregulated-by"
+                        '\"phosphorylation\"': "is-dephoshorylated-by",
+                        '\"dephosphorylation\"': "is-dephoshorylated-by",
+                        '\"activate\"': "expression-is-upregulated-by",
+                        '\"increase\"': "expression-is-upregulated-by",
+                        '\"inhibit\"': "expression-is-downregulated-by",
+                        '\"decrease\"': "expression-is-downregulated-by"
                     }
 
 
