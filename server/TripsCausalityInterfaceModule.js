@@ -223,8 +223,8 @@ class TripsCausalityInterfaceModule extends TripsInterfaceModule{
                 self.getTermName(contentObj.source, function (source) {
 
                     var queryToRequestMap = {
-                        '\"phosphorylation\"': "is-dephoshorylated-by",
-                        '\"dephosphorylation\"': "is-dephoshorylated-by",
+                        '\"phosphorylation\"': "is-dephosphorylated-by",
+                        '\"dephosphorylation\"': "is-dephosphorylated-by",
                         '\"activate\"': "expression-is-upregulated-by",
                         '\"increase\"': "expression-is-upregulated-by",
                         '\"inhibit\"': "expression-is-downregulated-by",
