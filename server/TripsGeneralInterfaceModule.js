@@ -20,6 +20,8 @@ class TripsGeneralInterfaceModule extends TripsInterfaceModule {
 
         var self = this;
 
+        self.askHuman = askHuman;
+
         setTimeout(function(){
 
             self.tm.sendMsg({0: 'tell', content: ['start-conversation']});
@@ -130,7 +132,7 @@ class TripsGeneralInterfaceModule extends TripsInterfaceModule {
 
     }
 
-    displayImage(text, askHuman) {
+    displayImage(text) {
 
         var self = this;
         var contentObj = KQML.keywordify(text.content);
@@ -166,7 +168,7 @@ class TripsGeneralInterfaceModule extends TripsInterfaceModule {
 
                     //The socket connection is between the interface and the agent, so we cannot directly emit messages
                     //we must ask the client with the browser to do it for us
-                    askHuman(self.agentId, self.room, "addImage", imgData, function (val) {
+                    self.askHuman(self.agentId, self.room, "addImage", imgData, function (val) {
 
 
                         // self.tm.replyToMsg(text, {0: 'reply', content: {0: 'success'}});
@@ -182,7 +184,7 @@ class TripsGeneralInterfaceModule extends TripsInterfaceModule {
         }
     }
 
-    displaySbgn(text, askHuman) {
+    displaySbgn(text) {
         var self = this;
         var contentObj = KQML.keywordify(text.content);
         if (contentObj) {
@@ -197,7 +199,7 @@ class TripsGeneralInterfaceModule extends TripsInterfaceModule {
 
             //The socket connection is between the interface and the agent, so we cannot directly emit messages
             //we must ask the client with the browser to do it for us
-            askHuman(self.agentId, self.room, "mergeSbgn", sbgnModel, function (val) {
+            self.askHuman(self.agentId, self.room, "mergeSbgn", sbgnModel, function (val) {
 
                 // self.tm.replyToMsg(text, {0: 'reply', content: {0: 'success'}});
             });
