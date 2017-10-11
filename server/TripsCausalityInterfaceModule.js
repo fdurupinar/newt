@@ -260,18 +260,32 @@ class TripsCausalityInterfaceModule extends TripsInterfaceModule{
                     var pSite1 = data.pSite1 || '-';
                     var pSite2 = data.pSite2 || '-';
 
-                    //enter data separately to keep the order
-                    //self.tm.sendMsg({0:'request', receiver:'CAUSALITY-TRANSLATION-AGENT', content: {0:'TRANSLATE-CORRELATION', id1: data.id1, id2: data.id2, pSite1: pSite1, pSite2: pSite2, correlation: data.correlation}});
 
                     self.tm.replyToMsg(text, {0: 'reply', content: {0: 'success',  target:data.id2, correlation: data.correlation, explainable:data.explainable}});
-
-
-
 
                 });
             });
         });
 
+
+        //Listen to requests for common upstreams
+        var pattern = { 0: 'request', 1:'&key', content: [ 'find-common-upstreams',  '.', '*']};
+        self.tm.addHandler(pattern, function (text) { //listen to requests
+            var contentObj = KQML.keywordify(text.content);
+
+
+            self.getTermName(contentObj.source, function (source) {
+             self.getTermName(contentObj.target, function (target) {
+
+                //Request this information from the causalityAgent
+                self.socket.emit('findCommonUpstreams', source, target, function (data) {
+
+                    self.tm.replyToMsg(text, {0: 'reply', content: {0: 'success',  data}});
+
+                });
+             });
+            });
+        });
         //Listen to requests for correlation queries
         var pattern = { 0: 'request', 1:'&key', content: [ 'restart-causality-indices',  '.', '*']};
         self.tm.addHandler(pattern, function (text) { //listen to requests
