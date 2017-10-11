@@ -56,6 +56,11 @@ module.exports = function (model, docId, sbgnviz) {
                 this.updateHistory({opName: 'add', opTarget: 'image', opAttr: data.fileName});
         },
 
+        getImages: function(){
+            var images = model.get('_page.doc.images');
+            return images;
+        },
+
         setName: function (userId, userName) {
 
             model.set('_page.doc.users.' + userId +'.name', userName);

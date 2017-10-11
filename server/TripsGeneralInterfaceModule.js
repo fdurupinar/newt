@@ -32,6 +32,7 @@ class TripsGeneralInterfaceModule extends TripsInterfaceModule {
 
     }
 
+
     /***
      * When socket changes, update the listeners on that socket
      */
@@ -54,6 +55,10 @@ class TripsGeneralInterfaceModule extends TripsInterfaceModule {
             pattern = {0: 'tell', content: {0: 'utterance', mode: 'text', uttnum: data.uttNum, text: data.text, channel: 'Desktop', direction: 'input'}};
             self.tm.sendMsg(pattern);
 
+        });
+
+        self.socket.on('resetConversationRequest', function () {
+            self.tm.sendMsg({0: 'tell', content: ['start-conversation']});
         });
 
     }

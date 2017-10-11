@@ -45,8 +45,6 @@ var self = this;
 
 
 TripsGeneralInterfaceAgent.prototype.relayMessage = function(text){
-    var msg = "";
-
 
     console.log(this.socket.id + " " + this.room);
 
@@ -54,6 +52,13 @@ TripsGeneralInterfaceAgent.prototype.relayMessage = function(text){
 
     this.tripsUttNum++;
 }
+
+TripsGeneralInterfaceAgent.prototype.resetConversation = function(){
+
+    this.sendRequest('resetConversationRequest');
+
+}
+
 
 
 /***

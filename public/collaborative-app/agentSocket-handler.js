@@ -136,6 +136,11 @@ module.exports =  function(app, modelManager, socket) {
                     var status = modelManager.addImage(data);
 
 
+
+                    var images = modelManager.getImages();
+                    app.dynamicResize(images);
+
+
                     if (callback) callback(status);
 
                 }
@@ -409,13 +414,6 @@ module.exports =  function(app, modelManager, socket) {
             modelManager.newModel("me", true);
             //this takes a while so wait before initiating the model
             chise.updateGraph(jsonObj);
-            //DEBUG
-            // cy.nodes().forEach(function (node){
-            //     if(node._private.data == null){
-            //         console.log("Data not assigned");
-            //         console.log(node);
-            //     }
-            // });
 
             setTimeout(function () {
                 modelManager.initModel(cy.nodes(), cy.edges(), appUtilities, "me");
@@ -427,6 +425,8 @@ module.exports =  function(app, modelManager, socket) {
 
                 //Call Layout
                 $("#perform-layout").trigger('click');
+
+                cy.elements().unselect();
 
                 //Call merge notification after the layout
                 setTimeout(function () {

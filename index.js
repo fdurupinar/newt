@@ -41,6 +41,8 @@ var oneColor = require('onecolor');
 var editorListener;
 
 
+var TripsAgent;
+
 app.on('model', function (model) {
 
     model.fn('biggerTime', function (item) {
@@ -300,7 +302,6 @@ app.proto.create = function (model) {
 
     $(window).on('resize', function(){
         var images = model.get('_page.doc.images');
-        console.log(images);
         self.dynamicResize(images);
     });
 
@@ -1038,6 +1039,10 @@ app.proto.runUnitTests = function(){
 }
 
 
+app.proto.resetConversationOnTrips = function(){
+
+    TripsAgent.resetConversation();
+}
 
 
 app.proto.connectTripsAgent = function(){
@@ -1046,13 +1051,13 @@ app.proto.connectTripsAgent = function(){
 
 
         var TripsGeneralInterfaceAgent = require("./agent-interaction/TripsGeneralInterfaceAgent.js");
-        var agent = new TripsGeneralInterfaceAgent("Bob", "Bob123");
+        TripsAgent = new TripsGeneralInterfaceAgent("Bob", "Bob123");
 
 
-        agent.connectToServer("http://localhost:3000/", function (socket) {
-            agent.loadModel(function () {
-                agent.init();
-                agent.loadChatHistory(function () {
+        TripsAgent.connectToServer("http://localhost:3000/", function (socket) {
+            TripsAgent.loadModel(function () {
+                TripsAgent.init();
+                TripsAgent.loadChatHistory(function () {
                 });
             });
         });
@@ -1295,6 +1300,8 @@ app.proto.dynamicResize = function (images) {
             images.forEach(function (img) {
 
                 $("#static-image-container-" + img.tabIndex).height(hCanvasTab * 0.99);
+
+                console.log($("#static-image-container-" + img.tabIndex).height())
             });
         }
         $("#inspector-tab-area").resizable({
