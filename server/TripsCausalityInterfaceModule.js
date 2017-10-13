@@ -86,7 +86,6 @@ class TripsCausalityInterfaceModule extends TripsInterfaceModule{
      */
     getTermName(termStr, callback) {
 
-
         var self = this;
         this.tm.sendMsg({0: 'request', content: {0: 'CHOOSE-SENSE', 'ekb-term': termStr}});
 
@@ -95,13 +94,24 @@ class TripsCausalityInterfaceModule extends TripsInterfaceModule{
 
         self.tm.addHandler(patternXml, function (textXml) {
 
+            console.log("Choose sense result");
+
+
             if(textXml.content && textXml.content.length >= 2 && textXml.content[2].length > 0) {
 
 
-                var contentObj = KQML.keywordify(textXml.content[2][0]);
-                var termName = trimDoubleQuotes(contentObj.name);
 
-                if (callback) callback(termName);
+                var termNames = [];
+                for(var i = 0; i < textXml.content[2].length; i++) {
+                    var contentObj = KQML.keywordify(textXml.content[2][i]);
+                    var termName = trimDoubleQuotes(contentObj.name);
+                    termNames.push(termName);
+                }
+
+                if(termNames.length == 1 && callback)
+                     callback(termNames[0]);
+                else if(callback)
+                    callback(termNames);
             }
         });
     }
@@ -272,19 +282,28 @@ class TripsCausalityInterfaceModule extends TripsInterfaceModule{
         var pattern = { 0: 'request', 1:'&key', content: [ 'find-common-upstreams',  '.', '*']};
         self.tm.addHandler(pattern, function (text) { //listen to requests
             var contentObj = KQML.keywordify(text.content);
+            //
+            // console.log(contentObj.genes);
+            // self.getTermName(contentObj.genes, function (genes) {
+            //     console.log(genes);
+            // });
+             //self.getTermName(contentObj.target, function (target) {
 
 
-            self.getTermName(contentObj.source, function (source) {
-             self.getTermName(contentObj.target, function (target) {
+            var geneNames = [];
+            // contentObj.genes.forEach(function(gene){
+            self.getTermName(contentObj.genes, function(geneNames){
+                // // //Request this information from the causalityAgent
+                self.socket.emit('findCommonUpstreams', geneNames, function (data) {
 
-                //Request this information from the causalityAgent
-                self.socket.emit('findCommonUpstreams', source, target, function (data) {
-
-                    self.tm.replyToMsg(text, {0: 'reply', content: {0: 'success',  data}});
-
+                    var response = {0: 'reply', content: {0: 'success', upstreams: data}};
+                    self.tm.replyToMsg(text, response);
                 });
-             });
+
             });
+
+
+
         });
         //Listen to requests for correlation queries
         var pattern = { 0: 'request', 1:'&key', content: [ 'restart-causality-indices',  '.', '*']};

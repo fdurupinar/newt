@@ -463,6 +463,10 @@ input[type="file"] {
     bottom: 20px;
 }
 
+#connect-causality-agent{
+    margin: 10px;
+}
+
 
 #factoid-area{
     position: absolute;

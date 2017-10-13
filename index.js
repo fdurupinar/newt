@@ -1044,6 +1044,11 @@ app.proto.resetConversationOnTrips = function(){
     TripsAgent.resetConversation();
 }
 
+app.proto.connectCausalityAgent = function(){
+    socket.emit('connectToCausalityAgentRequest');
+}
+
+
 
 app.proto.connectTripsAgent = function(){
 

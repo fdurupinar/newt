@@ -6,6 +6,38 @@ var fs = require('fs');
 
 var useBiopax = true;
 
+/***
+ * Calls cmdStr on console and runs callback function with parameter content
+ * @param cmdStr
+ * @param content
+ * @param callback
+ */
+var executeCommandLineProcess = function (cmdStr, callback){
+
+    try {
+        var exec = require('child_process').exec;
+
+
+        exec(cmdStr, function (error, stdout, stderr) {
+            console.log('stdout: ' + stdout);
+            if (stderr)
+                console.log('stderr: ' + stderr);
+            if (error !== null) {
+                if (callback) callback(error);
+                console.log('exec error: ' + error);
+            }
+
+            if (callback) callback();
+
+        });
+    }
+    catch(error){
+        if (callback) callback("Error " + error);
+    }
+
+
+};
+
 module.exports.start = function(io, model, cancerDataOrganizer){
     var modelManagerList = [];
     var menuList = [];
@@ -832,6 +864,13 @@ module.exports.start = function(io, model, cancerDataOrganizer){
             // catch(e){
             //     console.log("Trips not connected. " + e);
             // }
+
+        });
+
+        //Run a shell script
+        socket.on('connectToCausalityAgentRequest', function(){
+
+            executeCommandLineProcess(("python ../CausalityAgent/causality_agent.py '../CausalityAgent/'"));
 
         });
 
