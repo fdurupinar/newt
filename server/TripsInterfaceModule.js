@@ -20,6 +20,10 @@ class TripsInterfaceModule {
         this.socket = socket;
         this.room  = socket.room;
 
+        if(!socket.room){
+            console.log("Uncreated document error.");
+            return;
+        }
 
         self.tm.init(function () {
 

@@ -908,42 +908,50 @@ module.exports.start = function(io, model, cancerDataOrganizer){
                     var userIds = model.at((docPath + '.userIds')); //used for keeping a list of subscribed users
                     var messages = model.at((docPath + '.messages'));
 
+                    console.log(data.room);
+                    if(!data.room)
+                        return;
+                    try {
+                        pageDoc.subscribe(function () {
+                            pysb.subscribe(function () {
+                            });
+                            cy.subscribe(function () {
+                            });
+                            history.subscribe(function () {
+                            });
+                            undoIndex.subscribe(function () {
+                            });
+                            context.subscribe(function () {
+                            });
+                            images.subscribe(function () {
+                            });
+                            messages.subscribe(function () {
+                            });
+                            userIds.subscribe(function () {
+                                var userIdsList = userIds.get();
+                                if (!userIdsList || userIdsList.indexOf(data.userId) < 0) {
+                                    userIds.push(data.userId);
 
-                    pageDoc.subscribe(function () {
-                        pysb.subscribe(function () {
+                                }
+                            });
+
+                                users.subscribe(function () {
+
+
+                                    users.set(data.userId, {name: data.userName, colorCode: data.colorCode});
+
+                                    modelManagerList[data.room].setName(data.userId, data.userName);
+
+
+                                    //     modelManagerList[data.userId] = require("../public/collaborative-app/modelManager.js")(model, data.room, data.userId, data.userName);
+
+                                });
                         });
-                        cy.subscribe(function () {
-                        });
-                        history.subscribe(function () {
-                        });
-                        undoIndex.subscribe(function () {
-                        });
-                        context.subscribe(function () {
-                        });
-                        images.subscribe(function () {
-                        });
-                        messages.subscribe(function () {
-                        });
-                        userIds.subscribe(function () {
-                            var userIdsList = userIds.get();
-                            if (!userIdsList || userIdsList.indexOf(data.userId) < 0)
-                                userIds.push(data.userId);
-                        });
-                        users.subscribe(function () {
+                    }
+                    catch(e) {
+                        console.log("Client not connected");
 
-
-                            users.set(data.userId, {name: data.userName, colorCode: data.colorCode});
-
-                            modelManagerList[data.room].setName(data.userId, data.userName);
-
-
-                            //     modelManagerList[data.userId] = require("../public/collaborative-app/modelManager.js")(model, data.room, data.userId, data.userName);
-
-                        });
-
-
-
-                    });
+                    }
                 });
             }
             catch(e){
