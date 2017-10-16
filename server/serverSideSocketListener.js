@@ -870,7 +870,7 @@ module.exports.start = function(io, model, cancerDataOrganizer){
         //Run a shell script
         socket.on('connectToCausalityAgentRequest', function(){
 
-            executeCommandLineProcess(("python ../CausalityAgent/causality_agent.py '../CausalityAgent/'"));
+            executeCommandLineProcess(("python ../CausalityAgent/causality_agent.py '../CausalityAgent/resources'"));
 
         });
 
