@@ -152,7 +152,7 @@ class TripsCausalityInterfaceModule extends TripsInterfaceModule{
                         var indraJson;
 
                         if (!causality || !causality.rel)
-                            self.tm.replyToMsg(text, {0: 'reply', content: {0: 'failure', 1: 'NO_PATH_FOUND'}});
+                            self.tm.replyToMsg(text, {0: 'reply', content: {0: 'failure', 1: {reason : 'NO_PATH_FOUND'}}});
                         else {
 
 
@@ -317,22 +317,13 @@ class TripsCausalityInterfaceModule extends TripsInterfaceModule{
 
                 self.tm.replyToMsg(text, {0: 'reply', content: {0: 'success'}});
 
-
-
-
             });
 
         });
 
-
-
     }
 
-
-
-
 }
-
 
 
 
