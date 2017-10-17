@@ -65,7 +65,7 @@ class TripsCausalityInterfaceModule extends TripsInterfaceModule{
                     console.log("Model id not initialized.");
             }
             else
-                response = {0:'reply', content:{0:'failure', 1:'NO_PATH_FOUND'}};
+                response = {0:'reply', content:{0:'failure',1: {reason: 'NO_PATH_FOUND'}}};
 
 
 
@@ -233,7 +233,7 @@ class TripsCausalityInterfaceModule extends TripsInterfaceModule{
                 self.getTermName(contentObj.source, function (source) {
 
                     var queryToRequestMap = {
-                        '\"phosphorylation\"': "is-dephosphorylated-by",
+                        '\"phosphorylation\"': "is-phosphorylated-by",
                         '\"dephosphorylation\"': "is-dephosphorylated-by",
                         '\"activate\"': "expression-is-upregulated-by",
                         '\"increase\"': "expression-is-upregulated-by",
