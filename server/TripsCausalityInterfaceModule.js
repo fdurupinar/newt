@@ -65,7 +65,7 @@ class TripsCausalityInterfaceModule extends TripsInterfaceModule{
                     console.log("Model id not initialized.");
             }
             else
-                response = {0:'reply', content:{0:'failure',1: {reason: 'NO_PATH_FOUND'}}};
+                response = {0:'reply', content:{0:'failure',1: ':reason', 2: 'MISSING_MECHANISM'}};
 
 
 
@@ -152,7 +152,7 @@ class TripsCausalityInterfaceModule extends TripsInterfaceModule{
                         var indraJson;
 
                         if (!causality || !causality.rel)
-                            self.tm.replyToMsg(text, {0: 'reply', content: {0: 'failure', 1: 'NO_PATH_FOUND'}});
+                            self.tm.replyToMsg(text, {0: 'reply', content: {0: 'failure', 1: ':reason', 2: 'NO_PATH_FOUND'}});
                         else {
 
 
