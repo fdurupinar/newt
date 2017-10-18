@@ -368,21 +368,55 @@ var makeIndraJson = function(causality){
 
     var relType = indraRelationMap[causality.rel];
 
+    // If it's a phosphorylation
     if(causality.rel.indexOf("PHOSPHO")>=0) {
         if(causality.rel.indexOf("IS") >= 0) //passive
-            indraJson = { type: relType,  enz: {name: causality.id2, mods: [{ mod_type: 'phosphorylation', is_modified: true, residue: causality.res2, position: causality.pos2}]},
-                sub: { name: causality.id1},residue: causality.res1, position:causality.pos1};
+            indraJson = {
+                type: relType,\
+                enz: {name: causality.id2,
+                      mods: [{ mod_type: 'phosphorylation',
+                               is_modified: true,
+                               residue: causality.res2,
+                               position: causality.pos2}]},
+                sub: { name: causality.id1},
+                residue: causality.res1,
+                position:causality.pos1};
         else
-            indraJson = { type: relType,  enz: {name: causality.id1, mods: [{ mod_type: 'phosphorylation', is_modified: true, residue: causality.res1, position: causality.pos1}]},
-                sub: {name: causality.id2},residue: causality.res2, position:causality.pos2};
+            indraJson = {
+                type: relType,
+                enz: {name: causality.id1,
+                      mods: [{ mod_type: 'phosphorylation',
+                               is_modified: true,
+                               residue: causality.res1,
+                               position: causality.pos1}]},
+                sub: {name: causality.id2},
+                residue: causality.res2,
+                position:causality.pos2};
     }
+    // If it's not a phosphorylation
     else {
         if(causality.rel.indexOf("IS") >= 0)//passive
-            indraJson = { type: relType,  subj: {name: causality.id2, mods: [{ mod_type: 'phosphorylation', is_modified: true, residue: causality.res2, position: causality.pos2}]},
-                obj: { name: causality.id1},residue: causality.res1, position:causality.pos1};
+            indraJson = {
+                type: relType,
+                subj: {name: causality.id2,
+                       mods: [{ mod_type: 'phosphorylation',
+                                is_modified: true,
+                                residue: causality.res2,
+                                position: causality.pos2}]},
+                obj: { name: causality.id1},
+                residue: causality.res1,
+                position:causality.pos1};
         else
-            indraJson = { type: relType,  subj: {name: causality.id1, mods: [{ mod_type: 'phosphorylation', is_modified: true, residue: causality.res1, position: causality.pos1}]},
-                obj: {name: causality.id2},residue: causality.res2, position:causality.pos2};
+            indraJson = {
+                type: relType,
+                subj: {name: causality.id1,
+                       mods: [{ mod_type: 'phosphorylation',
+                              is_modified: true,
+                              residue: causality.res1,
+                              position: causality.pos1}]},
+                obj: {name: causality.id2},
+                residue: causality.res2,
+                position:causality.pos2};
     }
 
 
