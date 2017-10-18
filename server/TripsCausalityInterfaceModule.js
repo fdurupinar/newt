@@ -368,11 +368,31 @@ var makeIndraJson = function(causality){
 
     var relType = indraRelationMap[causality.rel];
 
+    var mods = [];
+    for (i in causality.res2.length) {
+        var res = causality.res2[i];
+        var pos = causality.pos2[i];
+        var mod = {mod_type: 'phosphorylation',
+                   residue: res,
+                   position: pos,
+                   is_modified: true
+                  }
+        }
+        mods.push(mod)
+    indraJson = {
+        type: relType,
+        enz: {name: causality.id2,
+              mods: mods,
+        sub: { name: causality.id1},
+        residue: causality.res1,
+        position:causality.pos1};
+
+
     // If it's a phosphorylation
     if(causality.rel.indexOf("PHOSPHO")>=0) {
         if(causality.rel.indexOf("IS") >= 0) //passive
             indraJson = {
-                type: relType,\
+                type: relType,
                 enz: {name: causality.id2,
                       mods: [{ mod_type: 'phosphorylation',
                                is_modified: true,
