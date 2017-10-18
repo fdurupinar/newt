@@ -368,25 +368,6 @@ var makeIndraJson = function(causality){
 
     var relType = indraRelationMap[causality.rel];
 
-    var mods = [];
-    for (i in causality.res2.length) {
-        var res = causality.res2[i];
-        var pos = causality.pos2[i];
-        var mod = {mod_type: 'phosphorylation',
-                   residue: res,
-                   position: pos,
-                   is_modified: true
-                  }
-        }
-        mods.push(mod)
-    indraJson = {
-        type: relType,
-        enz: {name: causality.id2,
-              mods: mods,
-        sub: { name: causality.id1},
-        residue: causality.res1,
-        position:causality.pos1};
-
 
     // If it's a phosphorylation
     if(causality.rel.indexOf("PHOSPHO")>=0) {
@@ -394,24 +375,18 @@ var makeIndraJson = function(causality){
             indraJson = {
                 type: relType,
                 enz: {name: causality.id2,
-                      mods: [{ mod_type: 'phosphorylation',
-                               is_modified: true,
-                               residue: causality.res2,
-                               position: causality.pos2}]},
+                      mods: causality.mods2},
                 sub: { name: causality.id1},
-                residue: causality.res1,
-                position:causality.pos1};
+                residue: causality.mods1[0].residue,
+                position:causality.mods1[0].position};
         else
             indraJson = {
                 type: relType,
                 enz: {name: causality.id1,
-                      mods: [{ mod_type: 'phosphorylation',
-                               is_modified: true,
-                               residue: causality.res1,
-                               position: causality.pos1}]},
+                      mods: causality.mods1},
                 sub: {name: causality.id2},
-                residue: causality.res2,
-                position:causality.pos2};
+                residue: causality.mods2[0].residue,
+                position:causality.mods2[0].position};
     }
     // If it's not a phosphorylation
     else {
