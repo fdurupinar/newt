@@ -126,7 +126,6 @@ module.exports = function (model, docId, sbgnviz) {
         },
 
 
-
         updateLayoutProperties: function (layoutProperties, user, noHistUpdate) {
 
             var currentLayoutProperties;
@@ -1163,6 +1162,7 @@ module.exports = function (model, docId, sbgnviz) {
 
 
             var pos = nodePath.get('position');
+
             if (pos != null)
                 node.position(pos);
 
@@ -1265,6 +1265,7 @@ module.exports = function (model, docId, sbgnviz) {
                 this.updateHistory({opName: 'init', param: newModelCy, opTarget: 'model'});
             }
 
+            console.log("Init model finished")
             //notifies other clients to update their cy graphs
            model.pass({user:"me"}).set('_page.doc.cy.initTime', new Date());
 

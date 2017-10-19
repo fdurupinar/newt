@@ -667,6 +667,7 @@ module.exports.start = function(io, model, cancerDataOrganizer){
         socket.on('agentConnectToTripsRequest', function(param, callback){
 
 
+            console.log("Agent trips connection request");
 
 
             if(param.isInterfaceAgent){
@@ -696,14 +697,9 @@ module.exports.start = function(io, model, cancerDataOrganizer){
                 else {
 
                     tripsCausalityInterfaceInstance.updateWebSocket(socket);
-
                 }
-
             }
-
         });
-
-
 
     };
 
@@ -719,8 +715,12 @@ module.exports.start = function(io, model, cancerDataOrganizer){
 
         listenToAgentRequests(socket, socketRoom);
 
-        socket.on('getDate', function(callback){
+        socket.on('getDate',  function(msg, callback){
             callback(+(new Date));
+
+            //relay the message to agents
+            io.in(socket.room).emit('message', msg);
+
         });
 
 
@@ -743,16 +743,6 @@ module.exports.start = function(io, model, cancerDataOrganizer){
             console.log("human subscribed");
 
 
-
-
-
-            //
-            // readGeneList(function(geneList){
-            //     readPNNLData(geneList);
-            // });
-
-
-
             model.subscribe('documents', function () {
 
 
@@ -768,6 +758,7 @@ module.exports.start = function(io, model, cancerDataOrganizer){
                 var users = model.at((docPath + '.users'));//user lists with names and color codes
                 var userIds = model.at((docPath + '.userIds')); //used for keeping a list of subscribed users
                 var messages = model.at((docPath + '.messages'));
+                var tripsConnected = model.at((docPath + '.tripsConnected'));
 
 
 
@@ -786,9 +777,9 @@ module.exports.start = function(io, model, cancerDataOrganizer){
                     });
                     messages.subscribe(function () {
                     });
+
+
                     userIds.subscribe(function () {
-
-
 
                     });
                     users.subscribe(function () {
@@ -825,9 +816,7 @@ module.exports.start = function(io, model, cancerDataOrganizer){
                     }
 
 
-
-                    io.in(socket.room).emit('message', msg);
-
+                    //
                     if (msg && msg.comment) {
                         if (msg.comment.indexOf("The most likely context") > -1) { //if agent told about context
                             io.in(socket.room).emit("agentContextQuestion", msg.userId);
@@ -866,6 +855,39 @@ module.exports.start = function(io, model, cancerDataOrganizer){
             // }
 
         });
+
+
+        socket.on('resetConversationRequest', function(){
+                modelManagerList[socket.room].newModel()
+
+            //Reset through clic
+
+            request({
+                url: 'http://localhost:8000/clic/initiate-reset', //URL to hit
+                // qs: {from: 'blog example', time: +new Date()}, //Query string data
+                headers: responseHeaders,
+                form: ''
+
+            }, function (error, response, body) {
+
+                if (error) {
+
+                    console.log(error);
+                } else {
+
+                    // console.log(response);
+                    //
+                    // if(response.statusCode == 200) {
+                    //
+                    //     console.log("TRIPS reset")
+                    // }
+
+
+                }
+            });
+
+            }
+        );
 
         //Run a shell script
         socket.on('connectToCausalityAgentRequest', function(){
@@ -1169,13 +1191,9 @@ module.exports.start = function(io, model, cancerDataOrganizer){
 
                         }
 
-
                         if(callback) {
                             callback({graph: body});
                         }
-
-
-
                     }
                     else
                         socket.emit("Paxtools Server Error", "error");

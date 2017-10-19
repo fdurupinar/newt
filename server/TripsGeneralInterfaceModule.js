@@ -57,15 +57,14 @@ class TripsGeneralInterfaceModule extends TripsInterfaceModule {
 
         });
 
-        self.socket.on('resetConversationRequest', function () {
-            self.tm.sendMsg({0: 'tell', content: ['start-conversation']});
-        });
+        // self.socket.on('resetConversationRequest', function () {
+        //     self.tm.sendMsg({0: 'tell', content: ['start-conversation']});
+        // });
 
     }
 
     setHandlers() {
         var self = this;
-
 
         //Listen to spoken sentences
         var pattern = {0: 'tell', 1: '&key', content: ['spoken', '.', '*']};
@@ -130,11 +129,7 @@ class TripsGeneralInterfaceModule extends TripsInterfaceModule {
 
                 //console.log(self.model.get('documents.' + socket.room + '.pysb.model'));
             }
-
-
         });
-
-
     }
 
     displayImage(text) {
@@ -201,7 +196,6 @@ class TripsGeneralInterfaceModule extends TripsInterfaceModule {
             sbgnModel = sbgnModel.replace(/(\\")/g, '"');
             sbgnModel = "<?xml version='1.0' encoding='UTF-8' standalone='yes'?>\n" + sbgnModel;
 
-
             //The socket connection is between the interface and the agent, so we cannot directly emit messages
             //we must ask the client with the browser to do it for us
             self.askHuman(self.agentId, self.room, "mergeSbgn", sbgnModel, function (val) {
@@ -211,7 +205,6 @@ class TripsGeneralInterfaceModule extends TripsInterfaceModule {
 
 
         }
-
 
     }
 

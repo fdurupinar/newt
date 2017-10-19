@@ -43,6 +43,8 @@ var editorListener;
 
 var TripsAgent;
 
+const BobId = "Bob123"
+
 app.on('model', function (model) {
 
     model.fn('biggerTime', function (item) {
@@ -95,19 +97,15 @@ app.get('/', function (page, model, params) {
 
 
 app.get('/:docId', function (page, model, arg, next) {
-    var messagesQuery, room;
+    var  room;
+
+    var self = this;
     room = arg.docId;
 
-
-
-
-
     model.subscribe('documents', function () {
+
         var docPath = 'documents.' + arg.docId;
         model.ref('_page.doc', ('documents.' + arg.docId));
-
-
-
 
         model.subscribe(docPath, function (err) {
             if (err) return next(err);
@@ -166,9 +164,14 @@ app.get('/:docId', function (page, model, arg, next) {
                 if (!userIdsList) {
                     userIdsList = [userId];
                     userIds.push(userId);
+                    self.firstUser = true;
                 }
-                else if (userIdsList.indexOf(userId) < 0) //does not exist
+                else if (userIdsList.indexOf(userId) < 0) { //does not exist
                     userIds.push(userId);
+                    self.firstUser = true;
+                }
+                else //user exists
+                    self.firstUser = false;
 
                 userIdsList = userIds.get();
 
@@ -391,20 +394,16 @@ app.proto.create = function (model) {
     });
 
 
- //   }, 2000);
-
-
-
     this.atBottom = true;
 
 
-    //if there is already one connection, don't open another
+    //If there is already one connection to Bob, don't open another
+    var userIds = modelManager.getUserIds();
 
-    if(tripsMode)
-       this.connectTripsAgent();
+    if(userIds.indexOf(BobId) < 0) { //there's no agent for Bob
+        this.connectTripsAgent();
+    }
 
-    //TODO: Delete this
-    //this.updateMessage(); //init first one
 
     return model.on('all', '_page.list', (function (_this) {
 
@@ -560,6 +559,10 @@ app.proto.listenToNodeOperations = function(model){
             var posDiff = {x: (pos.x - cy.getElementById(id).position("x")), y:(pos.y - cy.getElementById(id).position("y"))} ;
             moveNodeAndChildren(posDiff, cy.getElementById(id)); //children need to be updated manually here
             //parent as well
+
+
+
+            console.log("Pos update " + pos.x  +  " " + pos.y);
 
 
         }
@@ -893,26 +896,15 @@ app.proto.init = function (model) {
 
     });
 
-    //Cy updated by other clients
-    model.on('all', '_page.doc.cy.initTime', function( val, prev, passed){
-
-        if(docReady ) {
-
-
-            console.log(val);
-            notyView.close();
-
-        }
-    });
-
-
 
     //Cy updated by other clients
-    model.on('change', '_page.doc.cy.initTime', function( val, prev, passed){
+    model.on('all', '_page.doc.cy.initTime', function(  op, prev, passed){
 
-        if(docReady &&  passed.user == null) {
+        if(docReady) {
 
-            self.loadCyFromModel();
+
+            if(op == 'change' && passed && passed.user == null)
+                self.loadCyFromModel();
             notyView.close();
 
         }
@@ -1041,7 +1033,15 @@ app.proto.runUnitTests = function(){
 
 app.proto.resetConversationOnTrips = function(){
 
-    TripsAgent.resetConversation();
+    //directly ask the server
+    socket.emit('resetConversationRequest');
+
+    // if(TripsAgent) {
+    //     TripsAgent.resetConversation();
+    //     cy.remove(cy.elements());
+    //     modelManager.newModel("me"); //do not delete cytoscape, only the model
+    // }
+
 }
 
 app.proto.connectCausalityAgent = function(){
@@ -1052,43 +1052,23 @@ app.proto.connectCausalityAgent = function(){
 
 app.proto.connectTripsAgent = function(){
 
-//    We can't run causality agent directly in node because it uses browser's database functionality
+    var TripsGeneralInterfaceAgent = require("./agent-interaction/TripsGeneralInterfaceAgent.js");
+    TripsAgent = new TripsGeneralInterfaceAgent("Bob", BobId);
 
-
-        var TripsGeneralInterfaceAgent = require("./agent-interaction/TripsGeneralInterfaceAgent.js");
-        TripsAgent = new TripsGeneralInterfaceAgent("Bob", "Bob123");
-
-
-        TripsAgent.connectToServer("http://localhost:3000/", function (socket) {
-            TripsAgent.loadModel(function () {
-                TripsAgent.init();
-                TripsAgent.loadChatHistory(function () {
-                });
+    console.log("bob connected");
+    TripsAgent.connectToServer("http://localhost:3000/", function (socket) {
+        TripsAgent.loadModel(function () {
+            TripsAgent.init();
+            TripsAgent.loadChatHistory(function () {
             });
         });
-    //}
-
-
-
-        //var w = window.open("http://localhost:63342/Sbgnviz-Collaborative-Editor/agent-interaction/computerAgent.html");
-
-        //w.blur();
-
-
-
-
+    });
 }
 
 app.proto.enterMessage= function(event){
 
     if (event.keyCode == 13 && !event.shiftKey) {
        this.add(event);
-
-       //  $('#inputs-comment')[0].value = "abc";
-       // // $('#inputs-comment')[0].focus();
-       //  $('#inputs-comment')[0].setSelectionRange(0,0);
-
-
 
         // prevent default behavior
         event.preventDefault();
@@ -1124,26 +1104,22 @@ app.proto.add = function (event, model, filePath) {
     var msgUserId = model.get('_session.userId');
     var msgUserName = model.get('_page.doc.users.' + msgUserId +'.name');
 
-    socket.emit('getDate', function(date){ //get the date from the server
+    comment.style = "font-size:large";
+    var msg = {room: model.get('_page.room'),
+        targets: targets,
+        userId: msgUserId,
+        userName: msgUserName,
+        comment: comment};
 
-       comment.style = "font-size:large";
-        model.add('_page.doc.messages', {
-            room: model.get('_page.room'),
-            targets: targets,
-            userId: msgUserId,
-            userName: msgUserName,
-            comment: comment,
-            date: date
-        });
+    //also lets server know that a client message is entered.
+    socket.emit('getDate', msg, function(date){ //get the date from the server
+        msg.date = date;
 
-
-        console.log(comment);
-       event.preventDefault();
+        model.add('_page.doc.messages', msg);
+        event.preventDefault();
 
         //change scroll position
        $('#messages').scrollTop($('#messages')[0].scrollHeight  - $('.message').height());
-
-
 
     });
 
@@ -1306,7 +1282,6 @@ app.proto.dynamicResize = function (images) {
 
                 $("#static-image-container-" + img.tabIndex).height(hCanvasTab * 0.99);
 
-                console.log($("#static-image-container-" + img.tabIndex).height())
             });
         }
         $("#inspector-tab-area").resizable({

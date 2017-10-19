@@ -19,7 +19,6 @@ module.exports = function(modelManager, socket, userId){
     });
 
 
-
     $("#file-input").change(function () {
 
         if ($(this).val() != "") {
@@ -29,7 +28,6 @@ module.exports = function(modelManager, socket, userId){
             var extension = file.name.split('.').pop().toLowerCase();
 
             if (extension === "owl") {
-
 
                 var reader = new FileReader();
 

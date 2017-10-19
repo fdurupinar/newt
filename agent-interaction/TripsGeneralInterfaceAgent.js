@@ -69,24 +69,13 @@ TripsGeneralInterfaceAgent.prototype.listenToMessages = function(callback){
     var self = this;
 
 
-    this.socket.on('displayModel', function(sbgn, callback){
-
-        //TODO: this should be deleted
-        self.sendRequest('agentNewFileRequest');
-
-        self.sendRequest('agentMergeGraphRequest', {type: 'sbgn', graph: sbgn}, function (data) {
-            if (callback) callback();
-        });
-    });
-
-
     this.socket.on('message', function(data){
 
 
         if(data.userId != self.agentId) {
 
-
             self.relayMessage(data.comment);
+
         }
 
     });

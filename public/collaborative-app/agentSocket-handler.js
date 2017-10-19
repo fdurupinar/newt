@@ -14,12 +14,6 @@ module.exports =  function(app, modelManager, socket) {
             var self = this;
 
 
-
-            //For debugging
-            socket.on('message', function (msg) {
-
-                console.log(msg.comment);
-            });
             socket.on('loadFile', function (txtFile, callback) {
                 try {
 
@@ -370,7 +364,6 @@ module.exports =  function(app, modelManager, socket) {
 
 
             var newJson = sbgnviz.convertSbgnmlTextToJson(sbgnText);
-            console.log(newJson);
             this.mergeJsonWithCurrent(newJson, callback);
 
         },
@@ -387,17 +380,24 @@ module.exports =  function(app, modelManager, socket) {
             chise.updateGraph(jsonObj);
 
             setTimeout(function () {
+                console.log("init called")
+
                 modelManager.initModel(cy.nodes(), cy.edges(), appUtilities, "me");
+                console.log("init finished")
 
-                $("#perform-layout").trigger('click');
+                    //Call layout after init
+                    setTimeout(function () {
+                        $("#perform-layout").trigger('click');
+                        console.log("layout finished")
 
-                //Call merge notification after the layout
-                setTimeout(function () {
-                    modelManager.mergeJsons("me", true);
+                        // //Call merge notification after the layout
+                        // setTimeout(function () {
+                        //     modelManager.mergeJsons("me", true);
+                        //
+                        //     if (callback) callback();
+                        // }, 1000);
 
-                    if (callback) callback();
-                }, 1000);
-
+                    }, 4000);
 
             }, 2000); //wait for chise to complete updating graph
             return {sentences: sentenceNodeMap, idxCards: idxCardNodeMap};
@@ -412,10 +412,13 @@ module.exports =  function(app, modelManager, socket) {
 
             //get another sbgncontainer and display the new SBGN model.
             modelManager.newModel("me", true);
+
+
             //this takes a while so wait before initiating the model
             chise.updateGraph(jsonObj);
 
             setTimeout(function () {
+
                 modelManager.initModel(cy.nodes(), cy.edges(), appUtilities, "me");
 
                 //select the new graph
@@ -423,24 +426,27 @@ module.exports =  function(app, modelManager, socket) {
                     cy.getElementById(node.data.id).select();
                 });
 
+
                 //Call Layout
                 $("#perform-layout").trigger('click');
 
+                console.log("Layout called");
+
                 cy.elements().unselect();
 
-                //Call merge notification after the layout
-                setTimeout(function () {
-                    modelManager.mergeJsons("me", true);
-                    if (callback) callback("success");
-                }, 1000);
+                socket.emit("runLayoutRequest");
 
-            }, 2000); //wait for chise to complete updating graph
+                //Call merge notification after the layout
+                // setTimeout(function () {
+                //     modelManager.mergeJsons("me", true);
+                //     if (callback) callback("success");
+                // }, 1000);
+
+
+            }, 4000); //wait for chise to complete updating graph
+
         }
 
     }
 }
 
-
-
-// if( typeof module !== 'undefined' && module.exports){ // expose as a nodejs module
-//     module.exports = new FactoidInput();
