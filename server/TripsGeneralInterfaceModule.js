@@ -30,10 +30,7 @@ class TripsGeneralInterfaceModule extends TripsInterfaceModule {
 
         }, 2000);
 
-
-
     }
-
 
     /***
      * When socket changes, update the listeners on that socket

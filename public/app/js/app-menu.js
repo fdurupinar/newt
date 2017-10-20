@@ -81,10 +81,10 @@ module.exports = function () {
     // wait until it is resized before loading the default sample. As the current solution we set a 100 ms
     // time out before loading the default sample.
     // TODO search for a better way.
-    setTimeout(function(){
-      $("#new-file").trigger('click');  
-      keyboardShortcuts();
-    }, 100);
+    // setTimeout(function(){
+    //   $("#new-file").trigger('click');
+    //   keyboardShortcuts();
+    // }, 100);
   });
 
   // Events triggered by sbgnviz module
@@ -202,12 +202,13 @@ module.exports = function () {
         });
       };
 
-      if(cy.elements().length != 0) {
-        promptConfirmationView.render(createNewFile);
-      }
-      else {
+      //FUNDA closed this
+      // if(cy.elements().length != 0) {
+      //   promptConfirmationView.render(createNewFile);
+      // }
+      // else {
         createNewFile(); 
-      }
+      // }
 
         //FUNDA
         $(document).trigger('newFile');

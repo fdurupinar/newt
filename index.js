@@ -402,6 +402,7 @@ app.proto.create = function (model) {
     //If there is already one connection to Bob, don't open another
     var userIds = modelManager.getUserIds();
 
+    console.log(userIds);
     if(userIds.indexOf(BobId) < 0) { //there's no agent for Bob
         this.connectTripsAgent();
     }
@@ -436,31 +437,34 @@ app.proto.loadCyFromModel = function(){
         chise.updateGraph({
             nodes: jsonArr.nodes,
             edges: jsonArr.edges
+        }, function(){
+            //Update position fields separately
+            cy.nodes().forEach(function(node){
+
+                var position = modelManager.getModelNodeAttribute('position',node.id());
+
+                node.position({x:position.x, y: position.y});
+
+
+                //reset to the center
+                cy.panzoom().reset();
+            });
+
         });
 
-        //Update position fields separately
-        cy.nodes().forEach(function(node){
-
-            var position = modelManager.getModelNodeAttribute('position',node.id());
-
-            node.position({x:position.x, y: position.y});
-
-        });
 
 
-        var props;
-        //update app utilities as well
-        props = modelManager.getLayoutProperties();
-        if(props) appUtilities.currentLayoutProperties = props;
+        // var props;
+        // //update app utilities as well
+        // props = modelManager.getLayoutProperties();
+        // if(props) appUtilities.currentLayoutProperties = props;
+        //
+        // props = modelManager.getGeneralProperties();
+        // if(props) appUtilities.currentGeneralProperties = props;
+        //
+        // props = modelManager.getGridProperties();
+        // if(props) appUtilities.currentGridProperties = props;
 
-        props = modelManager.getGeneralProperties();
-        if(props) appUtilities.currentGeneralProperties = props;
-
-        props = modelManager.getGridProperties();
-        if(props) appUtilities.currentGridProperties = props;
-
-        //reset to the center
-        // cy.panzoom().reset();
 
     }
     return (jsonArr == null);
@@ -897,51 +901,67 @@ app.proto.init = function (model) {
 
 
     //Cy updated by other clients
-    model.on('all', '_page.doc.cy.initTime', function(  op, prev, passed){
+    model.on('all', '_page.doc.cy.initTime', function( op, val, prev, passed){
 
-        if(docReady) {
+        if(docReady ) {
 
-
-            if(op == 'change' && passed && passed.user == null)
+            if(docReady && passed.user == null)
                 self.loadCyFromModel();
+
+            console.log("init time " + op + " " + val + " " + prev + " "+ passed);
             notyView.close();
 
         }
     });
 
-    model.on('all', '_page.doc.cy.layoutProperties', function(op, val) {
-        if (docReady){
-            for(var att in val){ //assign each attribute separately to keep the functions in currentlayoutproperties
-                if(appUtilities.currentLayoutProperties[att])
-                    appUtilities.currentLayoutProperties[att] = val[att];
-            }
 
-        }
+    //
+    // //Cy updated by other clients
+    // model.on('change', '_page.doc.cy.initTime', function( val, prev, passed){
+    //
+    //     console.log("init time " +  val + " " + prev + " "+ passed);
+    //     if(docReady &&  passed.user == null) {
+    //
+    //         self.loadCyFromModel();
+    //         notyView.close();
+    //
+    //     }
+    // });
 
-    });
-
-    model.on('all', '_page.doc.cy.generalProperties', function(op, val) {
-        if (docReady){
-            for(var att in val){ //assign each attribute separately to keep the functions in currentgeneralproperties
-                if(appUtilities.currentGeneralProperties[att])
-                    appUtilities.currentGeneralProperties[att] = val[att];
-            }
-
-        }
-
-    });
-
-    model.on('all', '_page.doc.cy.gridProperties', function(op, val) {
-        if (docReady){
-            for(var att in val){ //assign each attribute separately to keep the functions in currentgridproperties
-                if(appUtilities.currentGridProperties[att])
-                    appUtilities.currentGridProperties[att] = val[att];
-            }
-
-        }
-
-    });
-
+    //
+    // model.on('all', '_page.doc.cy.layoutProperties', function(op, val) {
+    //     if (docReady){
+    //         for(var att in val){ //assign each attribute separately to keep the functions in currentlayoutproperties
+    //             if(appUtilities.currentLayoutProperties[att])
+    //                 appUtilities.currentLayoutProperties[att] = val[att];
+    //         }
+    //
+    //     }
+    //
+    // });
+    //
+    // model.on('all', '_page.doc.cy.generalProperties', function(op, val) {
+    //     if (docReady){
+    //         for(var att in val){ //assign each attribute separately to keep the functions in currentgeneralproperties
+    //             if(appUtilities.currentGeneralProperties[att])
+    //                 appUtilities.currentGeneralProperties[att] = val[att];
+    //         }
+    //
+    //     }
+    //
+    // });
+    //
+    // model.on('all', '_page.doc.cy.gridProperties', function(op, val) {
+    //     if (docReady){
+    //         for(var att in val){ //assign each attribute separately to keep the functions in currentgridproperties
+    //             if(appUtilities.currentGridProperties[att])
+    //                 appUtilities.currentGridProperties[att] = val[att];
+    //         }
+    //
+    //     }
+    //
+    // });
+    //
 
     //Sometimes works
     model.on('all', '_page.doc.images', function() {

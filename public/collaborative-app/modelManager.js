@@ -126,88 +126,88 @@ module.exports = function (model, docId, sbgnviz) {
         },
 
 
-        updateLayoutProperties: function (layoutProperties, user, noHistUpdate) {
-
-            var currentLayoutProperties;
-            var lp = model.get('_page.doc.cy.layoutProperties');
-
-
-            currentLayoutProperties = _.clone(layoutProperties);
-
-
-
-            model.pass({user: user}).set('_page.doc.cy.layoutProperties',  currentLayoutProperties); //synclayout
-
-            if (!noHistUpdate)
-                this.updateHistory({
-                    opName: 'update',
-                    opTarget: 'layout properties',
-                    opAttr: JSON.stringify(currentLayoutProperties),
-                    param: currentLayoutProperties,
-                    prevParam: lp
-
-                });
-            return currentLayoutProperties;
-        },
-
-        getLayoutProperties: function (layoutProperties, user, noHistUpdate) {
-           return model.get('_page.doc.cy.layoutProperties');
-
-        },
-
-        updateGeneralProperties: function (generalProperties, user, noHistUpdate) {
-
-            var currentGeneralProperties;
-            var lp = model.get('_page.doc.cy.generalProperties');
-
-
-            currentGeneralProperties = _.clone(generalProperties);
-
-
-            model.pass({user: user}).set('_page.doc.cy.generalProperties',  currentGeneralProperties); //synclayout
-
-            if (!noHistUpdate)
-                this.updateHistory({
-                    opName: 'update',
-                    opTarget: 'general properties',
-                    opAttr: JSON.stringify(currentGeneralProperties),
-                    param:currentGeneralProperties,
-                    prevParam:lp
-                });
-            return currentGeneralProperties;
-        },
-
-        getGeneralProperties: function (generalProperties, user, noHistUpdate) {
-            return model.get('_page.doc.cy.generalProperties');
-
-        },
-
-        updateGridProperties: function (gridProperties, user, noHistUpdate) {
-
-            var currentGridProperties;
-            var lp = model.get('_page.doc.cy.gridProperties');
-
-
-            currentGridProperties = _.clone(gridProperties);
-
-
-            model.pass({user: user}).set('_page.doc.cy.gridProperties',  currentGridProperties); //synclayout
-
-            if (!noHistUpdate)
-                this.updateHistory({
-                    opName: 'update',
-                    opTarget: 'grid properties',
-                    opAttr: JSON.stringify(currentGridProperties),
-                    param:currentGridProperties,
-                    prevParam:lp
-                });
-            return currentGridProperties;
-        },
-
-        getGridProperties: function (gridProperties, user, noHistUpdate) {
-            return model.get('_page.doc.cy.gridProperties');
-
-        },
+        // updateLayoutProperties: function (layoutProperties, user, noHistUpdate) {
+        //
+        //     var currentLayoutProperties;
+        //     var lp = model.get('_page.doc.cy.layoutProperties');
+        //
+        //
+        //     currentLayoutProperties = _.clone(layoutProperties);
+        //
+        //
+        //
+        //     model.pass({user: user}).set('_page.doc.cy.layoutProperties',  currentLayoutProperties); //synclayout
+        //
+        //     if (!noHistUpdate)
+        //         this.updateHistory({
+        //             opName: 'update',
+        //             opTarget: 'layout properties',
+        //             opAttr: JSON.stringify(currentLayoutProperties),
+        //             param: currentLayoutProperties,
+        //             prevParam: lp
+        //
+        //         });
+        //     return currentLayoutProperties;
+        // },
+        //
+        // getLayoutProperties: function (layoutProperties, user, noHistUpdate) {
+        //    return model.get('_page.doc.cy.layoutProperties');
+        //
+        // },
+        //
+        // updateGeneralProperties: function (generalProperties, user, noHistUpdate) {
+        //
+        //     var currentGeneralProperties;
+        //     var lp = model.get('_page.doc.cy.generalProperties');
+        //
+        //
+        //     currentGeneralProperties = _.clone(generalProperties);
+        //
+        //
+        //     model.pass({user: user}).set('_page.doc.cy.generalProperties',  currentGeneralProperties); //synclayout
+        //
+        //     if (!noHistUpdate)
+        //         this.updateHistory({
+        //             opName: 'update',
+        //             opTarget: 'general properties',
+        //             opAttr: JSON.stringify(currentGeneralProperties),
+        //             param:currentGeneralProperties,
+        //             prevParam:lp
+        //         });
+        //     return currentGeneralProperties;
+        // },
+        //
+        // getGeneralProperties: function (generalProperties, user, noHistUpdate) {
+        //     return model.get('_page.doc.cy.generalProperties');
+        //
+        // },
+        //
+        // updateGridProperties: function (gridProperties, user, noHistUpdate) {
+        //
+        //     var currentGridProperties;
+        //     var lp = model.get('_page.doc.cy.gridProperties');
+        //
+        //
+        //     currentGridProperties = _.clone(gridProperties);
+        //
+        //
+        //     model.pass({user: user}).set('_page.doc.cy.gridProperties',  currentGridProperties); //synclayout
+        //
+        //     if (!noHistUpdate)
+        //         this.updateHistory({
+        //             opName: 'update',
+        //             opTarget: 'grid properties',
+        //             opAttr: JSON.stringify(currentGridProperties),
+        //             param:currentGridProperties,
+        //             prevParam:lp
+        //         });
+        //     return currentGridProperties;
+        // },
+        //
+        // getGridProperties: function (gridProperties, user, noHistUpdate) {
+        //     return model.get('_page.doc.cy.gridProperties');
+        //
+        // },
 
         /***
          *
@@ -1249,16 +1249,16 @@ module.exports = function (model, docId, sbgnviz) {
             var newModelCy = model.get('_page.doc.cy');
 
 
-            if(newModelCy) {
-                if (newModelCy.layoutProperties == null)
-                    model.set('_page.doc.cy.layoutProperties', _.clone(appUtilities.defaultLayoutProperties));
-
-                if (newModelCy.generalProperties == null)
-                    model.set('_page.doc.cy.generalProperties', _.clone(appUtilities.defaultGeneralProperties));
-
-                if (newModelCy.gridProperties == null)
-                    model.set('_page.doc.cy.gridProperties', _.clone(appUtilities.defaultGridProperties));
-            }
+            // if(newModelCy) {
+            //     if (newModelCy.layoutProperties == null)
+            //         model.set('_page.doc.cy.layoutProperties', _.clone(appUtilities.defaultLayoutProperties));
+            //
+            //     if (newModelCy.generalProperties == null)
+            //         model.set('_page.doc.cy.generalProperties', _.clone(appUtilities.defaultGeneralProperties));
+            //
+            //     if (newModelCy.gridProperties == null)
+            //         model.set('_page.doc.cy.gridProperties', _.clone(appUtilities.defaultGridProperties));
+            // }
 
 
             if (!noHistUpdate) {

@@ -416,18 +416,27 @@ module.exports =  function(app, modelManager, socket) {
             modelManager.newModel("me", true);
 
             //this takes a while so wait before initiating the model
-            chise.updateGraph(jsonObj);
-
-            setTimeout(function () {
-
+            chise.updateGraph(jsonObj, function(){
                 modelManager.initModel(cy.nodes(), cy.edges(), appUtilities, "me");
 
 
                 $("#perform-layout").trigger('click');
 
+            });
 
 
-            }, 2000);
+            //
+            //
+            // setTimeout(function () {
+            //
+            //     modelManager.initModel(cy.nodes(), cy.edges(), appUtilities, "me");
+            //
+            //
+            //     $("#perform-layout").trigger('click');
+            //
+            //
+            //
+            // }, 2000);
 
         },
 

@@ -629,7 +629,7 @@
     function updateModel(callback){
         agent.loadModel(function() {
 
-            fillLayoutProperties();
+           // fillLayoutProperties();
             //agent.updateNextAgentNodeId();
             agent.loadOperationHistory(function () {
 
@@ -938,26 +938,26 @@
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     ///Page editing
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    function fillLayoutProperties(){
-
-        var layoutProperties = agent.getLayoutProperties();
-
-        $('#layoutName')[0].value = layoutProperties.name;
-        $('#nodeRepulsion')[0].value = layoutProperties.nodeRepulsion;
-        $('#nodeOverlap')[0].value = layoutProperties.nodeOverlap;
-        $('#idealEdgeLength')[0].value = layoutProperties.idealEdgeLength;
-        $('#edgeElasticity')[0].value= layoutProperties.edgeElasticity;
-        $('#nestingFactor')[0].value= layoutProperties.nestingFactor;
-        $('#gravity')[0].value = layoutProperties.gravity;
-        $('#numIter')[0].value= layoutProperties.numIter;
-        $('#tile')[0].checked = layoutProperties.tile;
-        $('#animate')[0].checked= layoutProperties.animate;
-        $('#randomize')[0].checked= layoutProperties.randomize;
-        $('#tilingPaddingVertical')[0].value= layoutProperties.tilingPaddingVertical;
-        $('#tilingPaddingHorizontal')[0].value= layoutProperties.tilingPaddingHorizontal;
-
-
-    }
+//    function fillLayoutProperties(){
+//
+//        var layoutProperties = agent.getLayoutProperties();
+//
+//        $('#layoutName')[0].value = layoutProperties.name;
+//        $('#nodeRepulsion')[0].value = layoutProperties.nodeRepulsion;
+//        $('#nodeOverlap')[0].value = layoutProperties.nodeOverlap;
+//        $('#idealEdgeLength')[0].value = layoutProperties.idealEdgeLength;
+//        $('#edgeElasticity')[0].value= layoutProperties.edgeElasticity;
+//        $('#nestingFactor')[0].value= layoutProperties.nestingFactor;
+//        $('#gravity')[0].value = layoutProperties.gravity;
+//        $('#numIter')[0].value= layoutProperties.numIter;
+//        $('#tile')[0].checked = layoutProperties.tile;
+//        $('#animate')[0].checked= layoutProperties.animate;
+//        $('#randomize')[0].checked= layoutProperties.randomize;
+//        $('#tilingPaddingVertical')[0].value= layoutProperties.tilingPaddingVertical;
+//        $('#tilingPaddingHorizontal')[0].value= layoutProperties.tilingPaddingHorizontal;
+//
+//
+//    }
     function fillNodeIds(divId){
         $('#'+divId).empty();
         var nodeList = agent.getNodeList();

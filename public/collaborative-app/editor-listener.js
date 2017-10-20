@@ -53,25 +53,33 @@ module.exports = function(modelManager, socket, userId){
 
     });
 
-    $(document).on("saveLayout", function (evt) {
-        var layoutProperties = appUtilities.currentLayoutProperties;
-        modelManager.updateLayoutProperties(layoutProperties, "me");
-    });
-
-    $(document).on("saveGeneralProperties", function (evt) {
-        var generalProperties = appUtilities.currentGeneralProperties;
-        modelManager.updateGeneralProperties(generalProperties, "me");
-    });
-
-    $(document).on("saveGridProperties", function (evt) {
-        var gridProperties = appUtilities.currentGridProperties;
-        modelManager.updateGridProperties(gridProperties, "me");
-    });
+    // $(document).on("saveLayout", function (evt) {
+    //     var layoutProperties = appUtilities.currentLayoutProperties;
+    //     modelManager.updateLayoutProperties(layoutProperties, "me");
+    // });
+    //
+    // $(document).on("saveGeneralProperties", function (evt) {
+    //     var generalProperties = appUtilities.currentGeneralProperties;
+    //     modelManager.updateGeneralProperties(generalProperties, "me");
+    // });
+    //
+    // $(document).on("saveGridProperties", function (evt) {
+    //     var gridProperties = appUtilities.currentGridProperties;
+    //     modelManager.updateGridProperties(gridProperties, "me");
+    // });
 
     $(document).on("newFile", function (evt) {
         cy.remove(cy.elements());
         modelManager.newModel("me"); //do not delete cytoscape, only the model
     });
+
+    // $(document).on('updateGraphEnd', function(event) {
+    //     console.log("Graph updated");
+    //     modelManager.initModel(cy.nodes(), cy.edges(), appUtilities, "me");
+    //
+    //    $("#perform-layout").trigger('click');
+    //
+    // });
 
     cy.on("afterDo afterRedo", function (event, actionName, args, res) {
         // if(this.debugMode){
@@ -291,6 +299,7 @@ module.exports = function(modelManager, socket, userId){
             // cy.on('layoutstop', function() {
                 //TODO
 
+                console.log('Layout stopped');
                 var modelElList = [];
                 var paramList = [];
                 var paramListData = [];

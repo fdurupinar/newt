@@ -195,9 +195,9 @@ Agent.prototype.getEdgeList = function(){
  *
  * @returns {*} Layout properties in the shared model
  */
-Agent.prototype.getLayoutProperties = function(){
-    return this.pageDoc.layoutProperties;
-}
+// Agent.prototype.getLayoutProperties = function(){
+//     return this.pageDoc.layoutProperties;
+// }
 
 /**
  * Sends request to the node.js server to change agent's name

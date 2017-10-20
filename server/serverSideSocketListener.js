@@ -252,40 +252,40 @@ module.exports.start = function(io, model, cancerDataOrganizer){
 
 
 
-        //Agent requests
-        socket.on('agentSetLayoutPropertiesRequest', function(data, callback){
-            modelManagerList[data.room].updateLayoutProperties(data);
-            if(callback) callback();
-        });
-
-        socket.on('agentGetLayoutPropertiesRequest', function(data, callback){
-            var props = modelManagerList[data.room].getLayoutProperties();
-            callback(props);
-
-        });
-
-        socket.on('agentSetGeneralPropertiesRequest', function(data, callback){
-            modelManagerList[data.room].updateGeneralProperties(data);
-            if(callback) callback();
-        });
-
-        socket.on('agentGetGeneralPropertiesRequest', function(data, callback){
-            var props = modelManagerList[data.room].getGeneralProperties();
-            callback(props);
-
-        });
-
-
-        socket.on('agentSetGridPropertiesRequest', function(data, callback){
-            modelManagerList[data.room].updateGridProperties(data);
-            if(callback) callback();
-        });
-
-        socket.on('agentGetGridPropertiesRequest', function(data, callback){
-            var props = modelManagerList[data.room].getGridProperties();
-            callback(props);
-
-        });
+        // //Agent requests
+        // socket.on('agentSetLayoutPropertiesRequest', function(data, callback){
+        //     modelManagerList[data.room].updateLayoutProperties(data);
+        //     if(callback) callback();
+        // });
+        //
+        // socket.on('agentGetLayoutPropertiesRequest', function(data, callback){
+        //     var props = modelManagerList[data.room].getLayoutProperties();
+        //     callback(props);
+        //
+        // });
+        //
+        // socket.on('agentSetGeneralPropertiesRequest', function(data, callback){
+        //     modelManagerList[data.room].updateGeneralProperties(data);
+        //     if(callback) callback();
+        // });
+        //
+        // socket.on('agentGetGeneralPropertiesRequest', function(data, callback){
+        //     var props = modelManagerList[data.room].getGeneralProperties();
+        //     callback(props);
+        //
+        // });
+        //
+        //
+        // socket.on('agentSetGridPropertiesRequest', function(data, callback){
+        //     modelManagerList[data.room].updateGridProperties(data);
+        //     if(callback) callback();
+        // });
+        //
+        // socket.on('agentGetGridPropertiesRequest', function(data, callback){
+        //     var props = modelManagerList[data.room].getGridProperties();
+        //     callback(props);
+        //
+        // });
 
         socket.on('agentRunLayoutRequest', function(data, callback){
             askHuman(socket.userId, data.room,  "runLayout", null, function(val){
