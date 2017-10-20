@@ -428,13 +428,14 @@ module.exports =  function(app, modelManager, socket) {
 
 
                 //Call Layout
-                $("#perform-layout").trigger('click');
-
                 console.log("Layout called");
+                 $("#perform-layout").trigger('click');
+
+
 
                 cy.elements().unselect();
 
-                socket.emit("runLayoutRequest");
+
 
                 //Call merge notification after the layout
                 // setTimeout(function () {

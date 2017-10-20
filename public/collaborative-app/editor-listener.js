@@ -288,7 +288,8 @@ module.exports = function(modelManager, socket, userId){
         }
 
         else if (actionName === "layout") {
-            cy.on('layoutstop', function() {
+            // cy.on('layoutstop', function() {
+                //TODO
 
                 var modelElList = [];
                 var paramList = [];
@@ -304,7 +305,7 @@ module.exports = function(modelManager, socket, userId){
 
                 modelManager.changeModelElementGroupAttribute("position", modelElList, paramList, "me");
                 // modelManager.changeModelElementGroupAttribute("data", modelElList, paramListData, "me"); //bounding boxes may change
-            });
+            // });
         }
 
 
