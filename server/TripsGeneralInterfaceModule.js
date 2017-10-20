@@ -197,6 +197,7 @@ class TripsGeneralInterfaceModule extends TripsInterfaceModule {
 
             var sbgnModel = contentObj.graph;
 
+            
             sbgnModel = trimDoubleQuotes(sbgnModel);
 
             sbgnModel = sbgnModel.replace(/(\\")/g, '"');

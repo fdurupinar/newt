@@ -142,6 +142,8 @@ app.get('/:docId', function (page, model, arg, next) {
             history.subscribe(function () {
             });
 
+
+
             undoIndex.subscribe(function () {
             });
             context.subscribe(function () {
@@ -458,7 +460,7 @@ app.proto.loadCyFromModel = function(){
         if(props) appUtilities.currentGridProperties = props;
 
         //reset to the center
-        cy.panzoom().reset();
+        // cy.panzoom().reset();
 
     }
     return (jsonArr == null);
@@ -480,12 +482,13 @@ function moveNodeAndChildren(positionDiff, node, notCalcTopMostNodes) {
 app.proto.listenToNodeOperations = function(model){
 
 
+
     model.on('all', '_page.doc.factoid', function(op, val, prev, passed){
 
         if(docReady &&  passed.user == null) {
             factoidHandler.setFactoidModel(val);
             //reset to the center
-            cy.panzoom().reset();
+            // cy.panzoom().reset();
 
         }
 
@@ -559,11 +562,7 @@ app.proto.listenToNodeOperations = function(model){
             var posDiff = {x: (pos.x - cy.getElementById(id).position("x")), y:(pos.y - cy.getElementById(id).position("y"))} ;
             moveNodeAndChildren(posDiff, cy.getElementById(id)); //children need to be updated manually here
             //parent as well
-
-
-
-            console.log("Pos update " + pos.x  +  " " + pos.y);
-
+            cy.panzoom().fit();
 
         }
     });

@@ -54,6 +54,7 @@ module.exports =  function(app, modelManager, socket) {
             });
 
 
+
             socket.on('addNode', function (data, callback) {
                 try {
                     //does not trigger cy events
