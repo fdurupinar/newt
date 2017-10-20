@@ -4,7 +4,7 @@
  * Its role is to receive and decode messages and transfer them to all the clients
  * It handles general requests such as displaying, message sending and model building
  */
-
+"use strict";
 var KQML = require('./KQML/kqml.js');
 var TripsInterfaceModule = require('./TripsInterfaceModule.js');
 

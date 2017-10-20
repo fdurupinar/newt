@@ -3,7 +3,7 @@
  * This is a Trips module to enable communication between trips and causalityAgent
  * Its role is to receive and decode messages and transfer them to causalityAgent
  */
-
+"use strict";
 var KQML = require('./KQML/kqml.js');
 
 var TripsInterfaceModule = require('./TripsInterfaceModule.js');

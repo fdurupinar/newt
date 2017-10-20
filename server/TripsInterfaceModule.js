@@ -3,7 +3,7 @@
  * This is a Trips module to enable communication between trips and sbgnviz
  */
 
-
+"use strict";
 class TripsInterfaceModule {
 
     constructor(tmName, agentId, agentName, socket, model, askHuman) {
