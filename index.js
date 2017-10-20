@@ -4,20 +4,15 @@
  *	Author: Funda Durupinar Babur<f.durupinar@gmail.com>
  */
 var app = module.exports = require('derby').createApp('cwc', __filename);
-var _ = require('underscore');
-
-var bs;
-
-
-
 app.loadViews(__dirname + '/views');
-//app.loadStyles(__dirname + '/styles');
-//app.serverUse(module, 'derby-stylus');
+
+var _ = require('underscore');
+var oneColor = require('onecolor');
 
 
-var tripsMode = true;
+var TRIPS_MODE = true;
+var TEST_MODE = false;
 
-var testMode = true;
 var ONE_DAY = 1000 * 60 * 60 * 24;
 
 var ONE_HOUR = 1000 * 60 * 60;
@@ -26,24 +21,8 @@ var ONE_MINUTE = 1000 * 60;
 
 var docReady = false;
 
-var useQunit = true;
+const BobId = "Bob123";
 
-var factoidHandler;
-var notyView;
-
-var socket;
-
-var agentSocket;
-
-var modelManager;
-var oneColor = require('onecolor');
-
-var editorListener;
-
-
-var TripsAgent;
-
-const BobId = "Bob123"
 
 app.on('model', function (model) {
 
@@ -66,8 +45,6 @@ app.on('model', function (model) {
         return item.date > clickTime;
     });
 
-
-
 });
 
 
@@ -75,7 +52,6 @@ app.get('/', function (page, model, params) {
     function getId() {
         return model.id();
     }
-
 
     function idIsReserved() {
         var ret = model.get('documents.' + docId) != undefined;
@@ -88,9 +64,8 @@ app.get('/', function (page, model, params) {
         docId = getId();
     }
 
-    // if( useQunit ){ // use qunit testing doc if we're testing so we don't disrupt real docs
-    //     docId = 'qunit';
-    // }
+    if(TEST_MODE) // use qunit testing doc if we're testing so we don't disrupt real docs
+        docId = 'testMode';
 
     return page.redirect('/' + docId);
 });
@@ -141,9 +116,6 @@ app.get('/:docId', function (page, model, arg, next) {
             });
             history.subscribe(function () {
             });
-
-
-
             undoIndex.subscribe(function () {
             });
             context.subscribe(function () {
@@ -154,7 +126,6 @@ app.get('/:docId', function (page, model, arg, next) {
 
             messages.subscribe(function () {
             });
-
 
             userIds.subscribe(function () {
                 var userId = model.get('_session.userId');
@@ -196,8 +167,6 @@ app.get('/:docId', function (page, model, arg, next) {
 
                     users.set(userId, {name: userName, colorCode: colorCode});
 
-
-
                     return page.render();
                 });
             });
@@ -205,55 +174,7 @@ app.get('/:docId', function (page, model, arg, next) {
         });
     });
 
-
-
-
 });
-
-app.proto.updateMessage = function(){
-
-    var e = document.getElementById("test-messages");
-    var msg = e.options[e.selectedIndex].text;
-
-    this.model.set('_page.newComment', msg);
-}
-
-
-
-function getNewColor(){
-    var gR = 1.618033988749895; //golden ratio
-    var h = Math.floor((Math.random() * gR * 360));//Math.floor((cInd * gR - Math.floor(cInd * gR))*360);
-    var cHsl = [h, 70 + Math.random() * 30, 60 + Math.random() * 10];
-
-  //  return ('hsla('+cHsl[0]  +', '+ cHsl[1] + '%, ' + cHsl[2] +'%, 1)');
-    var strHsl = 'hsl('+cHsl[0]  +', '+ cHsl[1] + '%, ' + cHsl[2] +'%)';
-
-  return oneColor(strHsl).hex();
-
-
-}
-
-
-function triggerContentChange(divId){
-    //TODO: triggering here is not good
-
-    $(('#' + divId)).trigger('contentchanged');
-
-}
-function playSound() {
-    try {
-        document.getElementById('notificationAudio').play();
-        if (!document)
-            throw err;
-    }
-    catch (err) {
-        return err;
-    }
-
-
-}
-
-
 
 app.proto.changeDuration = function () {
 
@@ -277,14 +198,21 @@ app.proto.create = function (model) {
 
     var isQueryWindow = false;
 
-    socket = io();
-    notyView = noty({layout: "bottom",theme:"bootstrapTheme", text: "Please wait while model is loading."});
+    self.socket = io();
+    self.notyView = noty({layout: "bottom",theme:"bootstrapTheme", text: "Please wait while model is loading."});
 
     $('#messages').contentchanged = function () {
 
         $('#messages').scrollTop($('#messages')[0].scrollHeight  - $('.message').height());
 
     }
+
+
+    if(TEST_MODE)
+        $('#unitTestArea').show();
+    else
+        $('#unitTestArea').hide();
+
 
 
     //change scroll position
@@ -295,12 +223,8 @@ app.proto.create = function (model) {
     var name = model.get('_page.doc.users.' + id +'.name');
 
     // Make modelManager instance accessible through window object as testModelManager to use it in Cypress tests
-    modelManager = window.testModelManager = require('./public/collaborative-app/modelManager.js')(model, model.get('_page.room'), sbgnviz );
-    modelManager.setName( model.get('_session.userId'),name);
-
-
-
-    //$(window).on('resize', _.debounce(this.dynamicResize, 100));
+    self.modelManager = window.testModelManager = require('./public/collaborative-app/modelManager.js')(model, model.get('_page.room'), sbgnviz);
+    self.modelManager.setName( model.get('_session.userId'),name);
 
     var images = model.get('_page.doc.images');
     self.dynamicResize(model.get('_page.doc.images'));
@@ -311,26 +235,15 @@ app.proto.create = function (model) {
     });
 
 
-
-
     //Notify server about the client connection
-    socket.emit("subscribeHuman", { userName:name, room:  model.get('_page.room'), userId: id}, function(){
+    self.socket.emit("subscribeHuman", { userName:name, room:  model.get('_page.room'), userId: id});
+
+    self.agentSocket = require('./public/collaborative-app/agentSocket-handler')(this);
+    self.agentSocket.listen();
 
 
-
-    }); //subscribe to current doc as a new room
-
-
-
-
-
-
-    agentSocket = require('./public/collaborative-app/agentSocket-handler')(this, modelManager, socket);
-    agentSocket.listen();
-
-
-    factoidHandler = require('./public/collaborative-app/factoid-handler')(agentSocket, modelManager) ;
-    factoidHandler.initialize();
+    self.factoidHandler = require('./public/collaborative-app/factoid-handler')(this) ;
+    self.factoidHandler.initialize();
 
 
 
@@ -339,58 +252,43 @@ app.proto.create = function (model) {
         if(event.data) { //initialization for a query winddow
             isQueryWindow = true;
 
-            modelManager.newModel("me"); //do not delete cytoscape, only the model
+            self.modelManager.newModel("me"); //do not delete cytoscape, only the model
 
-             chise.updateGraph(JSON.parse(event.data));
-
-
-            setTimeout(function() {
-
-                modelManager.initModel(cy.nodes(), cy.edges(), appUtilities, "me");
-
-                //Menu and options can be active then
-            },2000);
+             chise.updateGraph(JSON.parse(event.data), function(){
+                 self.modelManager.initModel(cy.nodes(), cy.edges(), appUtilities, "me");
+             });
         }
 
     }, false);
 
 
-
-
-
     //Loading cytoscape and clients
-   // setTimeout(function(){
-
     if(!isQueryWindow) { //initialization for a regular window
-        var isModelEmpty = self.loadCyFromModel();
 
-        console.log("cy loaded");
-        //TODO????????????????
-        setTimeout(function () {
-            if (isModelEmpty)
-                modelManager.initModel(cy.nodes(), cy.edges(), appUtilities, "me");
-            else
-                notyView.close();
+        self.loadCyFromModel(function(isModelEmpty){
 
+                if (isModelEmpty)
+                    self.modelManager.initModel(cy.nodes(), cy.edges(), appUtilities, "me");
+                else
+                    self.notyView.close();
+        });
 
-
-        }, 1000);
 
     }
 
-    editorListener = require('./public/collaborative-app/editor-listener.js')(modelManager,socket, id);
+    self.editorListener = require('./public/collaborative-app/editor-listener.js')(self.modelManager,self.socket, id);
 
     //Listen to these after cy is loaded
     $("#undo-last-action, #undo-icon").click(function (e) {
-        if(modelManager.isUndoPossible()){
-            modelManager.undoCommand();
+        if(self.modelManager.isUndoPossible()){
+            self.modelManager.undoCommand();
 
         }
     });
 
     $("#redo-last-action, #redo-icon").click(function (e) {
-        if(modelManager.isRedoPossible()){
-            modelManager.redoCommand();
+        if(self.modelManager.isRedoPossible()){
+            self.modelManager.redoCommand();
 
         }
     });
@@ -400,10 +298,9 @@ app.proto.create = function (model) {
 
 
     //If there is already one connection to Bob, don't open another
-    var userIds = modelManager.getUserIds();
+    var userIds = self.modelManager.getUserIds();
 
-    console.log(userIds);
-    if(userIds.indexOf(BobId) < 0) { //there's no agent for Bob
+    if(TRIPS_MODE && userIds.indexOf(BobId) < 0) { //there's no agent for Bob
         this.connectTripsAgent();
     }
 
@@ -424,12 +321,10 @@ app.proto.create = function (model) {
     })(this));
 };
 
-app.proto.loadCyFromModel = function(){
 
-    var jsonArr = modelManager.getJsonFromModel();
-
-    console.log(jsonArr);
-
+app.proto.loadCyFromModel = function(callback){
+    var self = this;
+    var jsonArr = self.modelManager.getJsonFromModel();
 
     if (jsonArr!= null) {
 
@@ -441,13 +336,15 @@ app.proto.loadCyFromModel = function(){
             //Update position fields separately
             cy.nodes().forEach(function(node){
 
-                var position = modelManager.getModelNodeAttribute('position',node.id());
+                var position = self.modelManager.getModelNodeAttribute('position',node.id());
 
                 node.position({x:position.x, y: position.y});
 
 
                 //reset to the center
                 cy.panzoom().reset();
+
+                if(callback) callback(false);
             });
 
         });
@@ -456,18 +353,18 @@ app.proto.loadCyFromModel = function(){
 
         // var props;
         // //update app utilities as well
-        // props = modelManager.getLayoutProperties();
+        // props = self.modelManager.getLayoutProperties();
         // if(props) appUtilities.currentLayoutProperties = props;
         //
-        // props = modelManager.getGeneralProperties();
+        // props = self.modelManager.getGeneralProperties();
         // if(props) appUtilities.currentGeneralProperties = props;
         //
-        // props = modelManager.getGridProperties();
+        // props = self.modelManager.getGridProperties();
         // if(props) appUtilities.currentGridProperties = props;
 
 
     }
-    return (jsonArr == null);
+    if(callback) callback(true); //model is empty
 }
 
 function moveNodeAndChildren(positionDiff, node, notCalcTopMostNodes) {
@@ -485,12 +382,12 @@ function moveNodeAndChildren(positionDiff, node, notCalcTopMostNodes) {
 
 app.proto.listenToNodeOperations = function(model){
 
-
+    var self = this;
 
     model.on('all', '_page.doc.factoid', function(op, val, prev, passed){
 
         if(docReady &&  passed.user == null) {
-            factoidHandler.setFactoidModel(val);
+            self.factoidHandler.setFactoidModel(val);
             //reset to the center
             // cy.panzoom().reset();
 
@@ -504,8 +401,6 @@ app.proto.listenToNodeOperations = function(model){
         var cmd = model.get('_page.doc.history.' + id);
         //modelOp = cmd.opName;
         //console.log(modelOp);
-
-
     });
 
 
@@ -548,7 +443,7 @@ app.proto.listenToNodeOperations = function(model){
 
             var newNode = chise.elementUtilities.addNode(pos.x, pos.y, sbgnclass, id, parent, visibility);
 
-            // modelManager.initModelNode(newNode,"me", true);
+            // self.modelManager.initModelNode(newNode,"me", true);
 
 
             var parentEl = cy.getElementById(parent);
@@ -574,7 +469,7 @@ app.proto.listenToNodeOperations = function(model){
 
         //call it here so that everyone can highlight their own textbox
 
-        factoidHandler.highlightSentenceInText(id, val);
+        self.factoidHandler.highlightSentenceInText(id, val);
 
         if(docReady && passed.user == null) {
             if(val == null){
@@ -653,7 +548,6 @@ app.proto.listenToNodeOperations = function(model){
     model.on('all', '_page.doc.cy.nodes.*.expandCollapseStatus', function(id, op, val,prev, passed){
 
 
-
         if(docReady && passed.user == null) {
             var expandCollapse = cy.expandCollapse('get'); //we can't call chise.expand or collapse directly as it causes infinite calls
             if(val === "collapse")
@@ -711,8 +605,7 @@ app.proto.listenToNodeOperations = function(model){
 
 app.proto.listenToEdgeOperations = function(model){
 
-
-
+    var self = this;
 
     //Update inspector
     //TODO: open later
@@ -768,13 +661,9 @@ app.proto.listenToEdgeOperations = function(model){
             var sbgnclass = model.get('_page.doc.cy.edges.'+ id + '.data.class');
             var visibility = model.get('_page.doc.cy.nodes.'+ id + '.visibility');
 
-
             var newEdge = chise.elementUtilities.addEdge(source, target, sbgnclass, id, visibility);
 
-
-
-
-            modelManager.initModelEdge(newEdge,"me", true);
+            self.modelManager.initModelEdge(newEdge,"me", true);
 
         }
 
@@ -786,7 +675,6 @@ app.proto.listenToEdgeOperations = function(model){
 
             //cy.getElementById(id).data(data); //can't call this if cy element does not have a field called "data"
             cy.getElementById(id)._private.data = data;
-
 
             cy.getElementById(id).updateStyle();
 
@@ -869,64 +757,30 @@ app.proto.listenToEdgeOperations = function(model){
 
 app.proto.init = function (model) {
     var timeSort;
-
     var self = this;
+
     this.listenToNodeOperations(model);
     this.listenToEdgeOperations(model);
 
-
-
     //Listen to other model operations
-
-    //
-    // model.on('all', '_page.doc.messages.**', function(id, op, val, prev, passed){
-    //
-    //     // // $('#messages').scrollTop($('#messages')[0].scrollHeight  - $('.message').height());
-    //     // $('#messages').scrollTop($('#messages')[0].scrollHeight  - $('.message').height());
-    //
-    //
-    //
-    // });
-
-
-
     model.on('all', '_page.doc.factoid.*', function(id, op, val, prev, passed){
-
         if(docReady &&  passed.user == null) {
-            factoidHandler.setFactoidModel(val);
+            self.factoidHandler.setFactoidModel(val);
         }
-
-
     });
-
 
     //Cy updated by other clients
     model.on('all', '_page.doc.cy.initTime', function( op, val, prev, passed){
 
-        if(docReady ) {
-
-            if(docReady && passed.user == null)
-                self.loadCyFromModel();
-
-            console.log("init time " + op + " " + val + " " + prev + " "+ passed);
-            notyView.close();
-
+        if(docReady) {
+            if(docReady && passed.user == null) {
+                self.loadCyFromModel(function () {
+                    self.notyView.close();
+                });
+            }
         }
     });
 
-
-    //
-    // //Cy updated by other clients
-    // model.on('change', '_page.doc.cy.initTime', function( val, prev, passed){
-    //
-    //     console.log("init time " +  val + " " + prev + " "+ passed);
-    //     if(docReady &&  passed.user == null) {
-    //
-    //         self.loadCyFromModel();
-    //         notyView.close();
-    //
-    //     }
-    // });
 
     //
     // model.on('all', '_page.doc.cy.layoutProperties', function(op, val) {
@@ -968,7 +822,6 @@ app.proto.init = function (model) {
         if (docReady) {
             triggerContentChange('static-image-container');
             triggerContentChange('receivedImages');
-
         }
     });
 
@@ -980,39 +833,33 @@ app.proto.init = function (model) {
 
     model.on('insert', '_page.list', function (index) {
 
-
         var com = model.get('_page.list');
         var myId = model.get('_session.userId');
 
 
-        if(docReady){
+        if(docReady)
             triggerContentChange('messages');
 
-
-        }
-
-        if (com[com.length - 1].userId != myId) {
-
+        if (com[com.length - 1].userId != myId)
             playSound();
 
-        }
     });
 
 
     timeSort = function (a, b) {
-
         return (a != null ? a.date : void 0) - (b != null ? b.date : void 0);
     };
-
 
 
     return model.sort('_page.doc.messages', timeSort).ref('_page.list');
 };
 
+////////////////////////////////////////////////////////////////////////////
+// UI events
+////////////////////////////////////////////////////////////////////////////
 
 app.proto.onScroll = function (element) {
-    console.log(element);
-    console.log(this);
+
     var bottom, containerHeight, scrollBottom;
     bottom = this.list.offsetHeight;
     containerHeight = this.container.offsetHeight;
@@ -1022,15 +869,15 @@ app.proto.onScroll = function (element) {
 
 };
 
-
-
 app.proto.changeColorCode = function(){
 
     var  user = this.model.at('_page.doc.users.' + this.model.get('_session.userId'));
     user.set('colorCode', getNewColor());
 
 };
+
 app.proto.runUnitTests = function(){
+    var self = this;
     var userId = this.model.get('_session.userId');
 
     var room = this.model.get('_page.room');
@@ -1038,53 +885,58 @@ app.proto.runUnitTests = function(){
     //Null editorlistener why?????
    // console.log(editorListener);
     //editorListener.debugMode = false;
-    //require("./public/test/testsAgentAPI.js")(("http://localhost:3000/" + room), modelManager);
-    // require("./public/test/testsCausalityAgent.js")(("http://localhost:3000/" + room), modelManager);
-    //  require("./public/test/testsModelManager.js")(modelManager, userId);
+    //require("./public/test/testsAgentAPI.js")(("http://localhost:3000/" + room), self.modelManager);
+    // require("./public/test/testsCausalityAgent.js")(("http://localhost:3000/" + room), self.modelManager);
+    //  require("./public/test/testsModelManager.js")(self.modelManager, userId);
 
 
+    require("./public/test/testsUserOperations.js")(self.modelManager);
+    require("./public/test/testOptions.js")(); //to print out results
 
-    require("./public/test/testsUserOperations.js")(modelManager);
-   require("./public/test/testOptions.js")(); //to print out results
+}
 
+
+/***
+ * This is for selecting messages from the select box and test queries
+ */
+app.proto.updateTripsMessage = function(){
+
+    var e = document.getElementById("test-messages");
+    var msg = e.options[e.selectedIndex].text;
+
+    this.model.set('_page.newComment', msg);
 }
 
 
 app.proto.resetConversationOnTrips = function(){
-
-    //directly ask the server
-    socket.emit('resetConversationRequest');
-
-    // if(TripsAgent) {
-    //     TripsAgent.resetConversation();
-    //     cy.remove(cy.elements());
-    //     modelManager.newModel("me"); //do not delete cytoscape, only the model
-    // }
-
+    //directly ask the server as this client may not have a tripsAgent
+    this.socket.emit('resetConversationRequest');
 }
+
 
 app.proto.connectCausalityAgent = function(){
-    socket.emit('connectToCausalityAgentRequest');
+    this.socket.emit('connectToCausalityAgentRequest');
 }
-
 
 
 app.proto.connectTripsAgent = function(){
+    var self = this;
 
     var TripsGeneralInterfaceAgent = require("./agent-interaction/TripsGeneralInterfaceAgent.js");
-    TripsAgent = new TripsGeneralInterfaceAgent("Bob", BobId);
+    self.TripsAgent = new TripsGeneralInterfaceAgent("Bob", BobId);
 
-    console.log("bob connected");
-    TripsAgent.connectToServer("http://localhost:3000/", function (socket) {
-        TripsAgent.loadModel(function () {
-            TripsAgent.init();
-            TripsAgent.loadChatHistory(function () {
+    console.log("Bob connected");
+    self.TripsAgent.connectToServer("http://localhost:3000/", function(){
+        self.TripsAgent.loadModel(function () {
+            self.TripsAgent.init();
+            self.TripsAgent.loadChatHistory(function () {
             });
         });
     });
 }
 
-app.proto.enterMessage= function(event){
+
+app.proto.enterMessage = function(event){
 
     if (event.keyCode == 13 && !event.shiftKey) {
        this.add(event);
@@ -1094,20 +946,17 @@ app.proto.enterMessage= function(event){
 
     }
 }
-app.proto.add = function (event, model, filePath) {
 
+app.proto.add = function (event, model, filePath) {
+    var self = this;
     if(model == null)
         model = this.model;
 
     this.atBottom = true;
 
-
-
     var comment;
     comment = model.del('_page.newComment'); //to clear  the input box
-    if (!comment) {
-        return;
-    }
+    if (!comment) return;
 
     var targets  = [];
     var users = model.get('_page.doc.userIds');
@@ -1124,6 +973,7 @@ app.proto.add = function (event, model, filePath) {
     var msgUserName = model.get('_page.doc.users.' + msgUserId +'.name');
 
     comment.style = "font-size:large";
+
     var msg = {room: model.get('_page.room'),
         targets: targets,
         userId: msgUserId,
@@ -1131,7 +981,7 @@ app.proto.add = function (event, model, filePath) {
         comment: comment};
 
     //also lets server know that a client message is entered.
-    socket.emit('getDate', msg, function(date){ //get the date from the server
+    self.socket.emit('getDate', msg, function(date){ //get the date from the server
         msg.date = date;
 
         model.add('_page.doc.messages', msg);
@@ -1141,22 +991,18 @@ app.proto.add = function (event, model, filePath) {
        $('#messages').scrollTop($('#messages')[0].scrollHeight  - $('.message').height());
 
     });
+}
 
-
-
-};
 
 app.proto.clearHistory = function () {
     this.model.set('_page.clickTime', new Date);
 
     return this.model.filter('_page.doc.messages', 'biggerThanCurrentTime').ref('_page.list');
-
 }
 
 
-
 app.proto.uploadFile = function(evt){
-
+    var self = this;
     try{
         var room = this.model.get('_page.room');
         var fileStr = this.model.get("_page.newFile").split('\\');
@@ -1170,7 +1016,7 @@ app.proto.uploadFile = function(evt){
         if(images)
             imgCnt = images.length;
         reader.onload = function(evt){
-            modelManager.addImage({ img: evt.target.result,room: room, fileName: filePath, tabIndex:imgCnt, tabLabel:filePath});
+            self.modelManager.addImage({ img: evt.target.result,room: room, fileName: filePath, tabIndex:imgCnt, tabLabel:filePath});
 
         };
 
@@ -1193,7 +1039,6 @@ app.proto.uploadFile = function(evt){
 app.proto.count = function (value) {
     return Object.keys(value || {}).length;
 };
-
 
 
 app.proto.formatTime = function (message) {
@@ -1221,11 +1066,11 @@ app.proto.formatTime = function (message) {
     return hours + ':' + minutes + ':' + seconds;
 };
 
+
 app.proto.formatObj = function(obj){
 
     return JSON.stringify(obj, null, '\t');
 };
-
 
 
 app.proto.dynamicResize = function (images) {
@@ -1238,19 +1083,15 @@ app.proto.dynamicResize = function (images) {
     var canvasHeight = 680;
 
 
-    if (windowWidth > canvasWidth)
-    {
+    if (windowWidth > canvasWidth) {
 
-
-        $("#canvas-tab-area").resizable(
-            {
+        $("#canvas-tab-area").resizable({
                 alsoResize: '#inspector-tab-area',
                 minWidth: 860
             }
         );
 
         var wCanvasTab = $("#canvas-tab-area").width();
-
 
         $(".nav-menu").width(wCanvasTab);
         $(".navbar").width(wCanvasTab);
@@ -1268,16 +1109,12 @@ app.proto.dynamicResize = function (images) {
         $("#inspector-tab-area").resizable({
             minWidth:355
         });
+
         var wInspectorTab = $("#inspector-tab-area").width();
         $("#sbgn-inspector").width(wInspectorTab);
         $("#canvas-tabs").width( wCanvasTab* 0.99);
-
-
-
-
-
     }
-    else{
+    else {
         if(images) {
             images.forEach(function (img) {
                 $("#static-image-container-" + img.tabIndex).width(800);
@@ -1286,27 +1123,26 @@ app.proto.dynamicResize = function (images) {
         }
     }
 
-    if (windowHeight > canvasHeight)
-    {
+    if (windowHeight > canvasHeight) {
 
         $("#canvas-tab-area").resizable({
             alsoResize:'#inspector-tab-area',
             minHeight: 600
-
         });
+
         var hCanvasTab = $("#canvas-tab-area").height();
         $("#sbgn-network-container").height(hCanvasTab * 0.99);
         if(images) {
             images.forEach(function (img) {
-
                 $("#static-image-container-" + img.tabIndex).height(hCanvasTab * 0.99);
-
             });
         }
+
         $("#inspector-tab-area").resizable({
             alsoResize:'#canvas-tab-area',
             minHeight: 600
         });
+
         var hInspectorTab = $("#inspector-tab-area").height();
 
         $("#sbgn-inspector").height(hInspectorTab);
@@ -1314,3 +1150,36 @@ app.proto.dynamicResize = function (images) {
         $("#factoidBox").height(hInspectorTab * 0.6);
     }
 };
+
+
+////////////////////////////////////////////////////////////////////////////
+//Local functions
+////////////////////////////////////////////////////////////////////////////
+function getNewColor(){
+    var gR = 1.618033988749895; //golden ratio
+    var h = Math.floor((Math.random() * gR * 360));//Math.floor((cInd * gR - Math.floor(cInd * gR))*360);
+    var cHsl = [h, 70 + Math.random() * 30, 60 + Math.random() * 10];
+
+    //  return ('hsla('+cHsl[0]  +', '+ cHsl[1] + '%, ' + cHsl[2] +'%, 1)');
+    var strHsl = 'hsl('+cHsl[0]  +', '+ cHsl[1] + '%, ' + cHsl[2] +'%)';
+
+    return oneColor(strHsl).hex();
+}
+
+
+function triggerContentChange(divId){
+    //TODO: triggering here is not good
+    $(('#' + divId)).trigger('contentchanged');
+}
+
+function playSound() {
+    try {
+        document.getElementById('notificationAudio').play();
+        if (!document)
+            throw err;
+    }
+    catch (err) {
+        return err;
+    }
+
+}

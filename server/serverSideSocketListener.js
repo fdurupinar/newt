@@ -160,23 +160,17 @@ module.exports.start = function(io, model, cancerDataOrganizer){
                         console.log(i);
                     }
                 }
-
-
             });
 
-
             rlCorr.on('close', function () {
-
                 console.log("PNNL data reading into memory complete.");
                 if (callback) callback(pnnlArr);
-
 
             });
         }
         else{
             if (callback) callback(pnnlArr);
         }
-
 
     }
     /***
@@ -201,15 +195,11 @@ module.exports.start = function(io, model, cancerDataOrganizer){
 
 
         socket.on('agentPNNLRequest', function(data, callback){
-            // var READ_DATA = true;
-            // if(READ_DATA) {
-
 
             readGeneList(function(geneList){
                 readPNNLData(geneList, callback);
             });
             console.log("Received request");
-
 
 
         });
@@ -306,13 +296,11 @@ module.exports.start = function(io, model, cancerDataOrganizer){
 
         socket.on('agentMergeGraphRequest', function(data, callback){
 
-
             var requestStr;
             if(data.type == "sbgn")
                 requestStr = "mergeSbgn";
             else //default is json
                 requestStr = "mergeJsonWithCurrent";
-
 
             askHuman(socket.userId, data.room,  requestStr, data.graph, function(val){
                 if (callback) callback(val);
@@ -560,7 +548,6 @@ module.exports.start = function(io, model, cancerDataOrganizer){
         socket.on('agentSendImageRequest', function(data, callback){
             console.log("agent sent an image");
 
-          //  console.log(data);
             var status = modelManagerList[socket.room].addImage(data);
             if(callback) callback(status);
 
@@ -724,7 +711,7 @@ module.exports.start = function(io, model, cancerDataOrganizer){
         });
 
 
-        socket.on('subscribeHuman', function (data,  callback) {
+        socket.on('subscribeHuman', function (data) {
             socket.userId = data.userId;
             socket.room = data.room;
             socket.userName = data.userName;
@@ -831,28 +818,7 @@ module.exports.start = function(io, model, cancerDataOrganizer){
                     if (socket.subscribed)
                         io.in(socket.room).emit('imageFile', data.img);
                 });
-
-
-
-
-
-
             });
-            //
-            // try {
-            //
-            //     var tripsInterfaceModule = require('./TripsGeneralInterfaceModule.js')(socket, model, askHuman);
-            //     setTimeout(function(){
-            //         modelManagerList[data.room].setName(tripsInterfaceModule.userId, tripsInterfaceModule.userName);
-            //         modelManagerList[data.room].addUser(tripsInterfaceModule.userId);
-            //         modelManagerList[data.room].setColorCode(tripsInterfaceModule.userId, '#ffb366');
-            //     },1000); //wait for trips to connect
-            //
-            //
-            // }
-            // catch(e){
-            //     console.log("Trips not connected. " + e);
-            // }
 
         });
 
@@ -861,28 +827,15 @@ module.exports.start = function(io, model, cancerDataOrganizer){
                 modelManagerList[socket.room].newModel()
 
             //Reset through clic
-
             request({
                 url: 'http://localhost:8000/clic/initiate-reset', //URL to hit
-                // qs: {from: 'blog example', time: +new Date()}, //Query string data
                 headers: responseHeaders,
                 form: ''
 
             }, function (error, response, body) {
 
                 if (error) {
-
                     console.log(error);
-                } else {
-
-                    // console.log(response);
-                    //
-                    // if(response.statusCode == 200) {
-                    //
-                    //     console.log("TRIPS reset")
-                    // }
-
-
                 }
             });
 
@@ -891,9 +844,7 @@ module.exports.start = function(io, model, cancerDataOrganizer){
 
         //Run a shell script
         socket.on('connectToCausalityAgentRequest', function(){
-
             executeCommandLineProcess(("python ../CausalityAgent/causality_sbgnviz_interface.py '../CausalityAgent/resources'"));
-
         });
 
         socket.on('subscribeAgent', function (data, callback) {
@@ -909,11 +860,6 @@ module.exports.start = function(io, model, cancerDataOrganizer){
 
 
             try {
-
-                model.subscribe('pnnl.data', function () {
-
-                });
-
 
                 model.subscribe('documents', function () {
                     var pageDoc = model.at('documents.' + data.room);
@@ -961,11 +907,7 @@ module.exports.start = function(io, model, cancerDataOrganizer){
 
 
                                     users.set(data.userId, {name: data.userName, colorCode: data.colorCode});
-
                                     modelManagerList[data.room].setName(data.userId, data.userName);
-
-
-                                    //     modelManagerList[data.userId] = require("../public/collaborative-app/modelManager.js")(model, data.room, data.userId, data.userName);
 
                                 });
                         });
@@ -980,10 +922,7 @@ module.exports.start = function(io, model, cancerDataOrganizer){
                 console.log("Model subscription unsuccessful");
             }
 
-
-
          if(callback) callback();
-
 
         });
 
@@ -992,7 +931,6 @@ module.exports.start = function(io, model, cancerDataOrganizer){
         socket.on('disconnect', function() {
 
             try {
-
 
                 if(socket.room) {
                     modelManagerList[socket.room].deleteUser(socket.userId);

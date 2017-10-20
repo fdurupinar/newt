@@ -1,15 +1,11 @@
 /**
  * Created by durupina on 11/14/16.
  */
+var jsonMerger = require('./reach-functions/json-merger.js');
 
-
-
-
-
-module.exports =  function(agentSocket, modelManager) {
+module.exports =  function(app) {
 
     var idxcardjson = require('./reach-functions/idxcardjson-to-json-converter.js');
-
 
     var socket = io();
     var idxCardView = require('./reach-functions/idxCard-info.js');
@@ -20,31 +16,20 @@ module.exports =  function(agentSocket, modelManager) {
 
 
     return   {
-
-
-
-
         initialize: function(){
-
-
 
             $('#factoidBox')[0].value = text;
 
-            var factoidModel = modelManager.getFactoidModel();
-
+            var factoidModel = app.modelManager.getFactoidModel();
 
             if(factoidModel != null){
 
                 jsonGraphs = factoidModel.jsonGraphs;
                 nodeMap = factoidModel.nodeMap;
-
                 this.updateTextBox(jsonGraphs);
-
             }
 
-
             this.listenToEvents();
-
 
         },
 
@@ -56,195 +41,158 @@ module.exports =  function(agentSocket, modelManager) {
             text = textFromJsons;
             $('#factoidBox')[0].value = text = textFromJsons;
         },
+
         loadFactoidModel: function(inputStr){
-
-
             //parse each input sentence one by one
-
 
             var self = this;
             var jsonGraphs = [];
 
-
-
             var notyView = noty({layout: "bottom",text: "Sending REACH queries"});
-
 
             var p = new Promise(function (resolve) {
                 socket.emit("REACHQuery", "indexcard", inputStr, function (data) {
-                        //      console.log(line);
+                    var cards = JSON.parse(data).cards;
 
+                    cards.forEach(function(card){
+                        var jsonData = idxcardjson.createJson({cards: [card]});
+                            jsonGraphs.push({sentence: card.evidence[0], json: jsonData, idxCard:card});
+                    });
 
-                        var cards = JSON.parse(data).cards;
-                        // console.log(cards);
+                    notyView.setText( "Merging graphs...");
 
-                        cards.forEach(function(card){
-                            var jsonData = idxcardjson.createJson({cards: [card]});
-
-                                jsonGraphs.push({sentence: card.evidence[0], json: jsonData, idxCard:card});
-
-
-                        });
-
-
-
-                     notyView.setText( "Merging graphs...");
-
-
-
-                    nodeMap = agentSocket.mergeJsons(jsonGraphs, function(){
-
+                    nodeMap = self.mergeJsons(jsonGraphs, function(){
                         //save it to the model
-                        modelManager.updateFactoidModel({jsonGraphs: jsonGraphs, nodeMap: nodeMap, text: text}, "me");
-
+                        app.modelManager.updateFactoidModel({jsonGraphs: jsonGraphs, nodeMap: nodeMap, text: text}, "me");
                     }); //mapping between sentences and node labels
-
-
-
                     notyView.close();
 
-
-
-
-
-                    });
-                });
+                 });
+            });
         },
 
 
+        //Merge an array of json objects to output a single json object.
+        mergeJsons: function (jsonGraph, callback) {
+            var idxCardNodeMap = {};
+            var sentenceNodeMap = {};
+
+            var jsonObj = jsonMerger.mergeJsons(jsonGraph, sentenceNodeMap, idxCardNodeMap);
+
+            app.modelManager.newModel("me", true);
+
+            chise.updateGraph(jsonObj, function(){
+
+                app.modelManager.initModel(cy.nodes(), cy.edges(), appUtilities, "me");
+
+                //Call layout after init
+                $("#perform-layout").trigger('click');
+
+                //Call merge notification after the layout
+                setTimeout(function () {
+                    app.modelManager.mergeJsons("me", true);
+
+                    if (callback) callback();
+                }, 1000);
+
+            });
+
+            return {sentences: sentenceNodeMap, idxCards: idxCardNodeMap};
+        },
 
         highlightSentenceInText: function(nodeId, highlightColor){
 
-            if(!this.modelLoaded)
-                return;
 
-            var el  = $('#factoidBox');
-
+            try {
+                var el = $('#factoidBox');
 
 
-            console.log(nodeId);
-
-
-            if(highlightColor == null){
-                el.highlightTextarea('destroy');
-                return;
-            }
-
-
-
-            var sentences = nodeMap.sentences[nodeId];
-
-            var idxCards = nodeMap.idxCards[nodeId];
-            console.log(nodeMap);
-
-            // console.log(idxCards);
-
-            //TODO: open this!!!!!! qtip not working
-            // cy.$(('#' + nodeId)).qtip({
-            //     content: {
-            //         text: function (event, api) {
-            //
-            //             var info = (new idxCardView(idxCards)).render();
-            //             var html = $('#idxCard-container').html();
-            //
-            //
-            //             api.set('content.text', html);
-            //
-            //             return html;
-            //
-            //
-            //         }
-            //     },
-            //     show: {
-            //         ready: true
-            //     },
-            //     position: {
-            //         my: 'top center',
-            //         at: 'top middle',
-            //         adjust: {
-            //             cyViewport: true
-            //         },
-            //         effect: false
-            //     },
-            //     style: {
-            //         classes: 'qtip-bootstrap',
-            //         tip: {
-            //             width: 20,
-            //             height: 20
-            //         }
-            //     }
-            // });
-            //
-
-
-
-            if(sentences) {
-
-                var ranges = [];
-
-                for(var i = 0; i < sentences.length; i++) {
-                    var startInd = el[0].value.indexOf(sentences[i]);
-                    var endInd = startInd + sentences[i].length;
-                    ranges.push([startInd, endInd]);
+                if (highlightColor == null) {
+                    el.highlightTextarea('destroy');
+                    return;
                 }
-                console.log(ranges);
 
-                el.highlightTextarea({
-                    ranges: [{
-                        color: highlightColor,//('#FFFF0'),
-                        ranges: ranges
-                    }]
-                });
+                var sentences = nodeMap.sentences[nodeId];
+
+                var idxCards = nodeMap.idxCards[nodeId];
+
+                //TODO: open this!!!!!! qtip not working
+                // try {
+                //     cy.$(('#' + nodeId)).qtip({
+                //         content: {
+                //             text: function (event, api) {
+                //
+                //                 var info = (new idxCardView(idxCards)).render();
+                //                 var html = $('#idxCard-container').html();
+                //
+                //
+                //                 api.set('content.text', html);
+                //
+                //                 return html;
+                //
+                //
+                //             }
+                //         },
+                //         show: {
+                //             ready: true
+                //         },
+                //         position: {
+                //             my: 'top center',
+                //             at: 'top middle',
+                //             adjust: {
+                //                 cyViewport: true
+                //             },
+                //             effect: false
+                //         },
+                //         style: {
+                //             classes: 'qtip-bootstrap',
+                //             tip: {
+                //                 width: 20,
+                //                 height: 20
+                //             }
+                //         }
+                //     });
+                //
+                // }
+                // catch(e){
+                //     console.log(e);
+                // }
 
 
+                if (sentences) {
+
+                    var ranges = [];
+
+                    for (var i = 0; i < sentences.length; i++) {
+                        var startInd = el[0].value.indexOf(sentences[i]);
+                        var endInd = startInd + sentences[i].length;
+                        ranges.push([startInd, endInd]);
+                    }
+                    console.log(ranges);
+
+                    el.highlightTextarea({
+                        ranges: [{
+                            color: highlightColor,//('#FFFF0'),
+                            ranges: ranges
+                        }]
+                    });
+
+                }
+            }
+            catch(e){
+                console.log(e);
             }
         },
-        //
-        // getSelectionText: function() {
-        //     var text = "";
-        //     var activeEl = document.activeElement;
-        //     var activeElTagName = activeEl ? activeEl.tagName.toLowerCase() : null;
-        //     if (
-        //             (activeElTagName == "textarea" || activeElTagName == "input") &&
-        //            /^(?:text|search|password|tel|url)$/i.test(activeEl.type) &&
-        //             (typeof activeEl.selectionStart == "number")
-        //         ) {
-        //             text = activeEl.value.slice(activeEl.selectionStart, activeEl.selectionEnd);
-        //         } else if (window.getSelection) {
-        //             text = window.getSelection().toString();
-        //         }
-        //     return text;
-        // },
-        //
-        // document.onmouseup = document.onkeyup =  function() {
-        //     var txt = getSelectionText();
-        //
-        //         if((/^\s*$/).test(txt)) {
-        //             menu.removeHighlights();
-        //         }
-        //     else {
-        //                 menu.removeHighlights();
-        //                 menu.highlightWords(txt);
-        //             }
-        //
-        //
-        //
-        //
-        // },
 
         setFactoidModel: function(factoidModel){
-
             nodeMap = factoidModel.nodeMap;
             jsonGraphs = factoidModel.jsonGraphs;
             text = factoidModel.text;
-
 
         },
 
 
         loadFactoidPMC: function() {
-
-
 
             var link = "https://www.ncbi.nlm.nih.gov/pmc/articles/" + $('#pmcBox').val() ;
             socket.emit("HTTPRequest", link,  function(result){
@@ -256,7 +204,6 @@ module.exports =  function(agentSocket, modelManager) {
         },
 
         loadFactoidFile: function(e){
-
 
             var extension = $("#factoid-file-input")[0].files[0].name.split('.').pop().toLowerCase();
 
@@ -302,20 +249,14 @@ module.exports =  function(agentSocket, modelManager) {
 
                 };
                 reader.readAsText($("#factoid-file-input")[0].files[0]);
-
-
-
             }
-
         },
-
 
         listenToEvents: function(){
             var self = this;
 
             $('#factoid-text-submit-button').click(function () {
                 self.loadFactoidModel($('#factoidBox').val());
-                self.modelLoaded = true;
 
             });
 
@@ -337,7 +278,6 @@ module.exports =  function(agentSocket, modelManager) {
             });
 
         }
-
 
     };
 }

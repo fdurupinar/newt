@@ -11,10 +11,7 @@ var TripsInterfaceModule = require('./TripsInterfaceModule.js');
 
 class TripsGeneralInterfaceModule extends TripsInterfaceModule {
 
-
     constructor(agentId, agentName, socket, model, askHuman){
-
-
 
         super('Sbgnviz-Interface-Agent', agentId, agentName, socket, model);
 
@@ -27,7 +24,6 @@ class TripsGeneralInterfaceModule extends TripsInterfaceModule {
             self.tm.sendMsg({0: 'tell', content: ['start-conversation']});
             self.updateListeners();
 
-
         }, 2000);
 
     }
@@ -39,9 +35,6 @@ class TripsGeneralInterfaceModule extends TripsInterfaceModule {
         var self = this;
         self.socket.on('relayMessageToTripsRequest', function (data) {
 
-            // if(data.userId !== agentId){
-
-            //console.log(data);
             var pattern = {0: 'tell', content: {0: 'started-speaking', mode: 'text', uttnum: data.uttNum, channel: 'Desktop', direction: 'input'}};
             self.tm.sendMsg(pattern);
 
@@ -56,9 +49,6 @@ class TripsGeneralInterfaceModule extends TripsInterfaceModule {
 
         });
 
-        // self.socket.on('resetConversationRequest', function () {
-        //     self.tm.sendMsg({0: 'tell', content: ['start-conversation']});
-        // });
 
     }
 
@@ -188,6 +178,7 @@ class TripsGeneralInterfaceModule extends TripsInterfaceModule {
 
 
     displaySbgn(text) {
+
         var self = this;
         var contentObj = KQML.keywordify(text.content);
         if (contentObj) {
@@ -226,6 +217,10 @@ class TripsGeneralInterfaceModule extends TripsInterfaceModule {
 
 
 module.exports = TripsGeneralInterfaceModule;
+
+/////////////////////////////////////////////////
+// Local functions
+/////////////////////////////////////////////////
 
 function trimDoubleQuotes(str){
     if(str[0]!== '"' || str[str.length-1]!== '"')

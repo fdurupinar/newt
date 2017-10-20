@@ -1,7 +1,6 @@
-
 /**
  * Created by durupina on 5/13/16.
- * Computer agent with the purpose of creating a model of causal relationships in ovarian cancer data
+ * Computer agent to provide communication between client and trips
  */
 
 if(typeof module !== 'undefined' && module.exports){
@@ -10,56 +9,27 @@ if(typeof module !== 'undefined' && module.exports){
 }
 TripsGeneralInterfaceAgent.prototype = new Agent();
 
-
-
-
-
-
 function TripsGeneralInterfaceAgent(agentName, id) {
     this.agentName = agentName;
     this.agentId = id;
-
-
     this.tripsUttNum = 1;
-
-
-
-
-//test end
 }
-/***
- *
- */
 TripsGeneralInterfaceAgent.prototype.init = function(){
-var self = this;
+    var self = this;
 
     this.sendRequest('agentConnectToTripsRequest', {isInterfaceAgent: true, userName: this.agentName }, function(result){
-        console.log(result);
         if(!result)
             self.disconnect();
-
-
     }); //interfaceAgent
     this.listenToMessages();
 }
 
-
 TripsGeneralInterfaceAgent.prototype.relayMessage = function(text){
 
-    console.log(this.socket.id + " " + this.room);
-
     this.sendRequest('relayMessageToTripsRequest', {text: '"' + text +'"', uttNum: this.tripsUttNum});
-
     this.tripsUttNum++;
-}
-
-TripsGeneralInterfaceAgent.prototype.resetConversation = function(){
-
-    this.sendRequest('resetConversationRequest');
 
 }
-
-
 
 /***
  * Listen to messages from other actors and act accordingly
@@ -68,20 +38,7 @@ TripsGeneralInterfaceAgent.prototype.resetConversation = function(){
 TripsGeneralInterfaceAgent.prototype.listenToMessages = function(callback){
     var self = this;
 
-    //
-    // this.socket.on('displayModel', function(sbgn, callback){
-    //
-    //     //TODO: this should be deleted
-    //
-    //
-    //     self.sendRequest('agentDisplaySbgnRequest', { graph: sbgn}, function (data) {
-    //         if (callback) callback();
-    //     });
-    // });
-
-
     this.socket.on('message', function(data){
-
 
         if(data.userId != self.agentId) {
 

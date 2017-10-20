@@ -11,13 +11,12 @@ var TripsInterfaceModule = require('./TripsInterfaceModule.js');
 class TripsCausalityInterfaceModule extends TripsInterfaceModule{
 
 
-        // @param socket : socket connection between the module and the agent --not server
-       constructor (agentId, agentName, socket,  model) {
+    // @param socket : socket connection between the module and the agent --not server
+   constructor (agentId, agentName, socket,  model) {
 
-           super('Causality-Interface-Agent',agentId, agentName, socket,  model);
+       super('Causality-Interface-Agent',agentId, agentName, socket,  model);
 
-           
-       }
+   }
 
     /***
      * Sends queries to CausalityAgent.js
@@ -36,13 +35,13 @@ class TripsCausalityInterfaceModule extends TripsInterfaceModule{
         self.socket.emit("findCausalityTargets", param, function(elements){
             var indraJson = [];
 
-            //TODO: foreach
-            for(var i = 0; i < elements.length ;i++){
-                indraJson.push(makeIndraJson(elements[i]));
-            }
+            elements.forEach(function(el){
+                indraJson.push(makeIndraJson(el));
+            });
+
+
             var stringJson = JSON.stringify(indraJson);
             stringJson = '"'+  stringJson.replace(/["]/g, "\\\"") + '"';
-
 
             var response;
             if(indraJson.length > 0) {
@@ -67,16 +66,10 @@ class TripsCausalityInterfaceModule extends TripsInterfaceModule{
             else
                 response = {0:'reply', content:{0:'failure',1: ':reason', 2: 'MISSING_MECHANISM'}};
 
-
-
-
-
             if(callback) callback(response);
 
         });
-
     }
-
 
     /***
      * Gets the standardized name of the gene from an EKB XML string
@@ -94,12 +87,7 @@ class TripsCausalityInterfaceModule extends TripsInterfaceModule{
 
         self.tm.addHandler(patternXml, function (textXml) {
 
-            console.log("Choose sense result");
-
-
             if(textXml.content && textXml.content.length >= 2 && textXml.content[2].length > 0) {
-
-
 
                 var termNames = [];
                 for(var i = 0; i < textXml.content[2].length; i++) {
@@ -115,7 +103,6 @@ class TripsCausalityInterfaceModule extends TripsInterfaceModule{
             }
         });
     }
-
 
 
     setHandlers() {
@@ -145,7 +132,6 @@ class TripsCausalityInterfaceModule extends TripsInterfaceModule{
                     };
 
 
-                    console.log("Find causality query");
                     //Request this information from the causalityAgent
                     self.socket.emit('findCausality', param, function (causality) {
 
@@ -176,7 +162,6 @@ class TripsCausalityInterfaceModule extends TripsInterfaceModule{
                             }
                             else
                                 console.log("Model id not initialized.");
-
 
                             //console.log(stringJson);
                             var response = {0: 'reply', content: {0: 'success', paths: stringJson}};
@@ -317,27 +302,14 @@ class TripsCausalityInterfaceModule extends TripsInterfaceModule{
 
                 self.tm.replyToMsg(text, {0: 'reply', content: {0: 'success'}});
 
-
-
-
             });
 
         });
-
-
-
     }
-
-
-
-
 }
 
 
-
-
 module.exports = TripsCausalityInterfaceModule;
-
 
 /***
  * Converts the causal relationship information into JSON format so that INDRA can translate it into NL
@@ -419,6 +391,9 @@ var makeIndraJson = function(causality){
 
 }
 
+/////////////////////////////////////////////////
+// Local functions
+/////////////////////////////////////////////////
 
 function trimDoubleQuotes(str){
     if(str[0]!== '"' || str[str.length-1]!== '"')

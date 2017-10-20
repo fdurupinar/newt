@@ -4,17 +4,15 @@
 */
 var jsonMerger = require('./reach-functions/json-merger.js');
 
-module.exports =  function(app, modelManager, socket) {
-
+module.exports =  function(app) {
 
     return {
-
 
         listen: function () {
             var self = this;
 
 
-            socket.on('loadFile', function (txtFile, callback) {
+            app.socket.on('loadFile', function (txtFile, callback) {
                 try {
 
                     sbgnviz.loadSBGNMLText(txtFile);
@@ -28,10 +26,10 @@ module.exports =  function(app, modelManager, socket) {
 
             });
 
-            socket.on('newFile', function (data, callback) {
+            app.socket.on('newFile', function (data, callback) {
                 try {
                     cy.remove(cy.elements());
-                    modelManager.newModel("me"); //do not delete cytoscape, only the model
+                    app.modelManager.newModel("me"); //do not delete cytoscape, only the model
                     if (callback) callback("success");
                 }
                 catch (e) {
@@ -41,7 +39,7 @@ module.exports =  function(app, modelManager, socket) {
                 }
             });
 
-            socket.on('runLayout', function (data, callback) {
+            app.socket.on('runLayout', function (data, callback) {
                 try {
                     $("#perform-layout").trigger('click');
                     if (callback) callback("success");
@@ -54,15 +52,14 @@ module.exports =  function(app, modelManager, socket) {
             });
 
 
-
-            socket.on('addNode', function (data, callback) {
+            app.socket.on('addNode', function (data, callback) {
                 try {
                     //does not trigger cy events
                     var newNode = chise.elementUtilities.addNode(data.x, data.y, data.class);
 
                     //notifies other clients
-                    modelManager.addModelNode(newNode.id(), data, "me");
-                    modelManager.initModelNode(newNode, "me");
+                    app.modelManager.addModelNode(newNode.id(), data, "me");
+                    app.modelManager.initModelNode(newNode, "me");
 
                     if (callback) callback(newNode.id());
                 }
@@ -74,7 +71,7 @@ module.exports =  function(app, modelManager, socket) {
             });
 
 
-            socket.on('deleteEles', function (data, callback) {
+            app.socket.on('deleteEles', function (data, callback) {
                 try {
                     //unselect all others
                     cy.elements().unselect();
@@ -94,15 +91,9 @@ module.exports =  function(app, modelManager, socket) {
 
                     var p1 = new Promise(function (resolve) {
 
-                        var modelOp = modelManager.getLastCommandName();
-
+                        var modelOp = app.modelManager.getLastCommandName();
 
                         if (modelOp === "delete") {
-                            // var undoInd = model.get('_page.doc.undoIndex');
-                            //
-                            // var cmd = model.get('_page.doc.history.' + undoInd);
-                            //
-                            // console.log(cmd.opName);
                             resolve("success");
                         }
                     });
@@ -110,7 +101,6 @@ module.exports =  function(app, modelManager, socket) {
 
                         if (callback) callback("deleted!!");
                     });
-
 
                 }
                 catch (e) {
@@ -120,21 +110,12 @@ module.exports =  function(app, modelManager, socket) {
                 }
             });
 
-            socket.on('addImage', function (data, callback) {
+            app.socket.on('addImage', function (data, callback) {
                 try {
 
-
-
-                    // data.img = data.img.replace(/(\%22)/g, '"');
-
-
-                    var status = modelManager.addImage(data);
-
-
-
-                    var images = modelManager.getImages();
+                    var status = app.modelManager.addImage(data);
+                    var images = app.modelManager.getImages();
                     app.dynamicResize(images);
-
 
                     if (callback) callback(status);
 
@@ -147,16 +128,14 @@ module.exports =  function(app, modelManager, socket) {
             });
 
 
-
-
-            socket.on('addEdge', function (data, callback) {
+            app.socket.on('addEdge', function (data, callback) {
                 try {
                     //does not trigger cy events
                     var newEdge = chise.elementUtilities.addEdge(source, target, sbgnclass, id, visibility);
 
                     //notifies other clients
-                    modelManager.addModelEdge(newNode.id(), data, "me");
-                    // modelManager.initModelEdge(newEdge, "me");
+                    app.modelManager.addModelEdge(newNode.id(), data, "me");
+                    // app.modelManager.initModelEdge(newEdge, "me");
 
                     if (callback) callback(newEdge.id());
                 }
@@ -168,7 +147,7 @@ module.exports =  function(app, modelManager, socket) {
             });
 
 
-            socket.on('align', function (data, callback) {
+            app.socket.on('align', function (data, callback) {
                 try {
                     var nodes = cy.collection();
                     if (data.nodeIds === '*' || data.nodeIds === 'all')
@@ -189,7 +168,7 @@ module.exports =  function(app, modelManager, socket) {
                 }
 
             });
-            socket.on('updateVisibility', function (data, callback) {
+            app.socket.on('updateVisibility', function (data, callback) {
                 try {
                     //unselect all others
                     cy.elements().unselect();
@@ -217,13 +196,12 @@ module.exports =  function(app, modelManager, socket) {
                 }
             });
 
-            socket.on('searchByLabel', function (data, callback) {
+            app.socket.on('searchByLabel', function (data, callback) {
                 try {
                     //unselect all others
                     cy.elements().unselect();
 
                     chise.searchByLabel(data.label);
-
 
                     if (callback) callback("success");
                 }
@@ -233,7 +211,7 @@ module.exports =  function(app, modelManager, socket) {
 
                 }
             });
-            socket.on('updateHighlight', function (data, callback) {
+            app.socket.on('updateHighlight', function (data, callback) {
                 try {
                     //unselect all others
                     cy.elements().unselect();
@@ -261,7 +239,7 @@ module.exports =  function(app, modelManager, socket) {
                 }
             });
 
-            socket.on('updateExpandCollapse', function (data, callback) {
+            app.socket.on('updateExpandCollapse', function (data, callback) {
                 try {
 
                     //unselect all others
@@ -286,7 +264,7 @@ module.exports =  function(app, modelManager, socket) {
             });
 
 
-            socket.on('addCompound', function (data, callback) {
+            app.socket.on('addCompound', function (data, callback) {
                 try {
                     //unselect all others
                     cy.elements().unselect();
@@ -312,7 +290,7 @@ module.exports =  function(app, modelManager, socket) {
 
             });
 
-            socket.on('clone', function (data, callback) {
+            app.socket.on('clone', function (data, callback) {
                 try {
                     cy.elements().unselect();
 
@@ -332,168 +310,71 @@ module.exports =  function(app, modelManager, socket) {
                 }
             });
 
-            socket.on("displaySbgn", function(data, callback){
-                self.displaySbgn(data, function () {
+            app.socket.on("displaySbgn", function(sbgn, callback){
+
+                var jsonObj = sbgnviz.convertSbgnmlTextToJson(sbgn);
+
+                //get another sbgncontainer and display the new SBGN model.
+                app.modelManager.newModel("me", true);
+
+                chise.updateGraph(jsonObj, function(){
+                    app.modelManager.initModel(cy.nodes(), cy.edges(), appUtilities, "me");
+
+                    $("#perform-layout").trigger('click');
+
                     if (callback) callback("success");
                 });
-            })
 
-            socket.on("mergeSbgn", function (data, callback) {
+            });
 
-                console.log("merging agent" + data);
-                self.mergeSbgn(data, function () {
-                    if (callback) callback("success");
-                });
+            app.socket.on("mergeSbgn", function (sbgn, callback) {
+
+
+                var newJson = sbgnviz.convertSbgnmlTextToJson(sbgn);
+                this.mergeJsonWithCurrent(newJson, callback);
 
 
             });
 
-            socket.on("mergeJsonWithCurrent", function (data) {
-                self.mergeJsonWithCurrent(data);
+            app.socket.on("mergeJsonWithCurrent", function (data, callback) {
+                self.mergeJsonWithCurrent(data, callback);
             });
-
-
-            // socket.on('agentContextQuestion', function(socketId){
-            //     setTimeout(function() {
-            //         var answer = confirm("Do you agree with the context?");
-            //         socket.emit('contextAnswer', {socketId: socketId, value:answer});
-            //         //if (callback) callback(answer);
-            //     }, 1000); //wait for the human to read
-            //
-            // });
-
-
         },
 
-        //TODO: move these to a different place
-        mergeSbgn: function (sbgnText, callback) {
-
-
-            var newJson = sbgnviz.convertSbgnmlTextToJson(sbgnText);
-            this.mergeJsonWithCurrent(newJson, callback);
-
-        },
-
-        //Merge an array of json objects to output a single json object.
-        mergeJsons: function (jsonGraph, callback) {
-            var idxCardNodeMap = {};
-            var sentenceNodeMap = {};
-
-            var jsonObj = jsonMerger.mergeJsons(jsonGraph, sentenceNodeMap, idxCardNodeMap);
-
-            modelManager.newModel("me", true);
-
-            chise.updateGraph(jsonObj);
-
-            setTimeout(function () {
-                console.log("init called")
-
-                modelManager.initModel(cy.nodes(), cy.edges(), appUtilities, "me");
-                console.log("init finished")
-
-                    //Call layout after init
-                    setTimeout(function () {
-                        $("#perform-layout").trigger('click');
-                        console.log("layout finished")
-
-                        //Call merge notification after the layout
-                        setTimeout(function () {
-                            modelManager.mergeJsons("me", true);
-
-                            if (callback) callback();
-                        }, 1000);
-
-                    }, 4000);
-
-            }, 2000); //wait for chise to complete updating graph
-            return {sentences: sentenceNodeMap, idxCards: idxCardNodeMap};
-        },
-
-        displaySbgn: function(sbgn, callback){
-
-            var jsonObj = sbgnviz.convertSbgnmlTextToJson(sbgn);
-            //get another sbgncontainer and display the new SBGN model.
-            modelManager.newModel("me", true);
-
-            //this takes a while so wait before initiating the model
-            chise.updateGraph(jsonObj, function(){
-                modelManager.initModel(cy.nodes(), cy.edges(), appUtilities, "me");
-
-
-                $("#perform-layout").trigger('click');
-
-            });
-
-
-            //
-            //
-            // setTimeout(function () {
-            //
-            //     modelManager.initModel(cy.nodes(), cy.edges(), appUtilities, "me");
-            //
-            //
-            //     $("#perform-layout").trigger('click');
-            //
-            //
-            //
-            // }, 2000);
-
-        },
 
         //Merge an array of json objects with the json of the current sbgn network
         //on display to output a single json object.
         mergeJsonWithCurrent: function (jsonGraph, callback) {
-
-
             var currJson = sbgnviz.createJson();
-            modelManager.setRollbackPoint(); //before merging
-
-            console.log("json1")
-            console.log(jsonGraph);
-            console.log("json2")
-            console.log(currJson);
+            app.modelManager.setRollbackPoint(); //before merging.. for undo
 
             var jsonObj = jsonMerger.mergeJsonWithCurrent(jsonGraph, currJson);
 
-
             //get another sbgncontainer and display the new SBGN model.
-            modelManager.newModel("me", true);
-
+            app.modelManager.newModel("me", true);
 
             //this takes a while so wait before initiating the model
-            chise.updateGraph(jsonObj);
+            chise.updateGraph(jsonObj, function () {
 
-            setTimeout(function () {
-
-                modelManager.initModel(cy.nodes(), cy.edges(), appUtilities, "me");
+                app.modelManager.initModel(cy.nodes(), cy.edges(), appUtilities, "me");
 
                 //select the new graph
                 jsonGraph.nodes.forEach(function (node) {
                     cy.getElementById(node.data.id).select();
                 });
 
-
-                //Call Layout
-                console.log("Layout called");
-                 $("#perform-layout").trigger('click');
-
-
+                $("#perform-layout").trigger('click');
 
                 cy.elements().unselect();
 
-
-
                 // Call merge notification after the layout
                 setTimeout(function () {
-                    modelManager.mergeJsons("me", true);
+                    app.modelManager.mergeJsons("me", true);
                     if (callback) callback("success");
                 }, 1000);
 
-
-            }, 2000); //wait for chise to complete updating graph
-
+            });
         }
-
     }
 }
 
