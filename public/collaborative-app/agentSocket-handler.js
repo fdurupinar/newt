@@ -331,6 +331,11 @@ module.exports =  function(app, modelManager, socket) {
                 }
             });
 
+            socket.on("displaySbgn", function(data, callback){
+                self.displaySbgn(data, function () {
+                    if (callback) callback("success");
+                });
+            })
 
             socket.on("mergeSbgn", function (data, callback) {
 
@@ -390,12 +395,12 @@ module.exports =  function(app, modelManager, socket) {
                         $("#perform-layout").trigger('click');
                         console.log("layout finished")
 
-                        // //Call merge notification after the layout
-                        // setTimeout(function () {
-                        //     modelManager.mergeJsons("me", true);
-                        //
-                        //     if (callback) callback();
-                        // }, 1000);
+                        //Call merge notification after the layout
+                        setTimeout(function () {
+                            modelManager.mergeJsons("me", true);
+
+                            if (callback) callback();
+                        }, 1000);
 
                     }, 4000);
 
@@ -403,12 +408,51 @@ module.exports =  function(app, modelManager, socket) {
             return {sentences: sentenceNodeMap, idxCards: idxCardNodeMap};
         },
 
+        displaySbgn: function(sbgn, callback){
+
+            var jsonObj = sbgnviz.convertSbgnmlTextToJson(sbgn);
+            //get another sbgncontainer and display the new SBGN model.
+            modelManager.newModel("me", true);
+
+            //this takes a while so wait before initiating the model
+            chise.updateGraph(jsonObj);
+
+            setTimeout(function () {
+
+                modelManager.initModel(cy.nodes(), cy.edges(), appUtilities, "me");
+
+                //select the new graph
+                jsonObj.nodes.forEach(function (node) {
+                    cy.getElementById(node.data.id).select();
+                });
+
+
+                //Call Layout
+                console.log("Layout called");
+                $("#perform-layout").trigger('click');
+
+
+                cy.elements().unselect();
+
+            }, 1000);
+
+        },
+
         //Merge an array of json objects with the json of the current sbgn network
         //on display to output a single json object.
         mergeJsonWithCurrent: function (jsonGraph, callback) {
+
+
             var currJson = sbgnviz.createJson();
             modelManager.setRollbackPoint(); //before merging
+
+            console.log("json1")
+            console.log(jsonGraph);
+            console.log("json2")
+            console.log(currJson);
+
             var jsonObj = jsonMerger.mergeJsonWithCurrent(jsonGraph, currJson);
+
 
             //get another sbgncontainer and display the new SBGN model.
             modelManager.newModel("me", true);
@@ -437,14 +481,14 @@ module.exports =  function(app, modelManager, socket) {
 
 
 
-                //Call merge notification after the layout
-                // setTimeout(function () {
-                //     modelManager.mergeJsons("me", true);
-                //     if (callback) callback("success");
-                // }, 1000);
+                // Call merge notification after the layout
+                setTimeout(function () {
+                    modelManager.mergeJsons("me", true);
+                    if (callback) callback("success");
+                }, 1000);
 
 
-            }, 4000); //wait for chise to complete updating graph
+            }, 2000); //wait for chise to complete updating graph
 
         }
 

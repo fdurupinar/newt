@@ -68,6 +68,17 @@ TripsGeneralInterfaceAgent.prototype.resetConversation = function(){
 TripsGeneralInterfaceAgent.prototype.listenToMessages = function(callback){
     var self = this;
 
+    //
+    // this.socket.on('displayModel', function(sbgn, callback){
+    //
+    //     //TODO: this should be deleted
+    //
+    //
+    //     self.sendRequest('agentDisplaySbgnRequest', { graph: sbgn}, function (data) {
+    //         if (callback) callback();
+    //     });
+    // });
+
 
     this.socket.on('message', function(data){
 

@@ -297,6 +297,7 @@ module.exports = function(modelManager, socket, userId){
                 args.eles.forEach(function (ele) {
                     if(ele.isNode()){
                         modelElList.push({id: ele.id(), isNode: true});
+                        ele.data("annotationsView", null);
                         paramList.push(ele.position());
                         //ele.data("annotationsView", null);
                         //paramListData.push(ele.data());
