@@ -30,6 +30,8 @@ class TripsGeneralInterfaceModule extends TripsInterfaceModule {
 
         }, 2000);
 
+
+
     }
 
 
@@ -98,6 +100,10 @@ class TripsGeneralInterfaceModule extends TripsInterfaceModule {
             self.displaySbgn(text);
         });
 
+        var pattern = {0: 'request', 1: '&key', content: ['clean-model', '.', '*']};
+        self.tm.addHandler(pattern, function (text) {
+            self.cleanModel(text);
+        });
 
         var pattern = {0: 'tell', 1: '&key', content: ['display-image', '.', '*']};
         self.tm.addHandler(pattern, function (text) {
@@ -183,6 +189,7 @@ class TripsGeneralInterfaceModule extends TripsInterfaceModule {
         }
     }
 
+
     displaySbgn(text) {
         var self = this;
         var contentObj = KQML.keywordify(text.content);
@@ -204,6 +211,16 @@ class TripsGeneralInterfaceModule extends TripsInterfaceModule {
 
 
         }
+
+    }
+
+    cleanModel(){
+        //The socket connection is between the interface and the agent, so we cannot directly emit messages
+        //we must ask the client with the browser to do it for us
+        this.askHuman(this.agentId, this.room, "newFile", function (val) {
+
+            // self.tm.replyToMsg(text, {0: 'reply', content: {0: 'success'}});
+        });
 
     }
 
