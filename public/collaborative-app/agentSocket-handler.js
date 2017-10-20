@@ -421,20 +421,12 @@ module.exports =  function(app, modelManager, socket) {
 
                 modelManager.initModel(cy.nodes(), cy.edges(), appUtilities, "me");
 
-                //select the new graph
-                jsonObj.nodes.forEach(function (node) {
-                    cy.getElementById(node.data.id).select();
-                });
 
-
-                //Call Layout
-                console.log("Layout called");
                 $("#perform-layout").trigger('click');
 
 
-                cy.elements().unselect();
 
-            }, 1000);
+            }, 2000);
 
         },
 
