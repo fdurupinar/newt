@@ -10,6 +10,8 @@ module.exports = function(modelManager, socket, userId){
     // this.debugMode = true;
 
 
+
+
     //A new sample or file is loaded --update model and inform others
     $(document).on("sbgnvizLoadSampleEnd sbgnvizLoadFileEnd",  function(event, file){
         console.log("Loading new sample");

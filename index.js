@@ -191,10 +191,12 @@ app.proto.changeDuration = function () {
  */
 
 app.proto.create = function (model) {
+
     model.set('_page.showTime', true);
 
     var self = this;
     docReady = true;
+    var userId = model.get('_session.userId');
 
     var isQueryWindow = false;
 
@@ -260,6 +262,30 @@ app.proto.create = function (model) {
         }
 
     }, false);
+
+
+    $('#inputs-comment').keydown(function (e){
+        if(e.keyCode == 38) { //up arrow
+
+
+            var messages = self.model.get('_page.doc.messages');
+            console.log(messages);
+            if(messages) {
+                var msg;
+                var maxDate = -100;
+                for(var att in messages){
+                    if(messages[att].date > maxDate && messages[att].userId == userId){
+                        maxDate = messages[att].date;
+                        msg = messages[att].comment;
+                    }
+                }
+
+                console.log(msg);
+
+                self.model.set('_page.newComment', msg);
+            }
+        }
+    });
 
 
     //Loading cytoscape and clients
@@ -938,6 +964,8 @@ app.proto.connectTripsAgent = function(){
 
 app.proto.enterMessage = function(event){
 
+    var self = this;
+
     if (event.keyCode == 13 && !event.shiftKey) {
        this.add(event);
 
@@ -945,6 +973,8 @@ app.proto.enterMessage = function(event){
         event.preventDefault();
 
     }
+
+
 }
 
 app.proto.add = function (event, model, filePath) {

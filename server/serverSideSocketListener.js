@@ -39,6 +39,7 @@ var executeCommandLineProcess = function (cmdStr, callback){
 };
 
 module.exports.start = function(io, model, cancerDataOrganizer){
+
     var modelManagerList = [];
     var menuList = [];
 
@@ -47,7 +48,6 @@ module.exports.start = function(io, model, cancerDataOrganizer){
     var pnnlArr  = [];
     var tripsGeneralInterfaceInstance;
     var tripsCausalityInterfaceInstance;
-
 
 
     var request = require('request'); //REST call over http/https
