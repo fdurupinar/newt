@@ -10,8 +10,9 @@ var _ = require('underscore');
 var oneColor = require('onecolor');
 
 
-var TRIPS_MODE = true;
-var TEST_MODE = false;
+var TRIPS_MODE = false;
+
+
 
 var ONE_DAY = 1000 * 60 * 60 * 24;
 
@@ -73,8 +74,6 @@ app.get('/', function (page, model, params) {
         docId = getId();
     }
 
-    if(TEST_MODE) // use qunit testing doc if we're testing so we don't disrupt real docs
-        docId = 'testMode';
 
     return page.redirect('/' + docId);
 });
@@ -218,10 +217,10 @@ app.proto.create = function (model) {
     }
 
 
-    if(TEST_MODE)
-        $('#unitTestArea').show();
-    else
+    if(TRIPS_MODE)
         $('#unitTestArea').hide();
+    else
+        $('#unitTestArea').show();
 
 
 
@@ -934,7 +933,8 @@ app.proto.runUnitTests = function(){
     //  require("./public/test/testsModelManager.js")(self.modelManager, userId);
 
 
-    require("./public/test/testsUserOperations.js")(self.modelManager);
+    // require("./public/test/testsUserOperations.js")(self.modelManager);
+    require("./public/test/testsMessages.js")(this);
     require("./public/test/testOptions.js")(); //to print out results
 
 }
@@ -984,8 +984,8 @@ app.proto.enterMessage = function(event){
 
     var self = this;
 
-    if (event.keyCode == 13 && !event.shiftKey) {
-       this.add(event);
+    if (event.keyCode === 13 && !event.shiftKey) {
+       self.add(event);
 
         // prevent default behavior
         event.preventDefault();
@@ -1026,7 +1026,8 @@ app.proto.add = function (event, model, filePath) {
         targets: targets,
         userId: msgUserId,
         userName: msgUserName,
-        comment: comment};
+        comment: comment
+    };
 
 
     var filteredMsgs = model.filter('_page.doc.messages', 'myMessages').get();
