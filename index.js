@@ -45,6 +45,15 @@ app.on('model', function (model) {
         return item.date > clickTime;
     });
 
+    model.fn('myMessages', function (msg) {
+
+        var userId = model.get('_session.userId');
+
+        return msg.userId === userId;
+    });
+
+
+
 });
 
 
@@ -183,7 +192,6 @@ app.proto.changeDuration = function () {
 };
 
 
-
 /***
  * Called only once in a browser after first page rendering
  * @param model
@@ -264,27 +272,36 @@ app.proto.create = function (model) {
     }, false);
 
 
+    descendingSort = function (a, b) {
+        return (b != null ? b.date : void 0) - (a != null ? a.date : void 0);
+    };
+
+    self.lastMsgInd = -1; //increment in app.proto.app
+
+    //start listening to keyboard events
     $('#inputs-comment').keydown(function (e){
-        if(e.keyCode == 38) { //up arrow
+        if(e.keyCode == 38 ||  e.keyCode == 40 ) { //up or down arrows
+
+            //sorted list
+            var filteredMsgs = model.filter('_page.doc.messages', 'myMessages').get();
+            var messages = filteredMsgs.sort(function(a, b){
+                return b-a;
+            });
 
 
-            var messages = self.model.get('_page.doc.messages');
-            console.log(messages);
-            if(messages) {
-                var msg;
-                var maxDate = -100;
-                for(var att in messages){
-                    if(messages[att].date > maxDate && messages[att].userId == userId){
-                        maxDate = messages[att].date;
-                        msg = messages[att].comment;
-                    }
-                }
+            var msg = messages[self.lastMsgInd].comment;
+            self.model.set('_page.newComment', msg);
 
-                console.log(msg);
+            if(e.keyCode == 38)
+                self.lastMsgInd = self.lastMsgInd > 0 ? self.lastMsgInd - 1 : 0;
+            else
+                self.lastMsgInd = self.lastMsgInd < messages.length - 1 ? self.lastMsgInd + 1 : messages.length - 1;
 
-                self.model.set('_page.newComment', msg);
-            }
         }
+
+
+
+
     });
 
 
@@ -801,9 +818,10 @@ app.proto.init = function (model) {
         if(docReady) {
             if(docReady && passed.user == null) {
                 self.loadCyFromModel(function () {
-                    self.notyView.close();
+
                 });
             }
+            self.notyView.close();
         }
     });
 
@@ -1009,6 +1027,11 @@ app.proto.add = function (event, model, filePath) {
         userId: msgUserId,
         userName: msgUserName,
         comment: comment};
+
+
+    var filteredMsgs = model.filter('_page.doc.messages', 'myMessages').get();
+
+    self.lastMsgInd = filteredMsgs.length; //new message will be added next
 
     //also lets server know that a client message is entered.
     self.socket.emit('getDate', msg, function(date){ //get the date from the server

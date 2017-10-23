@@ -312,8 +312,6 @@ module.exports = function (model, docId, sbgnviz) {
             var undoInd = model.get('_page.doc.undoIndex');
             var cmd = model.get('_page.doc.history.' + undoInd); // cmd: opName, opTarget, opAttr, elId, param
 
-            console.log("undo " + cmd.opName );
-            console.log(cmd.prevParam );
 
             if (cmd.opName == "set") {
                 if (cmd.opTarget == "element" && cmd.elType == "node")

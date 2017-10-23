@@ -7,10 +7,6 @@
 
 module.exports = function(modelManager, socket, userId){
 
-    // this.debugMode = true;
-
-
-
 
     //A new sample or file is loaded --update model and inform others
     $(document).on("sbgnvizLoadSampleEnd sbgnvizLoadFileEnd",  function(event, file){
@@ -84,7 +80,7 @@ module.exports = function(modelManager, socket, userId){
     // });
 
     cy.on("afterDo afterRedo", function (event, actionName, args, res) {
-        // if(this.debugMode){
+
 
             console.log(actionName);
             console.log(args);
@@ -459,8 +455,6 @@ module.exports = function(modelManager, socket, userId){
     });
 
 
-
-
     cy.on("mouseup", "node", function () {
         modelManager.unselectModelNode(this, "me");
     });
@@ -492,6 +486,3 @@ module.exports = function(modelManager, socket, userId){
 
 }
 
-module.exports.setDebugMode = function(val){
-    this.debugMode = false;
-}
