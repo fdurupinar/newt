@@ -7,7 +7,6 @@ var session = require('express-session');
 var MongoStore = require('connect-mongo/es5')(session);
 var highway = require('racer-highway');
 var ShareDbMongo = require('sharedb-mongo');
-// var liveDbMongo = require('livedb-mongo');
 derby.use(require('racer-bundle'));
 
 exports.setup = setup;
@@ -86,47 +85,11 @@ function setup(app, options, cb) {
         var model = backend.createModel();
 
 
-
-
-
-     //   model.subscribe('documents', function(){
-
-
-
-            cb(err, expressApp, handlers.upgrade, model);
-
-
-            //call after subscribing
-
-            // Here we got the data
-            // Subscription for future updates is registered
-            // We can call render
-      //  });
-
-
-
+        cb(err, expressApp, handlers.upgrade, model);
 
     });
 
 
-    // backend.on('client', function (client) {
-    //     console.log('Client connected: ', client.id);
-    //  //        console.log(client);
-    //     for (var id in app.clients) {
-    //     if(id!= client.id)
-    //     app.clients[id].channel.send('connected', client.id);
-    //  }
-    //  // Close event fires when client has disconnected
-    //  // (losing connection / closing a page)
-    //  client.on('close', function (reason) {
-    //  //send disconnection to other clients
-    //      for (var id in app.clients) {
-    //      if(id!= client.id)
-    //      app.clients[id].channel.send('disconnected', client.id);
-    //  }
-    //      console.log('Client disconnected: ', client.id);
-    //  });
-    //  });
 }
 
 function createUserId(req, res, next) {

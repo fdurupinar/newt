@@ -4,9 +4,9 @@
  * Its role is to receive and decode messages and transfer them to causalityAgent
  */
 "use strict";
-var KQML = require('./KQML/kqml.js');
+let KQML = require('./KQML/kqml.js');
 
-var TripsInterfaceModule = require('./TripsInterfaceModule.js');
+let TripsInterfaceModule = require('./TripsInterfaceModule.js');
 
 class TripsCausalityInterfaceModule extends TripsInterfaceModule{
 
@@ -27,41 +27,27 @@ class TripsCausalityInterfaceModule extends TripsInterfaceModule{
     requestCausalityElementsFromAgent(id, rel, callback){
 
 
-        var self = this;
-        var param = {id: id, pSite: '', rel:rel};
+        let self = this;
+        let param = {id: id, pSite: '', rel:rel};
 
 
         //Request this information from the causalityAgent
         self.socket.emit("findCausalityTargets", param, function(elements){
-            var indraJson = [];
+            let indraJson = [];
 
             elements.forEach(function(el){
                 indraJson.push(makeIndraJson(el));
             });
 
 
-            var stringJson = JSON.stringify(indraJson);
+            let stringJson = JSON.stringify(indraJson);
             stringJson = '"'+  stringJson.replace(/["]/g, "\\\"") + '"';
 
-            var response;
+            let response;
             if(indraJson.length > 0) {
                 response = {0: 'reply', content: {0: 'success', paths: stringJson}};
 
-                var modelId = self.model.get('documents.' + self.room + 'pysb.modelId');
-                //FIXME
-                if (self.modelId) {
-                    self.tm.sendMsg({
-                        0: 'request',
-                        content: {
-                            0: 'EXPAND-MODEL',
-                            format: "indra_json",
-                            description: stringJson,
-                            'model-id': self.modelId
-                        }
-                    });
-                }
-                else
-                    console.log("Model id not initialized.");
+
             }
             else
                 response = {0:'reply', content:{0:'failure',1: ':reason', 2: 'MISSING_MECHANISM'}};
@@ -79,20 +65,20 @@ class TripsCausalityInterfaceModule extends TripsInterfaceModule{
      */
     getTermName(termStr, callback) {
 
-        var self = this;
+        let self = this;
         this.tm.sendMsg({0: 'request', content: {0: 'CHOOSE-SENSE', 'ekb-term': termStr}});
 
 
-        var patternXml = {0: 'reply', 1: '&key', content: ['SUCCESS', '.', '*']};
+        let patternXml = {0: 'reply', 1: '&key', content: ['SUCCESS', '.', '*']};
 
         self.tm.addHandler(patternXml, function (textXml) {
 
             if(textXml.content && textXml.content.length >= 2 && textXml.content[2].length > 0) {
 
-                var termNames = [];
-                for(var i = 0; i < textXml.content[2].length; i++) {
-                    var contentObj = KQML.keywordify(textXml.content[2][i]);
-                    var termName = trimDoubleQuotes(contentObj.name);
+                let termNames = [];
+                for(let i = 0; i < textXml.content[2].length; i++) {
+                    let contentObj = KQML.keywordify(textXml.content[2][i]);
+                    let termName = trimDoubleQuotes(contentObj.name);
                     termNames.push(termName);
                 }
 
@@ -106,27 +92,27 @@ class TripsCausalityInterfaceModule extends TripsInterfaceModule{
 
 
     setHandlers() {
-        var self = this;
+        let self = this;
 
         //Listen to queries about the causal relationship between to genes
         //E.g. How does MAPK1 affect JUND?
-        var pattern = { 0: 'request', 1:'&key', content: [ 'find-causal-path',  '.', '*']};
+        let pattern = { 0: 'request', 1:'&key', content: [ 'find-causal-path',  '.', '*']};
         self.tm.addHandler(pattern, function (text) { //listen to requests
 
-            var contentObj = KQML.keywordify(text.content);
+            let contentObj = KQML.keywordify(text.content);
 
 
             self.getTermName(contentObj.source, function (source) {
 
                 self.getTermName(contentObj.target, function (target) {
 
-                    var resSource = '';
-                    var posSource = '';
-                    var resTarget = '';
-                    var posTarget = '';
+                    //todo:later
+                    let resSource = '';
+                    let posSource = '';
+                    let resTarget = '';
+                    let posTarget = '';
 
-
-                    var param = {
+                    let param = {
                         source: {id: source, pSite: (resSource + posSource + resSource)},
                         target: {id: target, pSite: (resTarget + posTarget + resTarget)}
                     };
@@ -135,7 +121,7 @@ class TripsCausalityInterfaceModule extends TripsInterfaceModule{
                     //Request this information from the causalityAgent
                     self.socket.emit('findCausality', param, function (causality) {
 
-                        var indraJson;
+                        let indraJson;
 
                         if (!causality || !causality.rel)
                             self.tm.replyToMsg(text, {0: 'reply', content: {0: 'failure', 1: ':reason', 2: 'NO_PATH_FOUND'}});
@@ -143,28 +129,10 @@ class TripsCausalityInterfaceModule extends TripsInterfaceModule{
 
 
                             indraJson = [makeIndraJson(causality)];
-                            var stringJson = JSON.stringify(indraJson);
+                            let stringJson = JSON.stringify(indraJson);
                             stringJson = '"' + stringJson.replace(/["]/g, "\\\"") + '"';
 
-
-                            var modelId = self.model.get('documents.' + self.room + 'pysb.modelId');
-                            //FIXME
-                            if (self.modelId) {
-                                self.tm.sendMsg({
-                                    0: 'request',
-                                    content: {
-                                        0: 'EXPAND-MODEL',
-                                        format: "indra_json",
-                                        description: stringJson,
-                                        'model-id': self.modelId
-                                    }
-                                });
-                            }
-                            else
-                                console.log("Model id not initialized.");
-
-                            //console.log(stringJson);
-                            var response = {0: 'reply', content: {0: 'success', paths: stringJson}};
+                            let response = {0: 'reply', content: {0: 'success', paths: stringJson}};
                             self.tm.replyToMsg(text, response);
                         }
                     });
@@ -176,16 +144,16 @@ class TripsCausalityInterfaceModule extends TripsInterfaceModule{
 
         //Listen to queries asking the targets of a causal relationship
         //E.g. What genes does MAPK1 phosphorylate?
-        var pattern = { 0: 'request', 1:'&key', content: [ 'find-causality-target',  '.', '*']};
+        pattern = { 0: 'request', 1:'&key', content: [ 'find-causality-target',  '.', '*']};
 
         self.tm.addHandler(pattern, function (text) { //listen to requests
 
-            var contentObj = KQML.keywordify(text.content);
+            let contentObj = KQML.keywordify(text.content);
 
             if(contentObj) {
                 self.getTermName(contentObj.target, function (target) {
 
-                    var queryToRequestMap = {
+                    let queryToRequestMap = {
                         '\"phosphorylation\"': "phosphorylates",
                         '\"dephosphorylation\"': "dephosphorylates",
                         '\"activate\"': "upregulates-expression",
@@ -195,7 +163,7 @@ class TripsCausalityInterfaceModule extends TripsInterfaceModule{
                     };
 
 
-                    var requestType = queryToRequestMap[contentObj.type] || "modulates";
+                    let requestType = queryToRequestMap[contentObj.type] || "modulates";
 
 
                     self.requestCausalityElementsFromAgent(target, requestType, function (response) {
@@ -208,16 +176,16 @@ class TripsCausalityInterfaceModule extends TripsInterfaceModule{
 
         //Listen to queries asking the sources of a causal relationship
         //E.g. What genes phosphorylate MAPK1?
-        var pattern = { 0: 'request', 1:'&key', content: [ 'find-causality-source',  '.', '*']};
+        pattern = { 0: 'request', 1:'&key', content: [ 'find-causality-source',  '.', '*']};
 
         self.tm.addHandler(pattern, function (text) { //listen to requests
 
-            var contentObj = KQML.keywordify(text.content);
+            let contentObj = KQML.keywordify(text.content);
             if(contentObj) {
 
                 self.getTermName(contentObj.source, function (source) {
 
-                    var queryToRequestMap = {
+                    let queryToRequestMap = {
                         '\"phosphorylation\"': "is-phosphorylated-by",
                         '\"dephosphorylation\"': "is-dephosphorylated-by",
                         '\"activate\"': "expression-is-upregulated-by",
@@ -227,7 +195,7 @@ class TripsCausalityInterfaceModule extends TripsInterfaceModule{
                     }
 
 
-                    var requestType = queryToRequestMap[contentObj.type] || "modulates";
+                    let requestType = queryToRequestMap[contentObj.type] || "modulates";
 
                     self.requestCausalityElementsFromAgent(source, requestType, function (response) {
                         self.tm.replyToMsg(text, response);
@@ -240,9 +208,9 @@ class TripsCausalityInterfaceModule extends TripsInterfaceModule{
 
 
         //Listen to requests for correlation queries
-        var pattern = { 0: 'request', 1:'&key', content: [ 'dataset-correlated-entity',  '.', '*']};
+        pattern = { 0: 'request', 1:'&key', content: [ 'dataset-correlated-entity',  '.', '*']};
         self.tm.addHandler(pattern, function (text) { //listen to requests
-            var contentObj = KQML.keywordify(text.content);
+            let contentObj = KQML.keywordify(text.content);
 
 
             self.getTermName(contentObj.source, function (source) {
@@ -252,8 +220,8 @@ class TripsCausalityInterfaceModule extends TripsInterfaceModule{
 
 
                     // We are not allowed to send a request if null, so put a temporary string
-                    var pSite1 = data.pSite1 || '-';
-                    var pSite2 = data.pSite2 || '-';
+                    let pSite1 = data.pSite1 || '-';
+                    let pSite2 = data.pSite2 || '-';
 
 
                     self.tm.replyToMsg(text, {0: 'reply', content: {0: 'success',  target:data.id2, correlation: data.correlation, explainable:data.explainable}});
@@ -264,9 +232,9 @@ class TripsCausalityInterfaceModule extends TripsInterfaceModule{
 
 
         //Listen to requests for common upstreams
-        var pattern = { 0: 'request', 1:'&key', content: [ 'find-common-upstreams',  '.', '*']};
+        pattern = { 0: 'request', 1:'&key', content: [ 'find-common-upstreams',  '.', '*']};
         self.tm.addHandler(pattern, function (text) { //listen to requests
-            var contentObj = KQML.keywordify(text.content);
+            let contentObj = KQML.keywordify(text.content);
             //
             // console.log(contentObj.genes);
             // self.getTermName(contentObj.genes, function (genes) {
@@ -275,13 +243,13 @@ class TripsCausalityInterfaceModule extends TripsInterfaceModule{
              //self.getTermName(contentObj.target, function (target) {
 
 
-            var geneNames = [];
+            let geneNames = [];
             // contentObj.genes.forEach(function(gene){
             self.getTermName(contentObj.genes, function(geneNames){
                 // // //Request this information from the causalityAgent
                 self.socket.emit('findCommonUpstreams', geneNames, function (data) {
 
-                    var response = {0: 'reply', content: {0: 'success', upstreams: data}};
+                    let response = {0: 'reply', content: {0: 'success', upstreams: data}};
                     self.tm.replyToMsg(text, response);
                 });
 
@@ -291,7 +259,7 @@ class TripsCausalityInterfaceModule extends TripsInterfaceModule{
 
         });
         //Listen to requests for correlation queries
-        var pattern = { 0: 'request', 1:'&key', content: [ 'restart-causality-indices',  '.', '*']};
+        pattern = { 0: 'request', 1:'&key', content: [ 'restart-causality-indices',  '.', '*']};
         self.tm.addHandler(pattern, function (text) { //listen to requests
 
 
@@ -316,7 +284,7 @@ module.exports = TripsCausalityInterfaceModule;
  * @param causality : specific causal relationship with two genes
  * @returns {*}
  */
-var makeIndraJson = function(causality){
+let makeIndraJson = function(causality){
     const indraRelationMap ={
         "PHOSPHORYLATES": "Phosphorylation",
         "IS-PHOSPHORYLATED-BY": "Phosphorylation",
@@ -328,7 +296,7 @@ var makeIndraJson = function(causality){
     }
 
 
-    var indraJson;
+    let indraJson;
     causality.rel = causality.rel.toUpperCase();
 
     //INDRA requires site info to be null if empty
@@ -338,7 +306,7 @@ var makeIndraJson = function(causality){
     if(causality.res2 === "") causality.res2 = null;
 
 
-    var relType = indraRelationMap[causality.rel];
+    let relType = indraRelationMap[causality.rel];
 
 
     // If it's a phosphorylation
@@ -399,7 +367,7 @@ function trimDoubleQuotes(str){
     if(str[0]!== '"' || str[str.length-1]!== '"')
         return str;
 
-    var strTrimmed = str.slice(1, str.length -1);
+    let strTrimmed = str.slice(1, str.length -1);
 
     return strTrimmed;
 

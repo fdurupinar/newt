@@ -2,7 +2,7 @@
  * Created by durupina on 11/14/16.
  * Human listens to agent socket and performs menu operations requested by the agent
 */
-var jsonMerger = require('./reach-functions/json-merger.js');
+var jsonMerger = require('./merger/json-merger.js');
 
 module.exports =  function(app) {
 

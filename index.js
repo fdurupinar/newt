@@ -3,33 +3,27 @@
  *  Event handlers of model updates
  *	Author: Funda Durupinar Babur<f.durupinar@gmail.com>
  */
-var app = module.exports = require('derby').createApp('cwc', __filename);
+let app = module.exports = require('derby').createApp('cwc', __filename);
 app.loadViews(__dirname + '/views');
 
-var _ = require('underscore');
-var oneColor = require('onecolor');
+let _ = require('underscore');
+let oneColor = require('onecolor');
 
+//Test mode vs Trips mode
+const tripsMode = true;
 
-var TRIPS_MODE = false;
-
-
-
-var ONE_DAY = 1000 * 60 * 60 * 24;
-
-var ONE_HOUR = 1000 * 60 * 60;
-
-var ONE_MINUTE = 1000 * 60;
-
-var docReady = false;
-
+const ONE_DAY = 1000 * 60 * 60 * 24;
+const ONE_HOUR = 1000 * 60 * 60;
+const ONE_MINUTE = 1000 * 60;
 const BobId = "Bob123";
 
+let docReady = false;
 
 app.on('model', function (model) {
 
     model.fn('biggerTime', function (item) {
-        var duration = model.get('_page.durationId');
-        var startTime;
+        let duration = model.get('_page.durationId');
+        let startTime;
         if (duration < 0)
             startTime = 0;
         else
@@ -40,7 +34,7 @@ app.on('model', function (model) {
 
     model.fn('biggerThanCurrentTime', function (item) {
 
-        var clickTime = model.get('_page.clickTime');
+        let clickTime = model.get('_page.clickTime');
 
 
         return item.date > clickTime;
@@ -48,12 +42,10 @@ app.on('model', function (model) {
 
     model.fn('myMessages', function (msg) {
 
-        var userId = model.get('_session.userId');
+        let userId = model.get('_session.userId');
 
         return msg.userId === userId;
     });
-
-
 
 });
 
@@ -64,11 +56,11 @@ app.get('/', function (page, model, params) {
     }
 
     function idIsReserved() {
-        var ret = model.get('documents.' + docId) != undefined;
+        let ret = model.get('documents.' + docId) != undefined;
         return ret;
     }
 
-    var docId = getId();
+    let docId = getId();
 
     while (idIsReserved()) {
         docId = getId();
@@ -80,14 +72,14 @@ app.get('/', function (page, model, params) {
 
 
 app.get('/:docId', function (page, model, arg, next) {
-    var  room;
+    let  room;
 
-    var self = this;
+    let self = this;
     room = arg.docId;
 
     model.subscribe('documents', function () {
 
-        var docPath = 'documents.' + arg.docId;
+        let docPath = 'documents.' + arg.docId;
         model.ref('_page.doc', ('documents.' + arg.docId));
 
         model.subscribe(docPath, function (err) {
@@ -107,16 +99,16 @@ app.get('/:docId', function (page, model, arg, next) {
 
 
             // create a reference to the document
-            var pysb = model.at((docPath + '.pysb'));
-            var cy = model.at((docPath + '.cy'));
-            var history = model.at((docPath + '.history'));
-            var undoIndex = model.at((docPath + '.undoIndex'));
-            var context = model.at((docPath + '.context'));
-            var images = model.at((docPath + '.images'));
+            let pysb = model.at((docPath + '.pysb'));
+            let cy = model.at((docPath + '.cy'));
+            let history = model.at((docPath + '.history'));
+            let undoIndex = model.at((docPath + '.undoIndex'));
+            let context = model.at((docPath + '.context'));
+            let images = model.at((docPath + '.images'));
 
-            var users = model.at((docPath + '.users'));//user lists with names and color codes
-            var userIds = model.at((docPath + '.userIds')); //used for keeping a list of subscribed users
-            var messages = model.at((docPath + '.messages'));
+            let users = model.at((docPath + '.users'));//user lists with names and color codes
+            let userIds = model.at((docPath + '.userIds')); //used for keeping a list of subscribed users
+            let messages = model.at((docPath + '.messages'));
 
             pysb.subscribe(function () {
             });
@@ -136,10 +128,10 @@ app.get('/:docId', function (page, model, arg, next) {
             });
 
             userIds.subscribe(function () {
-                var userId = model.get('_session.userId');
+                let userId = model.get('_session.userId');
 
 
-                var userIdsList = userIds.get();
+                let userIdsList = userIds.get();
 
 
                 if (!userIdsList) {
@@ -161,15 +153,15 @@ app.get('/:docId', function (page, model, arg, next) {
 
                     console.log("User is being subscribed");
 
-                    var colorCode = null;
-                    var userName = null;
+                    let colorCode = null;
+                    let userName = null;
                     if (users.get(userId)) {
                         userName = users.get(userId).name;
                         colorCode = users.get(userId).colorCode;
                     }
-                    if (userName == null)
+                    if (!userName)
                         userName = 'User ' + userIdsList.length;
-                    if (colorCode == null)
+                    if (!colorCode)
                         colorCode = getNewColor();
 
 
@@ -201,11 +193,11 @@ app.proto.create = function (model) {
 
     model.set('_page.showTime', true);
 
-    var self = this;
+    let self = this;
     docReady = true;
-    var userId = model.get('_session.userId');
+    let userId = model.get('_session.userId');
 
-    var isQueryWindow = false;
+    let isQueryWindow = false;
 
     self.socket = io();
     self.notyView = noty({layout: "bottom",theme:"bootstrapTheme", text: "Please wait while model is loading."});
@@ -214,10 +206,11 @@ app.proto.create = function (model) {
 
         $('#messages').scrollTop($('#messages')[0].scrollHeight  - $('.message').height());
 
-    }
+    };
 
 
-    if(TRIPS_MODE)
+
+    if(tripsMode)
         $('#unitTestArea').hide();
     else
         $('#unitTestArea').show();
@@ -228,18 +221,18 @@ app.proto.create = function (model) {
     $('#messages').scrollTop($('#messages')[0].scrollHeight  - $('.message').height());
 
 
-    var id = model.get('_session.userId');
-    var name = model.get('_page.doc.users.' + id +'.name');
+    let id = model.get('_session.userId');
+    let name = model.get('_page.doc.users.' + id +'.name');
 
     // Make modelManager instance accessible through window object as testModelManager to use it in Cypress tests
     self.modelManager = window.testModelManager = require('./public/collaborative-app/modelManager.js')(model, model.get('_page.room'), sbgnviz);
     self.modelManager.setName( model.get('_session.userId'),name);
 
-    var images = model.get('_page.doc.images');
+    let images = model.get('_page.doc.images');
     self.dynamicResize(model.get('_page.doc.images'));
 
     $(window).on('resize', function(){
-        var images = model.get('_page.doc.images');
+        let images = model.get('_page.doc.images');
         self.dynamicResize(images);
     });
 
@@ -247,11 +240,11 @@ app.proto.create = function (model) {
     //Notify server about the client connection
     self.socket.emit("subscribeHuman", { userName:name, room:  model.get('_page.room'), userId: id});
 
-    self.agentSocket = require('./public/collaborative-app/agentSocket-handler')(this);
+    self.agentSocket = require('./public/collaborative-app/clientSideSocketListener')(this);
     self.agentSocket.listen();
 
 
-    self.factoidHandler = require('./public/collaborative-app/factoid-handler')(this) ;
+    self.factoidHandler = require('./public/collaborative-app/factoid/factoid-handler')(this) ;
     self.factoidHandler.initialize();
 
 
@@ -272,26 +265,26 @@ app.proto.create = function (model) {
 
 
     descendingSort = function (a, b) {
-        return (b != null ? b.date : void 0) - (a != null ? a.date : void 0);
+        return (!b ? b.date : void 0) - (!a ? a.date : void 0);
     };
 
     self.lastMsgInd = -1; //increment in app.proto.app
 
     //start listening to keyboard events
     $('#inputs-comment').keydown(function (e){
-        if(e.keyCode == 38 ||  e.keyCode == 40 ) { //up or down arrows
+        if(e.keyCode === 38 ||  e.keyCode === 40 ) { //up or down arrows
 
             //sorted list
-            var filteredMsgs = model.filter('_page.doc.messages', 'myMessages').get();
-            var messages = filteredMsgs.sort(function(a, b){
+            let filteredMsgs = model.filter('_page.doc.messages', 'myMessages').get();
+            let messages = filteredMsgs.sort(function(a, b){
                 return b-a;
             });
 
 
-            var msg = messages[self.lastMsgInd].comment;
+            let msg = messages[self.lastMsgInd].comment;
             self.model.set('_page.newComment', msg);
 
-            if(e.keyCode == 38)
+            if(e.keyCode === 38)
                 self.lastMsgInd = self.lastMsgInd > 0 ? self.lastMsgInd - 1 : 0;
             else
                 self.lastMsgInd = self.lastMsgInd < messages.length - 1 ? self.lastMsgInd + 1 : messages.length - 1;
@@ -340,9 +333,9 @@ app.proto.create = function (model) {
 
 
     //If there is already one connection to Bob, don't open another
-    var userIds = self.modelManager.getUserIds();
+    let userIds = self.modelManager.getUserIds();
 
-    if(TRIPS_MODE && userIds.indexOf(BobId) < 0) { //there's no agent for Bob
+    if(tripsMode && userIds.indexOf(BobId) < 0) { //there's no agent for Bob
         this.connectTripsAgent();
     }
 
@@ -365,10 +358,10 @@ app.proto.create = function (model) {
 
 
 app.proto.loadCyFromModel = function(callback){
-    var self = this;
-    var jsonArr = self.modelManager.getJsonFromModel();
+    let self = this;
+    let jsonArr = self.modelManager.getJsonFromModel();
 
-    if (jsonArr!= null) {
+    if (jsonArr) {
 
         //Updates data fields and sets style fields to default
         chise.updateGraph({
@@ -378,7 +371,7 @@ app.proto.loadCyFromModel = function(callback){
             //Update position fields separately
             cy.nodes().forEach(function(node){
 
-                var position = self.modelManager.getModelNodeAttribute('position',node.id());
+                let position = self.modelManager.getModelNodeAttribute('position',node.id());
 
                 node.position({x:position.x, y: position.y});
 
@@ -393,7 +386,7 @@ app.proto.loadCyFromModel = function(callback){
 
 
 
-        // var props;
+        // let props;
         // //update app utilities as well
         // props = self.modelManager.getLayoutProperties();
         // if(props) appUtilities.currentLayoutProperties = props;
@@ -407,16 +400,16 @@ app.proto.loadCyFromModel = function(callback){
 
     }
     if(callback) callback(true); //model is empty
-}
+};
 
 function moveNodeAndChildren(positionDiff, node, notCalcTopMostNodes) {
-        var oldX = node.position("x");
-        var oldY = node.position("y");
+        let oldX = node.position("x");
+        let oldY = node.position("y");
         node.position({
             x: oldX + positionDiff.x,
             y: oldY + positionDiff.y
         });
-        var children = node.children();
+        let children = node.children();
         children.forEach(function(child){
             moveNodeAndChildren(positionDiff, child, true);
         });
@@ -424,11 +417,11 @@ function moveNodeAndChildren(positionDiff, node, notCalcTopMostNodes) {
 
 app.proto.listenToNodeOperations = function(model){
 
-    var self = this;
+    let self = this;
 
     model.on('all', '_page.doc.factoid', function(op, val, prev, passed){
 
-        if(docReady &&  passed.user == null) {
+        if(docReady &&  !passed.user) {
             self.factoidHandler.setFactoidModel(val);
             //reset to the center
             // cy.panzoom().reset();
@@ -440,7 +433,7 @@ app.proto.listenToNodeOperations = function(model){
 
     model.on('change', '_page.doc.undoIndex', function (id, cmdInd) {
 
-        var cmd = model.get('_page.doc.history.' + id);
+        let cmd = model.get('_page.doc.history.' + id);
         //modelOp = cmd.opName;
         //console.log(modelOp);
     });
@@ -456,9 +449,9 @@ app.proto.listenToNodeOperations = function(model){
     model.on('all', '_page.doc.cy.nodes.*', function(id, op, val, prev, passed){
 
 
-        if(docReady &&  passed.user == null) {
+        if(docReady &&  !passed.user) {
 
-            var node  = model.get('_page.doc.cy.nodes.' + id);
+            let node  = model.get('_page.doc.cy.nodes.' + id);
 
 
             if(!node || !node.id){ //node is deleted
@@ -473,22 +466,22 @@ app.proto.listenToNodeOperations = function(model){
     model.on('all', '_page.doc.cy.nodes.*.addedLater', function(id, op, idName, prev, passed){ //this property must be something that is only changed during insertion
 
 
-        if(docReady && passed.user == null) {
-            var pos = model.get('_page.doc.cy.nodes.'+ id + '.position');
-            var sbgnclass = model.get('_page.doc.cy.nodes.'+ id + '.data.class');
-            var visibility = model.get('_page.doc.cy.nodes.'+ id + '.visibility');
-            var parent = model.get('_page.doc.cy.nodes.'+ id + '.data.parent');
+        if(docReady && !passed.user) {
+            let pos = model.get('_page.doc.cy.nodes.'+ id + '.position');
+            let sbgnclass = model.get('_page.doc.cy.nodes.'+ id + '.data.class');
+            let visibility = model.get('_page.doc.cy.nodes.'+ id + '.visibility');
+            let parent = model.get('_page.doc.cy.nodes.'+ id + '.data.parent');
 
-            if(parent == undefined) parent = null;
+            if(parent === undefined) parent = null;
 
 
 
-            var newNode = chise.elementUtilities.addNode(pos.x, pos.y, sbgnclass, id, parent, visibility);
+            let newNode = chise.elementUtilities.addNode(pos.x, pos.y, sbgnclass, id, parent, visibility);
 
             // self.modelManager.initModelNode(newNode,"me", true);
 
 
-            var parentEl = cy.getElementById(parent);
+            let parentEl = cy.getElementById(parent);
             newNode.move({"parent":parentEl});
 
         }
@@ -499,8 +492,8 @@ app.proto.listenToNodeOperations = function(model){
 
     model.on('all', '_page.doc.cy.nodes.*.position', function(id, op, pos,prev, passed){
 
-        if(docReady && passed.user == null) {
-            var posDiff = {x: (pos.x - cy.getElementById(id).position("x")), y:(pos.y - cy.getElementById(id).position("y"))} ;
+        if(docReady && !passed.user) {
+            let posDiff = {x: (pos.x - cy.getElementById(id).position("x")), y:(pos.y - cy.getElementById(id).position("y"))} ;
             moveNodeAndChildren(posDiff, cy.getElementById(id)); //children need to be updated manually here
             //parent as well
             cy.panzoom().fit();
@@ -513,8 +506,8 @@ app.proto.listenToNodeOperations = function(model){
 
         self.factoidHandler.highlightSentenceInText(id, val);
 
-        if(docReady && passed.user == null) {
-            if(val == null){
+        if(docReady && !passed.user) {
+            if(!val){
                 cy.getElementById(id).css({
                     "overlay-color": null,
                     "overlay-padding": 10,
@@ -539,9 +532,9 @@ app.proto.listenToNodeOperations = function(model){
 
     //Called by agents to change bbox
     model.on('all', '_page.doc.cy.nodes.*.data.bbox.*', function(id, att, op, val,prev, passed){
-        if(docReady && passed.user == null) {
+        if(docReady && !passed.user) {
 
-            var newAtt = cy.getElementById(id).data("bbox");
+            let newAtt = cy.getElementById(id).data("bbox");
             newAtt[att] = val;
             cy.getElementById(id).data("bbox", newAtt);
 
@@ -554,7 +547,7 @@ app.proto.listenToNodeOperations = function(model){
 
     //Called by agents to change specific properties of data
     model.on('all', '_page.doc.cy.nodes.*.data.*', function(id, att, op, val,prev, passed){
-        if(docReady && passed.user == null) {
+        if(docReady && !passed.user) {
 
             cy.getElementById(id).data(att, val);
             if(att === "parent")
@@ -568,14 +561,14 @@ app.proto.listenToNodeOperations = function(model){
         console.log("only data");
 
 
-        if(docReady && passed.user == null) {
+        if(docReady && !passed.user) {
 
             //cy.getElementById(id).data(data); //can't call this if cy element does not have a field called "data"
             cy.getElementById(id)._private.data = data;
 
             //to update parent
-            var newParent = data.parent;
-            if(newParent == undefined)
+            let newParent = data.parent;
+            if(newParent === undefined)
                 newParent = null;  //must be null explicitly
 
             cy.getElementById(id).move({"parent":newParent});
@@ -590,8 +583,8 @@ app.proto.listenToNodeOperations = function(model){
     model.on('all', '_page.doc.cy.nodes.*.expandCollapseStatus', function(id, op, val,prev, passed){
 
 
-        if(docReady && passed.user == null) {
-            var expandCollapse = cy.expandCollapse('get'); //we can't call chise.expand or collapse directly as it causes infinite calls
+        if(docReady && !passed.user) {
+            let expandCollapse = cy.expandCollapse('get'); //we can't call chise.expand or collapse directly as it causes infinite calls
             if(val === "collapse")
                 expandCollapse.collapse(cy.getElementById(id));
             else
@@ -603,9 +596,9 @@ app.proto.listenToNodeOperations = function(model){
 
 
     model.on('all', '_page.doc.cy.nodes.*.highlightStatus', function(id, op, highlightStatus, prev, passed){ //this property must be something that is only changed during insertion
-        if(docReady && passed.user == null) {
+        if(docReady && !passed.user) {
             try{
-                var viewUtilities = cy.viewUtilities('get');
+                let viewUtilities = cy.viewUtilities('get');
 
                 console.log(highlightStatus);
                 if(highlightStatus === "highlighted")
@@ -623,9 +616,9 @@ app.proto.listenToNodeOperations = function(model){
     });
 
     model.on('all', '_page.doc.cy.nodes.*.visibilityStatus', function(id, op, visibilityStatus, prev, passed){ //this property must be something that is only changed during insertion
-        if(docReady && passed.user == null) {
+        if(docReady && !passed.user) {
             try{
-                var viewUtilities = cy.viewUtilities('get');
+                let viewUtilities = cy.viewUtilities('get');
 
 
                 if(visibilityStatus === "hide") {
@@ -643,11 +636,11 @@ app.proto.listenToNodeOperations = function(model){
         }
     });
 
-}
+};
 
 app.proto.listenToEdgeOperations = function(model){
 
-    var self = this;
+    let self = this;
 
     //Update inspector
     //TODO: open later
@@ -658,7 +651,7 @@ app.proto.listenToEdgeOperations = function(model){
 
     model.on('all', '_page.doc.cy.edges.*.highlightColor', function(id, op, val,prev, passed){
 
-        if(docReady && passed.user == null) {
+        if(docReady && !passed.user) {
             if(val == null){
 
                 cy.getElementById(id).css({
@@ -683,8 +676,8 @@ app.proto.listenToEdgeOperations = function(model){
     model.on('all', '_page.doc.cy.edges.*', function(id, op, val, prev, passed){
 
 
-        if(docReady &&  passed.user == null) {
-            var edge  = model.get('_page.doc.cy.edges.' + id); //check
+        if(docReady &&  !passed.user) {
+            let edge  = model.get('_page.doc.cy.edges.' + id); //check
 
             if(!edge|| !edge.id){ //edge is deleted
                 cy.getElementById(id).remove();
@@ -697,13 +690,13 @@ app.proto.listenToEdgeOperations = function(model){
     model.on('all', '_page.doc.cy.edges.*.addedLater', function(id,op, idName, prev, passed){//this property must be something that is only changed during insertion
 
 
-        if(docReady && passed.user == null ){
-            var source = model.get('_page.doc.cy.edges.'+ id + '.data.source');
-            var target = model.get('_page.doc.cy.edges.'+ id + '.data.target');
-            var sbgnclass = model.get('_page.doc.cy.edges.'+ id + '.data.class');
-            var visibility = model.get('_page.doc.cy.nodes.'+ id + '.visibility');
+        if(docReady && !passed.user ){
+            let source = model.get('_page.doc.cy.edges.'+ id + '.data.source');
+            let target = model.get('_page.doc.cy.edges.'+ id + '.data.target');
+            let sbgnclass = model.get('_page.doc.cy.edges.'+ id + '.data.class');
+            let visibility = model.get('_page.doc.cy.nodes.'+ id + '.visibility');
 
-            var newEdge = chise.elementUtilities.addEdge(source, target, sbgnclass, id, visibility);
+            let newEdge = chise.elementUtilities.addEdge(source, target, sbgnclass, id, visibility);
 
             self.modelManager.initModelEdge(newEdge,"me", true);
 
@@ -713,7 +706,7 @@ app.proto.listenToEdgeOperations = function(model){
 
     model.on('all', '_page.doc.cy.edges.*.data', function(id, op, data,prev, passed){
 
-        if(docReady && passed.user == null) {
+        if(docReady && !passed.user) {
 
             //cy.getElementById(id).data(data); //can't call this if cy element does not have a field called "data"
             cy.getElementById(id)._private.data = data;
@@ -727,7 +720,7 @@ app.proto.listenToEdgeOperations = function(model){
 
     model.on('all', '_page.doc.cy.edges.*.data.*', function(id, att, op, val,prev, passed){
 
-        if(docReady && passed.user == null)
+        if(docReady && !passed.user)
             cy.getElementById(id).data(att, val);
 
     });
@@ -736,10 +729,10 @@ app.proto.listenToEdgeOperations = function(model){
 
 
     model.on('all', '_page.doc.cy.edges.*.bendPoints', function(id, op, bendPoints, prev, passed){ //this property must be something that is only changed during insertion
-        if(docReady && passed.user == null) {
+        if(docReady && !passed.user) {
 
             try{
-                var edge = cy.getElementById(id);
+                let edge = cy.getElementById(id);
                 if(bendPoints.weights && bendPoints.weights.length > 0) {
                     edge.data('cyedgebendeditingWeights', bendPoints.weights);
                     edge.data('cyedgebendeditingDistances', bendPoints.distances);
@@ -763,8 +756,8 @@ app.proto.listenToEdgeOperations = function(model){
     });
 
     model.on('all', '_page.doc.cy.edges.*.highlightStatus', function(id, op, highlightStatus, prev, passed){ //this property must be something that is only changed during insertion
-        if(docReady && passed.user == null) {
-            var viewUtilities = cy.viewUtilities('get');
+        if(docReady && !passed.user) {
+            let viewUtilities = cy.viewUtilities('get');
             try{
                 if(highlightStatus === "highlighted")
                     viewUtilities.highlight(cy.getElementById(id));
@@ -780,8 +773,8 @@ app.proto.listenToEdgeOperations = function(model){
     });
 
     model.on('all', '_page.doc.cy.edges.*.visibilityStatus', function(id, op, visibilityStatus, prev, passed){ //this property must be something that is only changed during insertion
-        if(docReady && passed.user == null) {
-            var viewUtilities = cy.viewUtilities('get');
+        if(docReady && !passed.user) {
+            let viewUtilities = cy.viewUtilities('get');
             try{
                 if(visibilityStatus === "hide")
                     viewUtilities.hide(cy.getElementById(id));
@@ -794,19 +787,19 @@ app.proto.listenToEdgeOperations = function(model){
         }
     });
 
-}
+};
 
 
 app.proto.init = function (model) {
-    var timeSort;
-    var self = this;
+    let timeSort;
+    let self = this;
 
     this.listenToNodeOperations(model);
     this.listenToEdgeOperations(model);
 
     //Listen to other model operations
     model.on('all', '_page.doc.factoid.*', function(id, op, val, prev, passed){
-        if(docReady &&  passed.user == null) {
+        if(docReady &&  !passed.user) {
             self.factoidHandler.setFactoidModel(val);
         }
     });
@@ -815,7 +808,7 @@ app.proto.init = function (model) {
     model.on('all', '_page.doc.cy.initTime', function( op, val, prev, passed){
 
         if(docReady) {
-            if(docReady && passed.user == null) {
+            if(docReady && !passed.user) {
                 self.loadCyFromModel(function () {
 
                 });
@@ -828,7 +821,7 @@ app.proto.init = function (model) {
     //
     // model.on('all', '_page.doc.cy.layoutProperties', function(op, val) {
     //     if (docReady){
-    //         for(var att in val){ //assign each attribute separately to keep the functions in currentlayoutproperties
+    //         for(let att in val){ //assign each attribute separately to keep the functions in currentlayoutproperties
     //             if(appUtilities.currentLayoutProperties[att])
     //                 appUtilities.currentLayoutProperties[att] = val[att];
     //         }
@@ -839,7 +832,7 @@ app.proto.init = function (model) {
     //
     // model.on('all', '_page.doc.cy.generalProperties', function(op, val) {
     //     if (docReady){
-    //         for(var att in val){ //assign each attribute separately to keep the functions in currentgeneralproperties
+    //         for(let att in val){ //assign each attribute separately to keep the functions in currentgeneralproperties
     //             if(appUtilities.currentGeneralProperties[att])
     //                 appUtilities.currentGeneralProperties[att] = val[att];
     //         }
@@ -850,7 +843,7 @@ app.proto.init = function (model) {
     //
     // model.on('all', '_page.doc.cy.gridProperties', function(op, val) {
     //     if (docReady){
-    //         for(var att in val){ //assign each attribute separately to keep the functions in currentgridproperties
+    //         for(let att in val){ //assign each attribute separately to keep the functions in currentgridproperties
     //             if(appUtilities.currentGridProperties[att])
     //                 appUtilities.currentGridProperties[att] = val[att];
     //         }
@@ -876,8 +869,8 @@ app.proto.init = function (model) {
 
     model.on('insert', '_page.list', function (index) {
 
-        var com = model.get('_page.list');
-        var myId = model.get('_session.userId');
+        let com = model.get('_page.list');
+        let myId = model.get('_session.userId');
 
 
         if(docReady)
@@ -903,7 +896,7 @@ app.proto.init = function (model) {
 
 app.proto.onScroll = function (element) {
 
-    var bottom, containerHeight, scrollBottom;
+    let bottom, containerHeight, scrollBottom;
     bottom = this.list.offsetHeight;
     containerHeight = this.container.offsetHeight;
     scrollBottom = this.container.scrollTop + containerHeight;
@@ -914,59 +907,55 @@ app.proto.onScroll = function (element) {
 
 app.proto.changeColorCode = function(){
 
-    var  user = this.model.at('_page.doc.users.' + this.model.get('_session.userId'));
+    let  user = this.model.at('_page.doc.users.' + this.model.get('_session.userId'));
     user.set('colorCode', getNewColor());
 
 };
 
 app.proto.runUnitTests = function(){
-    var self = this;
-    var userId = this.model.get('_session.userId');
+    let self = this;
+    let userId = this.model.get('_session.userId');
 
-    var room = this.model.get('_page.room');
+    let room = this.model.get('_page.room');
 
-    //Null editorlistener why?????
-   // console.log(editorListener);
-    //editorListener.debugMode = false;
     //require("./public/test/testsAgentAPI.js")(("http://localhost:3000/" + room), self.modelManager);
     // require("./public/test/testsCausalityAgent.js")(("http://localhost:3000/" + room), self.modelManager);
     //  require("./public/test/testsModelManager.js")(self.modelManager, userId);
 
-
-    // require("./public/test/testsUserOperations.js")(self.modelManager);
+    require("./public/test/testsUserOperations.js")(self.modelManager);
     require("./public/test/testsMessages.js")(this);
     require("./public/test/testOptions.js")(); //to print out results
 
-}
+};
 
 
-/***
+/*
  * This is for selecting messages from the select box and test queries
  */
 app.proto.updateTripsMessage = function(){
 
-    var e = document.getElementById("test-messages");
-    var msg = e.options[e.selectedIndex].text;
+    let e = document.getElementById("test-messages");
+    let msg = e.options[e.selectedIndex].text;
 
     this.model.set('_page.newComment', msg);
-}
+};
 
 
 app.proto.resetConversationOnTrips = function(){
     //directly ask the server as this client may not have a tripsAgent
     this.socket.emit('resetConversationRequest');
-}
+};
 
 
 app.proto.connectCausalityAgent = function(){
     this.socket.emit('connectToCausalityAgentRequest');
-}
+};
 
 
 app.proto.connectTripsAgent = function(){
-    var self = this;
+    let self = this;
 
-    var TripsGeneralInterfaceAgent = require("./agent-interaction/TripsGeneralInterfaceAgent.js");
+    let TripsGeneralInterfaceAgent = require("./agent-interaction/TripsGeneralInterfaceAgent.js");
     self.TripsAgent = new TripsGeneralInterfaceAgent("Bob", BobId);
 
     console.log("Bob connected");
@@ -977,12 +966,12 @@ app.proto.connectTripsAgent = function(){
             });
         });
     });
-}
+};
 
 
 app.proto.enterMessage = function(event){
 
-    var self = this;
+    let self = this;
 
     if (event.keyCode === 13 && !event.shiftKey) {
        self.add(event);
@@ -993,36 +982,36 @@ app.proto.enterMessage = function(event){
     }
 
 
-}
+};
 
 app.proto.add = function (event, model, filePath) {
-    var self = this;
-    if(model == null)
+    let self = this;
+    if(!model)
         model = this.model;
 
     this.atBottom = true;
 
-    var comment;
+    let comment;
     comment = model.del('_page.newComment'); //to clear  the input box
     if (!comment) return;
 
-    var targets  = [];
-    var users = model.get('_page.doc.userIds');
+    let targets  = [];
+    let users = model.get('_page.doc.userIds');
 
-    var myId = model.get('_session.userId');
-    for(var i = 0; i < users.length; i++){
-        var user = users[i];
-        if(user == myId ||  document.getElementById(user).checked){
+    let myId = model.get('_session.userId');
+    for(let i = 0; i < users.length; i++){
+        let user = users[i];
+        if(user === myId ||  document.getElementById(user).checked){
             targets.push({id: user});
         }
     }
 
-    var msgUserId = model.get('_session.userId');
-    var msgUserName = model.get('_page.doc.users.' + msgUserId +'.name');
+    let msgUserId = model.get('_session.userId');
+    let msgUserName = model.get('_page.doc.users.' + msgUserId +'.name');
 
     comment.style = "font-size:large";
 
-    var msg = {room: model.get('_page.room'),
+    let msg = {room: model.get('_page.room'),
         targets: targets,
         userId: msgUserId,
         userName: msgUserName,
@@ -1030,7 +1019,7 @@ app.proto.add = function (event, model, filePath) {
     };
 
 
-    var filteredMsgs = model.filter('_page.doc.messages', 'myMessages').get();
+    let filteredMsgs = model.filter('_page.doc.messages', 'myMessages').get();
 
     self.lastMsgInd = filteredMsgs.length; //new message will be added next
 
@@ -1045,28 +1034,28 @@ app.proto.add = function (event, model, filePath) {
        $('#messages').scrollTop($('#messages')[0].scrollHeight  - $('.message').height());
 
     });
-}
+};
 
 
 app.proto.clearHistory = function () {
     this.model.set('_page.clickTime', new Date);
 
     return this.model.filter('_page.doc.messages', 'biggerThanCurrentTime').ref('_page.list');
-}
+};
 
 
 app.proto.uploadFile = function(evt){
-    var self = this;
+    let self = this;
     try{
-        var room = this.model.get('_page.room');
-        var fileStr = this.model.get("_page.newFile").split('\\');
-        var filePath = fileStr[fileStr.length-1];
+        let room = this.model.get('_page.room');
+        let fileStr = this.model.get("_page.newFile").split('\\');
+        let filePath = fileStr[fileStr.length-1];
 
-        var file = evt.target.files[0];
+        let file = evt.target.files[0];
 
-        var reader = new FileReader();
-        var images = this.model.get('_page.doc.images');
-        var imgCnt = 0;
+        let reader = new FileReader();
+        let images = this.model.get('_page.doc.images');
+        let imgCnt = 0;
         if(images)
             imgCnt = images.length;
         reader.onload = function(evt){
@@ -1096,7 +1085,7 @@ app.proto.count = function (value) {
 
 
 app.proto.formatTime = function (message) {
-    var hours, minutes, seconds, period, time;
+    let hours, minutes, seconds, period, time;
     time = message && message.date;
 
 
@@ -1128,13 +1117,13 @@ app.proto.formatObj = function(obj){
 
 
 app.proto.dynamicResize = function (images) {
-    var win = $(window);
+    let win = $(window);
 
-    var windowWidth = win.width();
-    var windowHeight = win.height();
+    let windowWidth = win.width();
+    let windowHeight = win.height();
 
-    var canvasWidth = 1200;
-    var canvasHeight = 680;
+    let canvasWidth = 1200;
+    let canvasHeight = 680;
 
 
     if (windowWidth > canvasWidth) {
@@ -1145,7 +1134,7 @@ app.proto.dynamicResize = function (images) {
             }
         );
 
-        var wCanvasTab = $("#canvas-tab-area").width();
+        let wCanvasTab = $("#canvas-tab-area").width();
 
         $(".nav-menu").width(wCanvasTab);
         $(".navbar").width(wCanvasTab);
@@ -1164,7 +1153,7 @@ app.proto.dynamicResize = function (images) {
             minWidth:355
         });
 
-        var wInspectorTab = $("#inspector-tab-area").width();
+        let wInspectorTab = $("#inspector-tab-area").width();
         $("#sbgn-inspector").width(wInspectorTab);
         $("#canvas-tabs").width( wCanvasTab* 0.99);
     }
@@ -1184,7 +1173,7 @@ app.proto.dynamicResize = function (images) {
             minHeight: 600
         });
 
-        var hCanvasTab = $("#canvas-tab-area").height();
+        let hCanvasTab = $("#canvas-tab-area").height();
         $("#sbgn-network-container").height(hCanvasTab * 0.99);
         if(images) {
             images.forEach(function (img) {
@@ -1197,7 +1186,7 @@ app.proto.dynamicResize = function (images) {
             minHeight: 600
         });
 
-        var hInspectorTab = $("#inspector-tab-area").height();
+        let hInspectorTab = $("#inspector-tab-area").height();
 
         $("#sbgn-inspector").height(hInspectorTab);
         $("#factoid-area").height(hInspectorTab * 0.9);
@@ -1210,19 +1199,17 @@ app.proto.dynamicResize = function (images) {
 //Local functions
 ////////////////////////////////////////////////////////////////////////////
 function getNewColor(){
-    var gR = 1.618033988749895; //golden ratio
-    var h = Math.floor((Math.random() * gR * 360));//Math.floor((cInd * gR - Math.floor(cInd * gR))*360);
-    var cHsl = [h, 70 + Math.random() * 30, 60 + Math.random() * 10];
-
-    //  return ('hsla('+cHsl[0]  +', '+ cHsl[1] + '%, ' + cHsl[2] +'%, 1)');
-    var strHsl = 'hsl('+cHsl[0]  +', '+ cHsl[1] + '%, ' + cHsl[2] +'%)';
+    let gR = 1.618033988749895; //golden ratio
+    let h = Math.floor((Math.random() * gR * 360));//Math.floor((cInd * gR - Math.floor(cInd * gR))*360);
+    let cHsl = [h, 70 + Math.random() * 30, 60 + Math.random() * 10];
+    let strHsl = 'hsl('+cHsl[0]  +', '+ cHsl[1] + '%, ' + cHsl[2] +'%)';
 
     return oneColor(strHsl).hex();
 }
 
 
 function triggerContentChange(divId){
-    //TODO: triggering here is not good
+    //TODO: triggering here does not always work
     $(('#' + divId)).trigger('contentchanged');
 }
 

@@ -1,18 +1,18 @@
 /**
  * Created by durupina on 11/14/16.
  */
-var jsonMerger = require('./reach-functions/json-merger.js');
+let jsonMerger = require('../merger/json-merger.js');
 
 module.exports =  function(app) {
 
-    var idxcardjson = require('./reach-functions/idxcardjson-to-json-converter.js');
+    let idxcardjson = require('../reach-functions/idxcardjson-to-json-converter.js');
 
-    var socket = io();
-    var idxCardView = require('./reach-functions/idxCard-info.js');
-    var jsonGraphs;
-    var nodeMap;
-    var text= 'We introduce a new method. MDM2 phosphorylates TP53.  MDM2 deactivates RAF. A Sos-1-E3b1 complex directs Rac activation by entering into a tricomplex with Eps8.';
-    var pmcID = "PMC2797771";
+    let socket = io();
+    let idxCardView = require('../reach-functions/idxCard-info.js');
+    let jsonGraphs;
+    let nodeMap;
+    let text= 'We introduce a new method. MDM2 phosphorylates TP53.  MDM2 deactivates RAF. A Sos-1-E3b1 complex directs Rac activation by entering into a tricomplex with Eps8.';
+    let pmcID = "PMC2797771";
 
 
     return   {
@@ -20,7 +20,7 @@ module.exports =  function(app) {
 
             $('#factoidBox')[0].value = text;
 
-            var factoidModel = app.modelManager.getFactoidModel();
+            let factoidModel = app.modelManager.getFactoidModel();
 
             if(factoidModel != null){
 
@@ -34,8 +34,8 @@ module.exports =  function(app) {
         },
 
         updateTextBox: function(jsonGraphs){
-            var textFromJsons = "";
-            for(var i = 0; i < jsonGraphs.length; i++)
+            let textFromJsons = "";
+            for(let i = 0; i < jsonGraphs.length; i++)
                 textFromJsons+= jsonGraphs[i].sentence + '. ';
 
             text = textFromJsons;
@@ -45,17 +45,17 @@ module.exports =  function(app) {
         loadFactoidModel: function(inputStr){
             //parse each input sentence one by one
 
-            var self = this;
-            var jsonGraphs = [];
+            let self = this;
+            let jsonGraphs = [];
 
-            var notyView = noty({layout: "bottom",text: "Sending REACH queries"});
+            let notyView = noty({layout: "bottom",text: "Sending REACH queries"});
 
-            var p = new Promise(function (resolve) {
+            // let p = new Promise(function (resolve) {
                 socket.emit("REACHQuery", "indexcard", inputStr, function (data) {
-                    var cards = JSON.parse(data).cards;
+                    let cards = JSON.parse(data).cards;
 
                     cards.forEach(function(card){
-                        var jsonData = idxcardjson.createJson({cards: [card]});
+                        let jsonData = idxcardjson.createJson({cards: [card]});
                             jsonGraphs.push({sentence: card.evidence[0], json: jsonData, idxCard:card});
                     });
 
@@ -68,16 +68,16 @@ module.exports =  function(app) {
                     notyView.close();
 
                  });
-            });
+            // });
         },
 
 
         //Merge an array of json objects to output a single json object.
         mergeJsons: function (jsonGraph, callback) {
-            var idxCardNodeMap = {};
-            var sentenceNodeMap = {};
+            let idxCardNodeMap = {};
+            let sentenceNodeMap = {};
 
-            var jsonObj = jsonMerger.mergeJsons(jsonGraph, sentenceNodeMap, idxCardNodeMap);
+            let jsonObj = jsonMerger.mergeJsons(jsonGraph, sentenceNodeMap, idxCardNodeMap);
 
             app.modelManager.newModel("me", true);
 
@@ -104,7 +104,7 @@ module.exports =  function(app) {
 
 
             try {
-                var el = $('#factoidBox');
+                let el = $('#factoidBox');
 
 
                 if (highlightColor == null) {
@@ -112,9 +112,9 @@ module.exports =  function(app) {
                     return;
                 }
 
-                var sentences = nodeMap.sentences[nodeId];
+                let sentences = nodeMap.sentences[nodeId];
 
-                var idxCards = nodeMap.idxCards[nodeId];
+                let idxCards = nodeMap.idxCards[nodeId];
 
                 //TODO: open this!!!!!! qtip not working
                 // try {
@@ -122,8 +122,8 @@ module.exports =  function(app) {
                 //         content: {
                 //             text: function (event, api) {
                 //
-                //                 var info = (new idxCardView(idxCards)).render();
-                //                 var html = $('#idxCard-container').html();
+                //                 let info = (new idxCardView(idxCards)).render();
+                //                 let html = $('#idxCard-container').html();
                 //
                 //
                 //                 api.set('content.text', html);
@@ -161,11 +161,11 @@ module.exports =  function(app) {
 
                 if (sentences) {
 
-                    var ranges = [];
+                    let ranges = [];
 
-                    for (var i = 0; i < sentences.length; i++) {
-                        var startInd = el[0].value.indexOf(sentences[i]);
-                        var endInd = startInd + sentences[i].length;
+                    for (let i = 0; i < sentences.length; i++) {
+                        let startInd = el[0].value.indexOf(sentences[i]);
+                        let endInd = startInd + sentences[i].length;
                         ranges.push([startInd, endInd]);
                     }
                     console.log(ranges);
@@ -194,7 +194,7 @@ module.exports =  function(app) {
 
         loadFactoidPMC: function() {
 
-            var link = "https://www.ncbi.nlm.nih.gov/pmc/articles/" + $('#pmcBox').val() ;
+            let link = "https://www.ncbi.nlm.nih.gov/pmc/articles/" + $('#pmcBox').val() ;
             socket.emit("HTTPRequest", link,  function(result){
                 //console.log(result);
 
@@ -205,18 +205,18 @@ module.exports =  function(app) {
 
         loadFactoidFile: function(e){
 
-            var extension = $("#factoid-file-input")[0].files[0].name.split('.').pop().toLowerCase();
+            let extension = $("#factoid-file-input")[0].files[0].name.split('.').pop().toLowerCase();
 
 
             if(extension == "pdf") {
 
-                var reader = new FileReader();
+                let reader = new FileReader();
                 reader.onload = function (e) {
 
                     socket.emit('pdfConvertRequest',this.result, function(pages){
 
                         //Combine pages
-                        var txt  = "";
+                        let txt  = "";
                         pages.forEach(function(page){
 
                             page.forEach(function(el){
@@ -242,7 +242,7 @@ module.exports =  function(app) {
 
             }
             else{
-                var reader = new FileReader();
+                let reader = new FileReader();
                 reader.onload = function (e) {
 
                     $('#factoidBox')[0].value =  this.result; //change text
@@ -253,7 +253,7 @@ module.exports =  function(app) {
         },
 
         listenToEvents: function(){
-            var self = this;
+            let self = this;
 
             $('#factoid-text-submit-button').click(function () {
                 self.loadFactoidModel($('#factoidBox').val());

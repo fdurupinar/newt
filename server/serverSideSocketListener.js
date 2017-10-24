@@ -1,10 +1,6 @@
 var readline = require('readline');
-var stream = require('stream');
 var fs = require('fs');
 
-
-
-var useBiopax = true;
 
 /***
  * Calls cmdStr on console and runs callback function with parameter content
@@ -41,8 +37,6 @@ var executeCommandLineProcess = function (cmdStr, callback){
 module.exports.start = function(io, model, cancerDataOrganizer){
 
     var modelManagerList = [];
-    var menuList = [];
-
     var roomList = [];
     var humanList = [];
     var pnnlArr  = [];
@@ -63,11 +57,11 @@ module.exports.start = function(io, model, cancerDataOrganizer){
     var askHuman = function (userId, room, requestStr, data, callback){
 
         var roomMate = humanList.find(function(human){
-            return(human.userId != userId && human.room == room);
+            return(human.userId !== userId && human.room === room);
         }); //returns the first match
 
 
-        if(roomMate!= null) {
+        if(roomMate!== null) {
             var clientSocket = io.sockets.connected[roomMate.socketId];
 
             clientSocket.emit(requestStr, data, function(val){
@@ -87,7 +81,7 @@ module.exports.start = function(io, model, cancerDataOrganizer){
         var instream = fs.createReadStream(filePath);
         var rl = readline.createInterface(instream);
 
-        var i = 0;
+
 
         var geneList = [];
         rl.on('line', function (line) {
@@ -175,10 +169,9 @@ module.exports.start = function(io, model, cancerDataOrganizer){
     }
     /***
      *
-     * @param socket
-     * @param socketRoom: used for socket disconnections
+     * @param socket used for socket disconnections
      */
-    var listenToAgentRequests = function(socket, socketRoom){
+    var listenToAgentRequests = function(socket){
 
 
         socket.on('agentActiveRoomsRequest', function( callback){
@@ -297,7 +290,7 @@ module.exports.start = function(io, model, cancerDataOrganizer){
         socket.on('agentMergeGraphRequest', function(data, callback){
 
             var requestStr;
-            if(data.type == "sbgn")
+            if(data.type === "sbgn")
                 requestStr = "mergeSbgn";
             else //default is json
                 requestStr = "mergeJsonWithCurrent";
@@ -320,7 +313,7 @@ module.exports.start = function(io, model, cancerDataOrganizer){
                     url: "http://localhost:8080/SBGNConverterServlet",
                     headers: responseHeaders,
                     form: {reqType: "sbgn", content: data.param}
-                }, function(error, response, body){
+                }, function(error, response){
 
                     if (error) {
                         console.log(error);
@@ -331,7 +324,7 @@ module.exports.start = function(io, model, cancerDataOrganizer){
                         //console.log(body);
                         console.log(response.statusCode);
 
-                        if(response.statusCode == 200) {
+                        if(response.statusCode === 200) {
                             askHuman(socket.userId, data.room,  "loadFile", data.content, function(val){
                                 if (callback) callback(val);
                             });
@@ -556,14 +549,14 @@ module.exports.start = function(io, model, cancerDataOrganizer){
 
         socket.on('agentCBioPortalQueryRequest', function(queryInfo, callback){
 
-            if(queryInfo.queryType == "cancerTypes") {
+            if(queryInfo.queryType === "cancerTypes") {
 
                 callback(cancerDataOrganizer.cancerStudies);
 
 
             }
 
-            else if(queryInfo.queryType == "context") {
+            else if(queryInfo.queryType === "context") {
 
                 cancerDataOrganizer.getAllMutationCounts(queryInfo.proteinName, function (cancerData) {
 
@@ -571,7 +564,7 @@ module.exports.start = function(io, model, cancerDataOrganizer){
 
                 });
             }
-            else if(queryInfo.queryType == "alterations"){
+            else if(queryInfo.queryType === "alterations"){
 
                 cancerDataOrganizer.getMutationCountInContext(queryInfo.proteinName, queryInfo.studyId, function(mutationCount){
                     callback(mutationCount);
@@ -612,7 +605,7 @@ module.exports.start = function(io, model, cancerDataOrganizer){
         socket.on('agentPageDocRequest', function(data, callback){ //from computer agent
 
 
-            if(modelManagerList[data.room]!=null) {
+            if(modelManagerList[data.room]!==null) {
                 var pageDoc = modelManagerList[data.room].getPageDoc();
 
 
@@ -659,7 +652,7 @@ module.exports.start = function(io, model, cancerDataOrganizer){
 
             if(param.isInterfaceAgent){
                 if(!tripsGeneralInterfaceInstance || !tripsGeneralInterfaceInstance.isConnectedToTrips()) {
-                    var TripsGeneralInterfaceModule = require('./TripsGeneralInterfaceModule.js');
+                    var TripsGeneralInterfaceModule = require('./trips/TripsGeneralInterfaceModule.js');
                     tripsGeneralInterfaceInstance = new TripsGeneralInterfaceModule(param.userId, param.userName, socket, model, askHuman);
 
 
@@ -677,7 +670,7 @@ module.exports.start = function(io, model, cancerDataOrganizer){
 
                 if(!tripsCausalityInterfaceInstance || !tripsCausalityInterfaceInstance.isConnectedToTrips()) {
 
-                    var TripsCausalityInterfaceModule = require('./TripsCausalityInterfaceModule.js');
+                    var TripsCausalityInterfaceModule = require('./trips/TripsCausalityInterfaceModule.js');
                     tripsCausalityInterfaceInstance = new TripsCausalityInterfaceModule(param.userId, param.userName, socket, model);
 
                 }
@@ -938,7 +931,7 @@ module.exports.start = function(io, model, cancerDataOrganizer){
                     //remove from humanlist
                     var isHumanDisconnected = false;
                     for (var i = humanList.length - 1; i >= 0; i--) {
-                        if (humanList[i].userId == socket.userId) {
+                        if (humanList[i].userId === socket.userId) {
                             console.log(humanList[i].userId);
                             //human is disconnected, so disconnect all users
                             isHumanDisconnected = true;
@@ -991,7 +984,7 @@ module.exports.start = function(io, model, cancerDataOrganizer){
                 } else {
 
 
-                    if(response.statusCode == 200) {
+                    if(response.statusCode === 200) {
                         if(callback) callback(body);
                         io.in(socket.room).emit("REACHResult", body);
 
@@ -1054,7 +1047,7 @@ module.exports.start = function(io, model, cancerDataOrganizer){
 
                     //     console.log(body);
                     console.log(response.statusCode);
-                    if(response.statusCode == 200) {
+                    if(response.statusCode === 200) {
                         if(callback)
                             callback(body);
                         else
@@ -1084,7 +1077,7 @@ module.exports.start = function(io, model, cancerDataOrganizer){
                     console.log(error);
                 } else  { //only open the window if a proper response is returned
 
-                    if(response.statusCode == 200) {
+                    if(response.statusCode === 200) {
                         askHuman(socket.userId, socket.room,  "mergeSbgn", body, function(val){
                             if (callback) callback(val);
                         });
@@ -1122,9 +1115,9 @@ module.exports.start = function(io, model, cancerDataOrganizer){
                     console.log(error);
                 } else { //only open the window if a proper response is returned
 
-                    if (response.statusCode == 200) {
+                    if (response.statusCode === 200) {
 
-                        if(reqType == "partialBiopax"){
+                        if(reqType === "partialBiopax"){
                             io.in(socket.room).emit("processToIntegrate", body);
 
                         }

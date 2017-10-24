@@ -1,8 +1,8 @@
 var derby = require('derby');
 
 exports.run = run;
-var model;
-var server;
+let model;
+let server;
 if (!Array.prototype.find) {
     Array.prototype.find = function(predicate) {
         if (this === null) {
@@ -11,12 +11,12 @@ if (!Array.prototype.find) {
         if (typeof predicate !== 'function') {
             throw new TypeError('predicate must be a function');
         }
-        var list = Object(this);
-        var length = list.length >>> 0;
-        var thisArg = arguments[1];
-        var value;
+        let list = Object(this);
+        let length = list.length >>> 0;
+        let thisArg = arguments[1];
+        let value;
 
-        for (var i = 0; i < length; i++) {
+        for (let i = 0; i < length; i++) {
             value = list[i];
             if (predicate.call(thisArg, value, i, list)) {
                 return value;
@@ -31,7 +31,7 @@ if (!Array.prototype.find) {
 
 function run(app, options, cb) {
     options || (options = {});
-    var port = options.port || process.env.PORT || 3000 ;//| process.env.OPENSHIFT_NODEJS_PORT ;
+    let port = options.port || process.env.PORT || 3000 ;//| process.env.OPENSHIFT_NODEJS_PORT ;
 
     function listenCallback(err) {
 
@@ -41,36 +41,26 @@ function run(app, options, cb) {
 
 
     function createServer() {
-        var userList = [];
-
 
         if (typeof app === 'string') app = require(app);
 
         require('./server').setup(app, options, function (err, expressApp, upgrade, refModel) {
             model = refModel;
 
-
-
-
-
             if (err) throw err;
             server = require('http').createServer(expressApp);
 
 
-
-            // var io = require('socket.io')(server);
-            var io = require('socket.io').listen(server);
+            let io = require('socket.io').listen(server);
 
             server.on('upgrade', upgrade);
             server.listen(port, listenCallback);
 
 
             //Call this to get profile ids for each cancer study on cBioPortal server
-                var cancerDataOrganizer = require('./cancerDataOrganizer.js')();
-
+            let cancerDataOrganizer = require('./cancerDataOrganizer.js')();
             //    cancerDataOrganizer.getCancerStudies(); //initialize at the beginning
 
-//            require('./serverSideSocketListener.js').start(io, model, cancerDataOrganizer);
             require('./serverSideSocketListener.js').start(io, model, cancerDataOrganizer);
 
 
