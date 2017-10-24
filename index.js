@@ -281,13 +281,15 @@ app.proto.create = function (model) {
             });
 
 
-            let msg = messages[self.lastMsgInd].comment;
-            self.model.set('_page.newComment', msg);
+            if(messages && self.lastMsgInd > -1) {
+                let msg = messages[self.lastMsgInd].comment;
+                self.model.set('_page.newComment', msg);
 
-            if(e.keyCode === 38)
-                self.lastMsgInd = self.lastMsgInd > 0 ? self.lastMsgInd - 1 : 0;
-            else
-                self.lastMsgInd = self.lastMsgInd < messages.length - 1 ? self.lastMsgInd + 1 : messages.length - 1;
+                if (e.keyCode === 38)
+                    self.lastMsgInd = self.lastMsgInd > 0 ? self.lastMsgInd - 1 : 0;
+                else
+                    self.lastMsgInd = self.lastMsgInd < messages.length - 1 ? self.lastMsgInd + 1 : messages.length - 1;
+            }
 
         }
 
