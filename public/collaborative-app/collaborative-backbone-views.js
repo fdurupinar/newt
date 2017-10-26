@@ -85,7 +85,7 @@ var PathsBetweenQueryView = Backbone.View.extend({
 
                     // //because window opening takes a while
                     setTimeout(function () {
-                        var json = chise.convertSbgnmlToJson(data);
+                        var json = chise.convertSbgnmlTextToJson(data);
                         w.postMessage(JSON.stringify(json), "*");
                     }, 2000);
 
@@ -181,7 +181,7 @@ var PathsByURIQueryView = Backbone.View.extend({
 
                     // //because window opening takes a while
                     setTimeout(function () {
-                        var json = chise.convertSbgnmlToJson(data);
+                        var json = chise.convertSbgnmlTextToJson(data);
                         w.postMessage(JSON.stringify(json), "*");
                     }, 2000);
                     chise.endSpinner('paths-between-spinner');

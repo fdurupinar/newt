@@ -936,7 +936,7 @@ app.proto.runUnitTests = function(){
 
 
 app.proto.openPCQueryWindow = function(pc_url){
-  console.log("hehlloo");
+    this.socket.emit('PCQuery', {url: pc_url, type:'sbgn'});
 };
 
 /*

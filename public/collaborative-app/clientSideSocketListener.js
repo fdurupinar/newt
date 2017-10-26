@@ -311,7 +311,7 @@ module.exports =  function(app) {
             });
 
             //Open in another window
-            app.socket.on('openPCQueryWindow', function(html, callback){
+            app.socket.on('PCQueryResult', function(data, callback){
                 var loc = window.location.href;
                 if (loc[loc.length - 1] === "#") {
                     loc = loc.slice(0, -1);
@@ -322,7 +322,8 @@ module.exports =  function(app) {
 
                 // //because window opening takes a while
                 setTimeout(function () {
-                    var json = chise.convertSbgnmlToJson(data);
+
+                    var json = chise.convertSbgnmlTextToJson(data.graph);
                     w.postMessage(JSON.stringify(json), "*");
                 }, 2000);
 

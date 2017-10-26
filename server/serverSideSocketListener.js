@@ -1037,12 +1037,8 @@ module.exports.start = function(io, model, cancerDataOrganizer){
 
                     callback(body);
                     //socket.emit("BioGeneResult",body);
-
-
-
                 }
             });
-
 
         });
 

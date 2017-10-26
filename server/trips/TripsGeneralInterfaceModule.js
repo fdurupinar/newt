@@ -219,9 +219,12 @@ class TripsGeneralInterfaceModule extends TripsInterfaceModule {
         let self = this;
         let contentObj = KQML.keywordify(text.content);
         contentObj.html = trimDoubleQuotes(contentObj.html);
+        contentObj.pc = trimDoubleQuotes(contentObj.pc);
         //we can directly update the model
-        self.model.push('documents.' + this.room + '.provenance', {html:contentObj.html, userName: self.agentName});
-        console.log(contentObj.html);
+        if(contentObj.pc)
+            self.model.push('documents.' + this.room + '.provenance', {html:contentObj.html, pc: contentObj.pc, userName: self.agentName});
+        else
+            self.model.push('documents.' + this.room + '.provenance', {html:contentObj.html, userName: self.agentName});
 
     }
 

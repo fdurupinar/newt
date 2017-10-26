@@ -2201,7 +2201,11 @@
                 <div id = "provenance-area" class="tab-pane" as = "list">
                     <ul id = "provenance-messages">
                         {{each _page.doc.provenance as #message}}
-                            <li> <b>{{#message.userName}}: </b> {{unescaped #message.html}}</li>
+                            {{if #message.pc}}
+                                <li> <b>{{#message.userName}}: </b> <button on-click = "openPCQueryWindow(#message.pc)">PC Query View</button>{{unescaped #message.html}}</li>
+                            {{else}}
+                                <li> <b>{{#message.userName}}: </b> {{unescaped #message.html}}</li>
+                            {{/if}}
                         {{/each}}
                     </ul>
                 </div>
@@ -2302,7 +2306,7 @@
     }
 
     function openPCQueryWindow(){
-        console.log("opened window")
+        console.log("opened window");
     }
 
 
