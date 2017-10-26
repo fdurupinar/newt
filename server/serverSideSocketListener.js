@@ -44,7 +44,7 @@ module.exports.start = function(io, model, cancerDataOrganizer){
     var tripsCausalityInterfaceInstance;
 
 
-    var request = require('request'); //REST call over http/https
+    let request = require('request'); //REST call over http/https
 
     var responseHeaders = {
         "access-control-allow-origin": "*",
@@ -738,35 +738,42 @@ module.exports.start = function(io, model, cancerDataOrganizer){
                 var users = model.at((docPath + '.users'));//user lists with names and color codes
                 var userIds = model.at((docPath + '.userIds')); //used for keeping a list of subscribed users
                 var messages = model.at((docPath + '.messages'));
-                var tripsConnected = model.at((docPath + '.tripsConnected'));
-
-
+                let provenance = model.at((docPath + '.provenance'));
 
                 pageDoc.subscribe(function () {
                     pysb.subscribe(function () {
                     });
+
                     cy.subscribe(function () {
                     });
+
                     history.subscribe(function () {
                     });
+
                     undoIndex.subscribe(function () {
                     });
+
                     context.subscribe(function () {
+
                     });
                     images.subscribe(function () {
                     });
+
                     messages.subscribe(function () {
                     });
 
+                    provenance.subscribe(function(){
+                    });
 
                     userIds.subscribe(function () {
 
                     });
+
                     users.subscribe(function () {
 
                         modelManagerList[data.room] = require("../public/collaborative-app/modelManager.js")(model, data.room);
                         modelManagerList[data.room].setName(data.userId, data.userName);
-                       //
+
                        //  //Add the user explicitly here
                          modelManagerList[data.room].addUser(data.userId);
 
@@ -868,6 +875,7 @@ module.exports.start = function(io, model, cancerDataOrganizer){
                     var users = model.at((docPath + '.users'));//user lists with names and color codes
                     var userIds = model.at((docPath + '.userIds')); //used for keeping a list of subscribed users
                     var messages = model.at((docPath + '.messages'));
+                    var provenance = model.at((docPath + '.provenance'));
 
                     console.log(data.room);
                     if(!data.room)
@@ -888,6 +896,10 @@ module.exports.start = function(io, model, cancerDataOrganizer){
                             });
                             messages.subscribe(function () {
                             });
+
+                            provenance.subscribe(function () {
+                            });
+
                             userIds.subscribe(function () {
                                 var userIdsList = userIds.get();
                                 if (!userIdsList || userIdsList.indexOf(data.userId) < 0) {
@@ -1067,8 +1079,6 @@ module.exports.start = function(io, model, cancerDataOrganizer){
         });
 
         socket.on('MergePCQuery', function(queryData, callback){
-
-
 
             var req = request(queryData.url , function (error, response, body) {
 

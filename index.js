@@ -109,15 +109,20 @@ app.get('/:docId', function (page, model, arg, next) {
             let users = model.at((docPath + '.users'));//user lists with names and color codes
             let userIds = model.at((docPath + '.userIds')); //used for keeping a list of subscribed users
             let messages = model.at((docPath + '.messages'));
+            let provenance = model.at((docPath + '.provenance'));
 
             pysb.subscribe(function () {
             });
+
             cy.subscribe(function () {
             });
+
             history.subscribe(function () {
             });
+
             undoIndex.subscribe(function () {
             });
+
             context.subscribe(function () {
             });
 
@@ -125,6 +130,9 @@ app.get('/:docId', function (page, model, arg, next) {
             });
 
             messages.subscribe(function () {
+            });
+
+            provenance.subscribe(function(){
             });
 
             userIds.subscribe(function () {
@@ -290,11 +298,7 @@ app.proto.create = function (model) {
                 else
                     self.lastMsgInd = self.lastMsgInd < messages.length - 1 ? self.lastMsgInd + 1 : messages.length - 1;
             }
-
         }
-
-
-
 
     });
 
@@ -930,6 +934,10 @@ app.proto.runUnitTests = function(){
 
 };
 
+
+app.proto.openPCQueryWindow = function(pc_url){
+  console.log("hehlloo");
+};
 
 /*
  * This is for selecting messages from the select box and test queries

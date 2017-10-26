@@ -1877,16 +1877,15 @@
     <inspector-view:>
 
         <div id ="inspector-tab-area" tabindex="1">
-
-
             <div class="tab-content">
                 <div id="inspector-tabs">
 
                     <ul class="nav nav-tabs">
                         <li class = "active tab-link"><a data-toggle="tab"  href="#chat-area">Chat</a></li>
+                        <li class = "tab-link"><a data-toggle="tab"  href="#provenance-area">Provenance</a></li>
                         <li class = "tab-link"><a data-toggle="tab" href="#image-area">Images</a></li>
                         <li class = "tab-link"><a data-toggle="tab" href="#sbgn-inspector">Inspector</a></li>
-                        <li class = "tab-link"><a data-toggle="tab" href="#command-history-area">Operations</a></li>
+                        <!--<li class = "tab-link"><a data-toggle="tab" href="#command-history-area">Operations</a></li>-->
                         <li class = "tab-link"><a data-toggle="tab" href="#factoid-area">Factoid</a></li>
 
                     </ul>
@@ -2176,6 +2175,7 @@
                     </div>
                 </div>
 
+
                 <div id = "image-area" class="tab-pane">
                     <div id = "receivedImages" class="tab-pane">
                         {{ each _page.doc.images as #imageFile}}
@@ -2198,11 +2198,18 @@
 
                 </div>
 
+                <div id = "provenance-area" class="tab-pane" as = "list">
+                    <ul id = "provenance-messages">
+                        {{each _page.doc.provenance as #message}}
+                            <li> <b>{{#message.userName}}: </b> {{unescaped #message.html}}</li>
+                        {{/each}}
+                    </ul>
+                </div>
+
                 <div id ="command-history-area" class="tab-pane" as = "list">
                     <ul id = "command-messages">
                     <!--<ul id ="command-list" as = "list" >-->
                     {{each _page.doc.history as #pCommand}}
-
                         <!--Param is too long and sometimes cannot be displayed-->
                         <li> <b>{{#pCommand.userName}} {{_page.showTime && formatTime(#pCommand)}} : </b>{{#pCommand.opName}} {{#pCommand.opTarget}} {{formatObj(#pCommand.elId)}} {{#pCommand.opAttr}}</li>
                         <!--{{formatObj(#pCommand.param)}}-->
@@ -2292,6 +2299,10 @@
             window.open(url, 'Image', 'width=largeImage.stylewidth,height=largeImage.style.height,resizable=1');
         }
 
+    }
+
+    function openPCQueryWindow(){
+        console.log("opened window")
     }
 
 

@@ -5,8 +5,9 @@
  * It handles general requests such as displaying, message sending and model building
  */
 "use strict";
-var KQML = require('./KQML/kqml.js');
-var TripsInterfaceModule = require('./TripsInterfaceModule.js');
+let request = require('request'); //REST call over http/https
+let KQML = require('./KQML/kqml.js');
+let TripsInterfaceModule = require('./TripsInterfaceModule.js');
 
 
 class TripsGeneralInterfaceModule extends TripsInterfaceModule {
@@ -15,9 +16,10 @@ class TripsGeneralInterfaceModule extends TripsInterfaceModule {
 
         super('Sbgnviz-Interface-Agent', agentId, agentName, socket, model);
 
-        var self = this;
+        let self = this;
 
         self.askHuman = askHuman;
+
 
         setTimeout(function(){
 
@@ -32,13 +34,13 @@ class TripsGeneralInterfaceModule extends TripsInterfaceModule {
      * When socket changes, update the listeners on that socket
      */
     updateListeners(){
-        var self = this;
+        let self = this;
         self.socket.on('relayMessageToTripsRequest', function (data) {
 
-            var pattern = {0: 'tell', content: {0: 'started-speaking', mode: 'text', uttnum: data.uttNum, channel: 'Desktop', direction: 'input'}};
+            let pattern = {0: 'tell', content: {0: 'started-speaking', mode: 'text', uttnum: data.uttNum, channel: 'Desktop', direction: 'input'}};
             self.tm.sendMsg(pattern);
 
-            var pattern = {0: 'tell', content: {0: 'stopped-speaking', mode: 'text', uttnum: data.uttNum, channel: 'Desktop', direction: 'input'}};
+            pattern = {0: 'tell', content: {0: 'stopped-speaking', mode: 'text', uttnum: data.uttNum, channel: 'Desktop', direction: 'input'}};
             self.tm.sendMsg(pattern);
 
             pattern = {0: 'tell', content: {0: 'word', 1: data.text, uttnum: data.uttNum, index: 1, channel: 'Desktop', direction: 'input'}};
@@ -53,62 +55,68 @@ class TripsGeneralInterfaceModule extends TripsInterfaceModule {
     }
 
     setHandlers() {
-        var self = this;
+        let self = this;
 
         //Listen to spoken sentences
-        var pattern = {0: 'tell', 1: '&key', content: ['spoken', '.', '*']};
+        let pattern = {0: 'tell', 1: '&key', content: ['spoken', '.', '*']};
         self.tm.addHandler(pattern, function (text) {
-
-
-            var contentObj = KQML.keywordify(text.content);
+            let contentObj = KQML.keywordify(text.content);
 
             if (contentObj) {
-
-                var msg = {userName: self.agentName, userId: self.agentId, room: self.room, date: +(new Date)};
-
+                let msg = {userName: self.agentName, userId: self.agentId, room: self.room, date: +(new Date)};
                 msg.comment = trimDoubleQuotes(contentObj.what);
-
                 self.model.add('documents.' + msg.room + '.messages', msg);
-
             }
 
         });
 
 
-        var pattern = {0: 'tell', 1: '&key', content: ['display-sbgn', '.', '*']};
+        pattern = {0: 'tell', 1: '&key', content: ['display-sbgn', '.', '*']};
         self.tm.addHandler(pattern, function (text) {
             self.displaySbgn(text);
 
         });
 
 
-        var pattern = {0: 'request', 1: '&key', content: ['display-sbgn', '.', '*']};
+        pattern = {0: 'request', 1: '&key', content: ['display-sbgn', '.', '*']};
         self.tm.addHandler(pattern, function (text) {
             self.displaySbgn(text);
         });
 
-        var pattern = {0: 'request', 1: '&key', content: ['clean-model', '.', '*']};
+        pattern = {0: 'request', 1: '&key', content: ['clean-model', '.', '*']};
         self.tm.addHandler(pattern, function (text) {
             self.cleanModel(text);
         });
 
-        var pattern = {0: 'tell', 1: '&key', content: ['display-image', '.', '*']};
+        pattern = {0: 'tell', 1: '&key', content: ['display-image', '.', '*']};
         self.tm.addHandler(pattern, function (text) {
             self.displayImage(text);
         });
 
-        var pattern = {0: 'request', 1: '&key', content: ['display-image', '.', '*']};
+        pattern = {0: 'request', 1: '&key', content: ['display-image', '.', '*']};
         self.tm.addHandler(pattern, function (text) {
             self.displayImage(text);
         });
 
+
+        pattern = {0: 'tell', 1: '&key', content: ['add-provenance', '.', '*']};
+        self.tm.addHandler(pattern, function (html) {
+            self.addProvenance(html);
+
+        });
+
+        pattern = {0: 'request', 1: '&key', content: ['add-provenance', '.', '*']};
+        self.tm.addHandler(pattern, function (text) {
+            self.addProvenance(text);
+
+        });
 
         //
         // //Listen to model id response from MRA
-        var pattern = {0: 'reply', 1: '&key', content: ['success', '.', '*'], sender: 'MRA'};
+        pattern = {0: 'reply', 1: '&key', content: ['success', '.', '*'], sender: 'MRA'};
 
         self.tm.addHandler(pattern, function (text) { //listen to requests
-            var contentObj = KQML.keywordify(text.content);
+            let contentObj = KQML.keywordify(text.content);
 
 
             if (contentObj.modelId) {
@@ -126,12 +134,11 @@ class TripsGeneralInterfaceModule extends TripsInterfaceModule {
     }
 
     displayImage(text) {
+        let self = this;
+        let contentObj = KQML.keywordify(text.content);
 
-        var self = this;
-        var contentObj = KQML.keywordify(text.content);
         if (contentObj) {
-
-            var imageTabMap = {
+            let imageTabMap = {
                 'reactionnetwork': {ind: 1, label: 'RXN'},
                 'contactmap': {ind: 2, label: 'CM'},
                 'influencemap': {ind: 3, label: 'IM'},
@@ -139,32 +146,29 @@ class TripsGeneralInterfaceModule extends TripsInterfaceModule {
             }
 
 
-            var imgPath = trimDoubleQuotes(contentObj.path);
+            let imgPath = trimDoubleQuotes(contentObj.path);
             try {
-                var fs = require('fs');
+                let fs = require('fs');
                 fs.readFile(imgPath, function (error, fileContent) {
                     if (error) {
                         console.log('exec error: ' + error);
                         return;
                     }
 
+                    let imgContent = 'data:image/png;base64,' + fileContent.toString('base64');
 
-                    var imgContent = 'data:image/png;base64,' + fileContent.toString('base64');
-
-                    var imgData = {
+                    let imgData = {
                         img: imgContent,
                         tabIndex: imageTabMap[contentObj.type].ind,
                         tabLabel: imageTabMap[contentObj.type].label,
                         fileName: imgPath
-                    }
+                    };
 
 
                     //The socket connection is between the interface and the agent, so we cannot directly emit messages
                     //we must ask the client with the browser to do it for us
                     self.askHuman(self.agentId, self.room, "addImage", imgData, function (val) {
-
-
-                        // self.tm.replyToMsg(text, {0: 'reply', content: {0: 'success'}});
+                      // self.tm.replyToMsg(text, {0: 'reply', content: {0: 'success'}});
                     });
 
                 });
@@ -179,11 +183,11 @@ class TripsGeneralInterfaceModule extends TripsInterfaceModule {
 
     displaySbgn(text) {
 
-        var self = this;
-        var contentObj = KQML.keywordify(text.content);
+        let self = this;
+        let contentObj = KQML.keywordify(text.content);
         if (contentObj) {
 
-            var sbgnModel = contentObj.graph;
+            let sbgnModel = contentObj.graph;
 
             
             sbgnModel = trimDoubleQuotes(sbgnModel);
@@ -197,19 +201,27 @@ class TripsGeneralInterfaceModule extends TripsInterfaceModule {
 
                 // self.tm.replyToMsg(text, {0: 'reply', content: {0: 'success'}});
             });
-
-
         }
-
     }
 
     cleanModel(){
         //The socket connection is between the interface and the agent, so we cannot directly emit messages
         //we must ask the client with the browser to do it for us
         this.askHuman(this.agentId, this.room, "newFile", function (val) {
-
-            // self.tm.replyToMsg(text, {0: 'reply', content: {0: 'success'}});
         });
+    }
+
+    /***
+     * Extra messages that agents send
+     * @param text
+     */
+    addProvenance(text){
+        let self = this;
+        let contentObj = KQML.keywordify(text.content);
+        contentObj.html = trimDoubleQuotes(contentObj.html);
+        //we can directly update the model
+        self.model.push('documents.' + this.room + '.provenance', {html:contentObj.html, userName: self.agentName});
+        console.log(contentObj.html);
 
     }
 
@@ -226,7 +238,7 @@ function trimDoubleQuotes(str){
     if(str[0]!== '"' || str[str.length-1]!== '"')
         return str;
 
-    var strTrimmed = str.slice(1, str.length -1);
+    let strTrimmed = str.slice(1, str.length -1);
 
     return strTrimmed;
 

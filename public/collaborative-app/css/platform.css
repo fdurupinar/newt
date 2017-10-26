@@ -518,3 +518,17 @@ input[type="file"] {
 .factoid-button{
     margin: 5px;
 }
+
+
+#provenance-area{
+    padding: 5px;
+    height: 95%;
+    -webkit-overflow-scrolling: touch;
+    overflow: auto;
+}
+
+
+#provenance-messages{
+    font-size: small;
+    padding: 5px;
+}

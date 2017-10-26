@@ -454,7 +454,6 @@ ContextAgent.prototype.isInModel = function(geneName){
     return false;
 }
 
-
 /**
  *
  * @param order

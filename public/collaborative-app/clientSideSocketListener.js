@@ -310,6 +310,24 @@ module.exports =  function(app) {
                 }
             });
 
+            //Open in another window
+            app.socket.on('openPCQueryWindow', function(html, callback){
+                var loc = window.location.href;
+                if (loc[loc.length - 1] === "#") {
+                    loc = loc.slice(0, -1);
+                }
+                var w = window.open((loc + "_query"), function () {
+
+                });
+
+                // //because window opening takes a while
+                setTimeout(function () {
+                    var json = chise.convertSbgnmlToJson(data);
+                    w.postMessage(JSON.stringify(json), "*");
+                }, 2000);
+
+            });
+
             app.socket.on("displaySbgn", function(sbgn, callback){
 
                 var jsonObj = sbgnviz.convertSbgnmlTextToJson(sbgn);
