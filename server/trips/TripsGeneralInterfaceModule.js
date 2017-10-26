@@ -88,6 +88,11 @@ class TripsGeneralInterfaceModule extends TripsInterfaceModule {
             self.cleanModel(text);
         });
 
+        pattern = {0: 'tell', 1: '&key', content: ['clean-model', '.', '*']};
+        self.tm.addHandler(pattern, function (text) {
+            self.cleanModel(text);
+        });
+
         pattern = {0: 'tell', 1: '&key', content: ['display-image', '.', '*']};
         self.tm.addHandler(pattern, function (text) {
             self.displayImage(text);
@@ -209,6 +214,7 @@ class TripsGeneralInterfaceModule extends TripsInterfaceModule {
         //we must ask the client with the browser to do it for us
         this.askHuman(this.agentId, this.room, "newFile", function (val) {
         });
+
     }
 
     /***

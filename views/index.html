@@ -2186,7 +2186,6 @@
                     </div>
 
 
-
                     <div id = "upload-image">
                         <label for="file-upload" class="image-file">
                             <i class="fa fa-cloud-upload"></i> Upload Image
@@ -2202,9 +2201,9 @@
                     <ul id = "provenance-messages">
                         {{each _page.doc.provenance as #message}}
                             {{if #message.pc}}
-                                <li> <b>{{#message.userName}}: </b> <button on-click = "openPCQueryWindow(#message.pc)">PC Query View</button>{{unescaped #message.html}}</li>
+                                <li class = "message"> <b>{{#message.userName}}: </b> <button on-click = "openPCQueryWindow(#message.pc)">PC Query View</button>{{unescaped #message.html}}</li>
                             {{else}}
-                                <li> <b>{{#message.userName}}: </b> {{unescaped #message.html}}</li>
+                                <li class = "message"> <b>{{#message.userName}}: </b> {{unescaped #message.html}}</li>
                             {{/if}}
                         {{/each}}
                     </ul>

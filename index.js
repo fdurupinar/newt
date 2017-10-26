@@ -9,8 +9,7 @@ app.loadViews(__dirname + '/views');
 let _ = require('underscore');
 let oneColor = require('onecolor');
 
-//Test mode vs Trips mode
-const tripsMode = true;
+
 
 const ONE_DAY = 1000 * 60 * 60 * 24;
 const ONE_HOUR = 1000 * 60 * 60;
@@ -19,6 +18,7 @@ const BobId = "Bob123";
 
 let docReady = false;
 
+app.proto.tripsMode  = true;
 app.on('model', function (model) {
 
     model.fn('biggerTime', function (item) {
@@ -77,6 +77,9 @@ app.get('/:docId', function (page, model, arg, next) {
     let self = this;
     room = arg.docId;
 
+
+
+
     model.subscribe('documents', function () {
 
         let docPath = 'documents.' + arg.docId;
@@ -110,6 +113,7 @@ app.get('/:docId', function (page, model, arg, next) {
             let userIds = model.at((docPath + '.userIds')); //used for keeping a list of subscribed users
             let messages = model.at((docPath + '.messages'));
             let provenance = model.at((docPath + '.provenance'));
+            let pcQuery = model.at((docPath + '.pcQuery'));
 
             pysb.subscribe(function () {
             });
@@ -133,6 +137,9 @@ app.get('/:docId', function (page, model, arg, next) {
             });
 
             provenance.subscribe(function(){
+            });
+
+            pcQuery.subscribe(function(){
             });
 
             userIds.subscribe(function () {
@@ -218,7 +225,12 @@ app.proto.create = function (model) {
 
 
 
-    if(tripsMode)
+    let docId = model.get('_page.doc.id');
+    if(docId.indexOf("_query_") > -1) //if this is a query window don't connect to trips
+        self.tripsMode = false;
+
+
+    if(this.tripsMode)
         $('#unitTestArea').hide();
     else
         $('#unitTestArea').show();
@@ -341,7 +353,8 @@ app.proto.create = function (model) {
     //If there is already one connection to Bob, don't open another
     let userIds = self.modelManager.getUserIds();
 
-    if(tripsMode && userIds.indexOf(BobId) < 0) { //there's no agent for Bob
+
+    if(this.tripsMode && userIds.indexOf(BobId) < 0) { //there's no agent for Bob
         this.connectTripsAgent();
     }
 
@@ -434,6 +447,24 @@ app.proto.listenToNodeOperations = function(model){
 
         }
 
+
+    });
+
+    model.on('change', '_page.doc.pcQuery.*.graph', function(ind, data){
+            var loc = window.location.href;
+            if (loc[loc.length - 1] === "#") {
+                loc = loc.slice(0, -1);
+            }
+            var w = window.open((loc + "_query_" + ind), function () {
+    
+            });
+    
+            // //because window opening takes a while
+            setTimeout(function () {
+    
+                var json = chise.convertSbgnmlTextToJson(data);
+                w.postMessage(JSON.stringify(json), "*");
+            }, 2000);
 
     });
 
@@ -924,6 +955,7 @@ app.proto.runUnitTests = function(){
 
     let room = this.model.get('_page.room');
 
+    this.socket.emit("newFile");
     //require("./public/test/testsAgentAPI.js")(("http://localhost:3000/" + room), self.modelManager);
     // require("./public/test/testsCausalityAgent.js")(("http://localhost:3000/" + room), self.modelManager);
     //  require("./public/test/testsModelManager.js")(self.modelManager, userId);
@@ -931,12 +963,18 @@ app.proto.runUnitTests = function(){
     require("./public/test/testsUserOperations.js")(self.modelManager);
     require("./public/test/testsMessages.js")(this);
     require("./public/test/testOptions.js")(); //to print out results
-
 };
 
-
+/***
+ * Client requests the server to send a pc query
+ * The result will later be displayed by the client
+ * @param pc_url
+ */
 app.proto.openPCQueryWindow = function(pc_url){
-    this.socket.emit('PCQuery', {url: pc_url, type:'sbgn'});
+
+    this.model.push('_page.doc.pcQuery', {url: pc_url, graph:''});
+
+    // this.socket.emit('PCQuery', {url: pc_url, type:'sbgn'});
 };
 
 /*
@@ -949,7 +987,6 @@ app.proto.updateTripsMessage = function(){
 
     this.model.set('_page.newComment', msg);
 };
-
 
 app.proto.resetConversationOnTrips = function(){
     //directly ask the server as this client may not have a tripsAgent

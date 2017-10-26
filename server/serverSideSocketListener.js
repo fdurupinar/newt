@@ -739,6 +739,7 @@ module.exports.start = function(io, model, cancerDataOrganizer){
                 var userIds = model.at((docPath + '.userIds')); //used for keeping a list of subscribed users
                 var messages = model.at((docPath + '.messages'));
                 let provenance = model.at((docPath + '.provenance'));
+                let pcQuery = model.at((docPath + '.pcQuery'));
 
                 pageDoc.subscribe(function () {
                     pysb.subscribe(function () {
@@ -763,6 +764,9 @@ module.exports.start = function(io, model, cancerDataOrganizer){
                     });
 
                     provenance.subscribe(function(){
+                    });
+
+                    pcQuery.subscribe(function(){
                     });
 
                     userIds.subscribe(function () {
@@ -818,6 +822,33 @@ module.exports.start = function(io, model, cancerDataOrganizer){
                     if (socket.subscribed)
                         io.in(socket.room).emit('imageFile', data.img);
                 });
+
+
+                //queryData is the element in the array
+                model.on('insert', (docPath + '.pcQuery'), function( ind, queryData){
+
+                    if(ind >= 0 ) {
+
+                        request(queryData[0].url, function (error, response, body) {
+
+                            if (error) {
+                                console.log(error);
+                            } else { //only open the window if a proper response is returned
+
+                                //     console.log(body);
+                                console.log(response.statusCode);
+                                if (response.statusCode === 200) {
+                                    model.set(docPath + '.pcQuery.' + ind + '.graph', body);
+                                    // socket.emit("openPCQueryWindow", {graph: body});
+                                }
+                                // else {
+                                //     // socket.emit("openPCQueryWindow", "error");
+                                // }
+                            }
+                        });
+                    }
+                });
+
             });
 
         });
@@ -876,8 +907,8 @@ module.exports.start = function(io, model, cancerDataOrganizer){
                     var userIds = model.at((docPath + '.userIds')); //used for keeping a list of subscribed users
                     var messages = model.at((docPath + '.messages'));
                     var provenance = model.at((docPath + '.provenance'));
+                    var pcQuery = model.at((docPath + '.pcQuery'));
 
-                    console.log(data.room);
                     if(!data.room)
                         return;
                     try {
@@ -898,6 +929,9 @@ module.exports.start = function(io, model, cancerDataOrganizer){
                             });
 
                             provenance.subscribe(function () {
+                            });
+
+                            pcQuery.subscribe(function () {
                             });
 
                             userIds.subscribe(function () {
@@ -1039,9 +1073,7 @@ module.exports.start = function(io, model, cancerDataOrganizer){
                     //socket.emit("BioGeneResult",body);
                 }
             });
-
         });
-
 
         socket.on('PCQuery', function(queryData, callback){
 
@@ -1066,12 +1098,8 @@ module.exports.start = function(io, model, cancerDataOrganizer){
                             callback();
                         socket.emit("PCQueryResult", "error");
                     }
-
                 }
-                //    req.end();
             });
-
-            // req.end();
         });
 
         socket.on('MergePCQuery', function(queryData, callback){

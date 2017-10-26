@@ -30,6 +30,10 @@ module.exports =  function(app) {
                 try {
                     cy.remove(cy.elements());
                     app.modelManager.newModel("me"); //do not delete cytoscape, only the model
+                    //close all the other tabs
+                    model.set('_page.doc.images', null);
+                    app.dynamicResize(); //to clean the canvas 
+
                     if (callback) callback("success");
                 }
                 catch (e) {
@@ -311,7 +315,7 @@ module.exports =  function(app) {
             });
 
             //Open in another window
-            app.socket.on('PCQueryResult', function(data, callback){
+            app.socket.on('openPCQueryWindow', function(data, callback){
                 var loc = window.location.href;
                 if (loc[loc.length - 1] === "#") {
                     loc = loc.slice(0, -1);
