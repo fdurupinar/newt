@@ -112,71 +112,74 @@ module.exports =  function(app) {
                     return;
                 }
 
-                let sentences = nodeMap.sentences[nodeId];
+                if(nodeMap) {
+                    let sentences = nodeMap.sentences[nodeId];
 
-                let idxCards = nodeMap.idxCards[nodeId];
-
-                //TODO: open this!!!!!! qtip not working
-                // try {
-                //     cy.$(('#' + nodeId)).qtip({
-                //         content: {
-                //             text: function (event, api) {
-                //
-                //                 let info = (new idxCardView(idxCards)).render();
-                //                 let html = $('#idxCard-container').html();
-                //
-                //
-                //                 api.set('content.text', html);
-                //
-                //                 return html;
-                //
-                //
-                //             }
-                //         },
-                //         show: {
-                //             ready: true
-                //         },
-                //         position: {
-                //             my: 'top center',
-                //             at: 'top middle',
-                //             adjust: {
-                //                 cyViewport: true
-                //             },
-                //             effect: false
-                //         },
-                //         style: {
-                //             classes: 'qtip-bootstrap',
-                //             tip: {
-                //                 width: 20,
-                //                 height: 20
-                //             }
-                //         }
-                //     });
-                //
-                // }
-                // catch(e){
-                //     console.log(e);
-                // }
+                    let idxCards = nodeMap.idxCards[nodeId];
 
 
-                if (sentences) {
+                    //TODO: open this!!!!!! qtip not working
+                    // try {
+                    //     cy.$(('#' + nodeId)).qtip({
+                    //         content: {
+                    //             text: function (event, api) {
+                    //
+                    //                 let info = (new idxCardView(idxCards)).render();
+                    //                 let html = $('#idxCard-container').html();
+                    //
+                    //
+                    //                 api.set('content.text', html);
+                    //
+                    //                 return html;
+                    //
+                    //
+                    //             }
+                    //         },
+                    //         show: {
+                    //             ready: true
+                    //         },
+                    //         position: {
+                    //             my: 'top center',
+                    //             at: 'top middle',
+                    //             adjust: {
+                    //                 cyViewport: true
+                    //             },
+                    //             effect: false
+                    //         },
+                    //         style: {
+                    //             classes: 'qtip-bootstrap',
+                    //             tip: {
+                    //                 width: 20,
+                    //                 height: 20
+                    //             }
+                    //         }
+                    //     });
+                    //
+                    // }
+                    // catch(e){
+                    //     console.log(e);
+                    // }
 
-                    let ranges = [];
 
-                    for (let i = 0; i < sentences.length; i++) {
-                        let startInd = el[0].value.indexOf(sentences[i]);
-                        let endInd = startInd + sentences[i].length;
-                        ranges.push([startInd, endInd]);
+                    if (sentences) {
+
+                        let ranges = [];
+
+                        for (let i = 0; i < sentences.length; i++) {
+                            let startInd = el[0].value.indexOf(sentences[i]);
+                            let endInd = startInd + sentences[i].length;
+                            ranges.push([startInd, endInd]);
+                        }
+                        console.log(ranges);
+
+                        el.highlightTextarea({
+                            ranges: [{
+                                color: highlightColor,//('#FFFF0'),
+                                ranges: ranges
+                            }]
+                        });
+
                     }
-                    console.log(ranges);
-
-                    el.highlightTextarea({
-                        ranges: [{
-                            color: highlightColor,//('#FFFF0'),
-                            ranges: ranges
-                        }]
-                    });
-
                 }
             }
             catch(e){

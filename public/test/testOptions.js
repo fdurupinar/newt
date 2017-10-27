@@ -6,6 +6,7 @@ module.exports = function() {
     });
 
     QUnit.log(function( details ) {
+        // if(details.result == false)
         console.log( "Log: ", details.result, details.message, details.actual, details.expected );
     });
 

@@ -3,12 +3,11 @@
  *  Event handlers of model updates
  *	Author: Funda Durupinar Babur<f.durupinar@gmail.com>
  */
+// noinspection Annotator
 let app = module.exports = require('derby').createApp('cwc', __filename);
 app.loadViews(__dirname + '/views');
 
-let _ = require('underscore');
 let oneColor = require('onecolor');
-
 
 const ONE_DAY = 1000 * 60 * 60 * 24;
 const ONE_HOUR = 1000 * 60 * 60;
@@ -48,7 +47,9 @@ app.on('model', function (model) {
 
 });
 
-
+/***
+ * Load document and get a new docId if necessary
+ */
 app.get('/', function (page, model, params) {
     function getId() {
         return model.id();
@@ -69,15 +70,14 @@ app.get('/', function (page, model, params) {
     return page.redirect('/' + docId);
 });
 
-
+/***
+ * Load document with docId
+ */
 app.get('/:docId', function (page, model, arg, next) {
     let  room;
 
     let self = this;
     room = arg.docId;
-
-
-
 
     model.subscribe('documents', function () {
 
@@ -148,10 +148,7 @@ app.get('/:docId', function (page, model, arg, next) {
 
             userIds.subscribe(function () {
                 let userId = model.get('_session.userId');
-
-
                 let userIdsList = userIds.get();
-
 
                 if (!userIdsList) {
                     userIdsList = [userId];
@@ -166,7 +163,6 @@ app.get('/:docId', function (page, model, arg, next) {
                     self.firstUser = false;
 
                 userIdsList = userIds.get();
-
 
                 users.subscribe(function () {
 
@@ -195,6 +191,9 @@ app.get('/:docId', function (page, model, arg, next) {
 
 });
 
+/***
+ * Filter out messages on the chat window
+ */
 app.proto.changeDuration = function () {
 
     return this.model.filter('_page.doc.messages', 'biggerTime').ref('_page.list');
@@ -216,25 +215,13 @@ app.proto.isQueryWindow = function(){
  */
 
 app.proto.create = function (model) {
-
-    model.set('_page.showTime', true);
-
     let self = this;
     docReady = true;
-    let userId = model.get('_session.userId');
 
     self.socket = io();
     self.notyView = noty({layout: "bottom",theme:"bootstrapTheme", text: "Please wait while model is loading."});
 
-    $('#messages').contentchanged = function () {
-
-        $('#messages').scrollTop($('#messages')[0].scrollHeight  - $('.message').height());
-
-    };
-
-    //change scroll position
-    $('#messages').scrollTop($('#messages')[0].scrollHeight  - $('.message').height());
-
+    self.listenToUIOperations(model);
 
     let id = model.get('_session.userId');
     let name = model.get('_page.doc.users.' + id +'.name');
@@ -244,14 +231,8 @@ app.proto.create = function (model) {
     self.modelManager = window.testModelManager = new ModelManager(model, model.get('_page.room'));
     self.modelManager.setName( model.get('_session.userId'),name);
 
-    let images = model.get('_page.doc.images');
+
     self.dynamicResize(model.get('_page.doc.images'));
-
-    $(window).on('resize', function(){
-        let images = model.get('_page.doc.images');
-        self.dynamicResize(images);
-    });
-
 
     //Notify server about the client connection
     self.socket.emit("subscribeHuman", { userName:name, room:  model.get('_page.room'), userId: id});
@@ -263,22 +244,100 @@ app.proto.create = function (model) {
     self.factoidHandler = require('./public/collaborative-app/factoid/factoid-handler')(this) ;
     self.factoidHandler.initialize();
 
-    // //If we get a message on a separate window
-    window.addEventListener('message', function(event) {
-        if(event.data) { //initialization for a query window
-            self.modelManager.newModel("me"); //do not delete cytoscape, only the model
-             chise.updateGraph(JSON.parse(event.data), function(){
-                 self.modelManager.initModel(cy.nodes(), cy.edges(), appUtilities, "me");
-             });
-        }
 
-    }, false);
+    //Loading cytoscape and clients
+    if(!self.isQueryWindow()) { //initialization for a regular window
+        self.loadCyFromModel(function(isModelEmpty){
+            if (isModelEmpty)
+                self.modelManager.initModel(cy.nodes(), cy.edges(), appUtilities, "me");
+            else
+                self.notyView.close();
+        });
+    }
+
+    self.editorListener = require('./public/collaborative-app/editor-listener.js')(self.modelManager,self.socket, id);
+
+    this.atBottom = true;
+
+    return model.on('all', '_page.list', (function (_this) {
+        return function () {
+            if (!_this.atBottom)
+                return;
+
+            document.getElementById("messages").scrollTop= document.getElementById("messages").scrollHeight;
+            return _this.container.scrollTop = _this.list.offsetHeight;
+        };
+    })(this));
+};
 
 
+/***
+ * Called after document is loaded.
+ * Listeners are called here.
+ * @param model
+ */
+app.proto.init = function (model) {
 
-    descendingSort = function (a, b) {
-        return (!b ? b.date : void 0) - (!a ? a.date : void 0);
+    this.listenToNodeOperations(model);
+    this.listenToEdgeOperations(model);
+    this.listenToModelOperations(model);
+
+    //
+    // model.on('all', '_page.doc.cy.layoutProperties', function(op, val) {
+    //     if (docReady){
+    //         for(let att in val){ //assign each attribute separately to keep the functions in currentlayoutproperties
+    //             if(appUtilities.currentLayoutProperties[att])
+    //                 appUtilities.currentLayoutProperties[att] = val[att];
+    //         }
+    //
+    //     }
+    //
+    // });
+    //
+    // model.on('all', '_page.doc.cy.generalProperties', function(op, val) {
+    //     if (docReady){
+    //         for(let att in val){ //assign each attribute separately to keep the functions in currentgeneralproperties
+    //             if(appUtilities.currentGeneralProperties[att])
+    //                 appUtilities.currentGeneralProperties[att] = val[att];
+    //         }
+    //
+    //     }
+    //
+    // });
+    //
+    // model.on('all', '_page.doc.cy.gridProperties', function(op, val) {
+    //     if (docReady){
+    //         for(let att in val){ //assign each attribute separately to keep the functions in currentgridproperties
+    //             if(appUtilities.currentGridProperties[att])
+    //                 appUtilities.currentGridProperties[att] = val[att];
+    //         }
+    //
+    //     }
+    //
+    // });
+    //
+
+};
+
+/***
+ * Listen to UI inputs and update model accordingly
+ */
+app.proto.listenToUIOperations = function(model){
+    let self = this;
+
+    $('#messages').contentchanged = function () {
+        let scrollHeight = $('#messages')[0].scrollHeight
+        $('#messages').scrollTop( scrollHeight - $('.message').height());
     };
+
+    //change scroll position
+    $('#messages').scrollTop($('#messages')[0].scrollHeight  - $('.message').height());
+
+    $(window).on('resize', function(){
+        let images = model.get('_page.doc.images');
+        self.dynamicResize(images);
+    });
+
 
     self.lastMsgInd = -1; //increment in app.proto.app
 
@@ -291,7 +350,6 @@ app.proto.create = function (model) {
             let messages = filteredMsgs.sort(function(a, b){
                 return b-a;
             });
-
 
             if(messages && self.lastMsgInd > -1) {
                 let msg = messages[self.lastMsgInd].comment;
@@ -307,33 +365,15 @@ app.proto.create = function (model) {
     });
 
 
-
-
-    //Loading cytoscape and clients
-    if(!self.isQueryWindow()) { //initialization for a regular window
-
-        self.loadCyFromModel(function(isModelEmpty){
-
-                if (isModelEmpty)
-                    self.modelManager.initModel(cy.nodes(), cy.edges(), appUtilities, "me");
-                else
-                    self.notyView.close();
-        });
-
-
-    }
-
-    self.editorListener = require('./public/collaborative-app/editor-listener.js')(self.modelManager,self.socket, id);
-
     //Listen to these after cy is loaded
-    $("#undo-last-action, #undo-icon").click(function (e) {
+    $("#undo-last-action, #undo-icon").click(function () {
         if(self.modelManager.isUndoPossible()){
             self.modelManager.undoCommand();
 
         }
     });
 
-    $("#redo-last-action, #redo-icon").click(function (e) {
+    $("#redo-last-action, #redo-icon").click(function () {
         if(self.modelManager.isRedoPossible()){
             self.modelManager.redoCommand();
 
@@ -341,28 +381,19 @@ app.proto.create = function (model) {
     });
 
 
+    // //If we get a message on a separate window
+    window.addEventListener('message', function(event) {
+        if(event.data) { //initialization for a query window
+            self.modelManager.newModel("me"); //do not delete cytoscape, only the model
+            chise.updateGraph(JSON.parse(event.data), function(){
+                self.modelManager.initModel(cy.nodes(), cy.edges(), appUtilities, "me");
+            });
+        }
+
+    }, false);
 
 
-
-    this.atBottom = true;
-
-
-    return model.on('all', '_page.list', (function (_this) {
-
-        return function () {
-            if (!_this.atBottom) {
-                return;
-            }
-
-            document.getElementById("messages").scrollTop= document.getElementById("messages").scrollHeight;
-
-            // $('#messages').scrollTop($('#messages')[0].scrollHeight  - $('.message').height());
-
-            return _this.container.scrollTop = _this.list.offsetHeight;
-        };
-    })(this));
 };
-
 
 app.proto.loadCyFromModel = function(callback){
     let self = this;
@@ -407,45 +438,24 @@ app.proto.loadCyFromModel = function(callback){
     if(callback) callback(true); //model is empty
 };
 
-function moveNodeAndChildren(positionDiff, node, notCalcTopMostNodes) {
-        let oldX = node.position("x");
-        let oldY = node.position("y");
-        node.position({
-            x: oldX + positionDiff.x,
-            y: oldY + positionDiff.y
-        });
-        let children = node.children();
-        children.forEach(function(child){
-            moveNodeAndChildren(positionDiff, child, true);
-        });
-}
 
 app.proto.listenToNodeOperations = function(model){
 
     let self = this;
 
-
     //Update inspector
-
-//TODO: Open later
+    //TODO: Open later
     // model.on('all', '_page.doc.cy.nodes.**', function(id, op, val, prev, passed){
     //     inspectorUtilities.handleSBGNInspector();
     // });
 
     model.on('all', '_page.doc.cy.nodes.*', function(id, op, val, prev, passed){
-
-
         if(docReady &&  !passed.user) {
-
             let node  = model.get('_page.doc.cy.nodes.' + id);
-
-
             if(!node || !node.id){ //node is deleted
                 cy.getElementById(id).remove();
             }
-
         }
-
     });
 
 
@@ -459,25 +469,16 @@ app.proto.listenToNodeOperations = function(model){
             let parent = model.get('_page.doc.cy.nodes.'+ id + '.data.parent');
 
             if(parent === undefined) parent = null;
-
-
-
             let newNode = chise.elementUtilities.addNode(pos.x, pos.y, sbgnclass, id, parent, visibility);
 
             // self.modelManager.initModelNode(newNode,"me", true);
 
-
             let parentEl = cy.getElementById(parent);
             newNode.move({"parent":parentEl});
-
         }
-
     });
 
-
-
     model.on('all', '_page.doc.cy.nodes.*.position', function(id, op, pos,prev, passed){
-
         if(docReady && !passed.user) {
             let posDiff = {x: (pos.x - cy.getElementById(id).position("x")), y:(pos.y - cy.getElementById(id).position("y"))} ;
             moveNodeAndChildren(posDiff, cy.getElementById(id)); //children need to be updated manually here
@@ -486,10 +487,9 @@ app.proto.listenToNodeOperations = function(model){
 
         }
     });
+
     model.on('all', '_page.doc.cy.nodes.*.highlightColor', function(id, op, val,prev, passed){
-
         //call it here so that everyone can highlight their own textbox
-
         self.factoidHandler.highlightSentenceInText(id, val);
 
         if(docReady && !passed.user) {
@@ -499,32 +499,23 @@ app.proto.listenToNodeOperations = function(model){
                     "overlay-padding": 10,
                     "overlay-opacity": 0
                 });
-
             }
-            else
+            else {
                 cy.getElementById(id).css({
                     "overlay-color": val,
                     "overlay-padding": 10,
                     "overlay-opacity": 0.25
                 });
-
-
-
-
-            console.log("changed highlightcolor");
+            }
         }
-
     });
 
     //Called by agents to change bbox
     model.on('all', '_page.doc.cy.nodes.*.data.bbox.*', function(id, att, op, val,prev, passed){
         if(docReady && !passed.user) {
-
             let newAtt = cy.getElementById(id).data("bbox");
             newAtt[att] = val;
             cy.getElementById(id).data("bbox", newAtt);
-
-
         }
     });
 
@@ -534,7 +525,6 @@ app.proto.listenToNodeOperations = function(model){
     //Called by agents to change specific properties of data
     model.on('all', '_page.doc.cy.nodes.*.data.*', function(id, att, op, val,prev, passed){
         if(docReady && !passed.user) {
-
             cy.getElementById(id).data(att, val);
             if(att === "parent")
                 cy.getElementById(id).move({"parent":val});
@@ -543,13 +533,7 @@ app.proto.listenToNodeOperations = function(model){
 
 
     model.on('all', '_page.doc.cy.nodes.*.data', function(id,  op, data,prev, passed){
-
-        console.log("only data");
-
-
         if(docReady && !passed.user) {
-
-            //cy.getElementById(id).data(data); //can't call this if cy element does not have a field called "data"
             cy.getElementById(id)._private.data = data;
 
             //to update parent
@@ -559,25 +543,19 @@ app.proto.listenToNodeOperations = function(model){
 
             cy.getElementById(id).move({"parent":newParent});
             cy.getElementById(id).updateStyle();
-
-
         }
     });
 
 
 
     model.on('all', '_page.doc.cy.nodes.*.expandCollapseStatus', function(id, op, val,prev, passed){
-
-
         if(docReady && !passed.user) {
             let expandCollapse = cy.expandCollapse('get'); //we can't call chise.expand or collapse directly as it causes infinite calls
             if(val === "collapse")
                 expandCollapse.collapse(cy.getElementById(id));
             else
                 expandCollapse.expand(cy.getElementById(id));
-
         }
-
     });
 
 
@@ -586,7 +564,6 @@ app.proto.listenToNodeOperations = function(model){
             try{
                 let viewUtilities = cy.viewUtilities('get');
 
-                console.log(highlightStatus);
                 if(highlightStatus === "highlighted")
                     viewUtilities.highlight(cy.getElementById(id));
                 else
@@ -605,24 +582,26 @@ app.proto.listenToNodeOperations = function(model){
         if(docReady && !passed.user) {
             try{
                 let viewUtilities = cy.viewUtilities('get');
-
-
                 if(visibilityStatus === "hide") {
                     viewUtilities.hide(cy.getElementById(id));
                 }
                 else { //default is show
                     viewUtilities.show(cy.getElementById(id));
                 }
-
             }
             catch(e){
                 console.log(e);
             }
-
         }
     });
 
+
 };
+
+/***
+ *
+ * @param model
+ */
 
 app.proto.listenToEdgeOperations = function(model){
 
@@ -636,16 +615,13 @@ app.proto.listenToEdgeOperations = function(model){
 
 
     model.on('all', '_page.doc.cy.edges.*.highlightColor', function(id, op, val,prev, passed){
-
         if(docReady && !passed.user) {
             if(val == null){
-
                 cy.getElementById(id).css({
                     "overlay-color": null,
                     "overlay-padding": 10,
                     "overlay-opacity": 0
                 });
-
             }
             else {
                 cy.getElementById(id).css({
@@ -654,14 +630,10 @@ app.proto.listenToEdgeOperations = function(model){
                     "overlay-opacity": 0.25
                 });
             }
-
-
         }
     });
 
     model.on('all', '_page.doc.cy.edges.*', function(id, op, val, prev, passed){
-
-
         if(docReady &&  !passed.user) {
             let edge  = model.get('_page.doc.cy.edges.' + id); //check
 
@@ -670,53 +642,35 @@ app.proto.listenToEdgeOperations = function(model){
 
             }
         }
-
     });
 
     model.on('all', '_page.doc.cy.edges.*.addedLater', function(id,op, idName, prev, passed){//this property must be something that is only changed during insertion
-
-
         if(docReady && !passed.user ){
             let source = model.get('_page.doc.cy.edges.'+ id + '.data.source');
             let target = model.get('_page.doc.cy.edges.'+ id + '.data.target');
             let sbgnclass = model.get('_page.doc.cy.edges.'+ id + '.data.class');
             let visibility = model.get('_page.doc.cy.nodes.'+ id + '.visibility');
-
             let newEdge = chise.elementUtilities.addEdge(source, target, sbgnclass, id, visibility);
 
             self.modelManager.initModelEdge(newEdge,"me", true);
-
         }
-
     });
 
     model.on('all', '_page.doc.cy.edges.*.data', function(id, op, data,prev, passed){
-
         if(docReady && !passed.user) {
-
             //cy.getElementById(id).data(data); //can't call this if cy element does not have a field called "data"
             cy.getElementById(id)._private.data = data;
-
             cy.getElementById(id).updateStyle();
-
-
         }
-
     });
 
     model.on('all', '_page.doc.cy.edges.*.data.*', function(id, att, op, val,prev, passed){
-
         if(docReady && !passed.user)
             cy.getElementById(id).data(att, val);
-
     });
-
-
-
 
     model.on('all', '_page.doc.cy.edges.*.bendPoints', function(id, op, bendPoints, prev, passed){ //this property must be something that is only changed during insertion
         if(docReady && !passed.user) {
-
             try{
                 let edge = cy.getElementById(id);
                 if(bendPoints.weights && bendPoints.weights.length > 0) {
@@ -749,12 +703,10 @@ app.proto.listenToEdgeOperations = function(model){
                     viewUtilities.highlight(cy.getElementById(id));
                 else
                     viewUtilities.unhighlight(cy.getElementById(id));
-
             }
             catch(e){
                 console.log(e);
             }
-
         }
     });
 
@@ -772,27 +724,14 @@ app.proto.listenToEdgeOperations = function(model){
             }
         }
     });
-
 };
 
-
-app.proto.init = function (model) {
-    let timeSort;
+/***
+ * Listen to other operations on the model
+ * @param model
+ */
+app.proto.listenToModelOperations = function(model){
     let self = this;
-
-    this.listenToNodeOperations(model);
-    this.listenToEdgeOperations(model);
-
-    // //Listen to other model operations
-    // model.on('all', '_page.doc.userIds.**', function(id, op, val, prev, passed){
-    //     console.log("User ids");
-    //     console.log(id);
-    //     console.log(op);
-    //     console.log(val);
-    //     console.log(prev);
-    // });
-
-
 
     model.on('all', '_page.doc.noTrips', function(op, noTrips){
 
@@ -801,16 +740,11 @@ app.proto.init = function (model) {
         else
             $('#unitTestArea').hide();
 
-        console.log(noTrips);
         //If there is already one connection to Bob, don't open another
         let userIds = self.modelManager.getUserIds();
-
-        if(!noTrips && !self.isQueryWindow() &&  userIds.indexOf(BobId) < 0) { //there's no agent for Bob
+        if(!noTrips && !self.isQueryWindow() &&  userIds.indexOf(BobId) < 0)
             self.connectTripsAgent();
-        }
-
     });
-
 
     //Listen to other model operations
     model.on('all', '_page.doc.factoid.*', function(id, op, val, prev, passed){
@@ -825,7 +759,6 @@ app.proto.init = function (model) {
         if(docReady) {
             if(docReady && !passed.user) {
                 self.loadCyFromModel(function () {
-
                 });
             }
             self.notyView.close();
@@ -841,57 +774,15 @@ app.proto.init = function (model) {
             loc = loc.slice(0, -1);
         }
 
-
-
-        let w = window.open((loc + "_query_" + ind ), function () {
-
+        let w = window.open((loc + "_query_" + ind ), function(){
         });
-
 
         // //because window opening takes a while
         setTimeout(function () {
             var json = chise.convertSbgnmlTextToJson(data);
             w.postMessage(JSON.stringify(json), "*");
         }, 3000);
-
     });
-
-
-
-    //
-    // model.on('all', '_page.doc.cy.layoutProperties', function(op, val) {
-    //     if (docReady){
-    //         for(let att in val){ //assign each attribute separately to keep the functions in currentlayoutproperties
-    //             if(appUtilities.currentLayoutProperties[att])
-    //                 appUtilities.currentLayoutProperties[att] = val[att];
-    //         }
-    //
-    //     }
-    //
-    // });
-    //
-    // model.on('all', '_page.doc.cy.generalProperties', function(op, val) {
-    //     if (docReady){
-    //         for(let att in val){ //assign each attribute separately to keep the functions in currentgeneralproperties
-    //             if(appUtilities.currentGeneralProperties[att])
-    //                 appUtilities.currentGeneralProperties[att] = val[att];
-    //         }
-    //
-    //     }
-    //
-    // });
-    //
-    // model.on('all', '_page.doc.cy.gridProperties', function(op, val) {
-    //     if (docReady){
-    //         for(let att in val){ //assign each attribute separately to keep the functions in currentgridproperties
-    //             if(appUtilities.currentGridProperties[att])
-    //                 appUtilities.currentGridProperties[att] = val[att];
-    //         }
-    //
-    //     }
-    //
-    // });
-    //
 
     //Sometimes works
     model.on('all', '_page.doc.images', function() {
@@ -907,36 +798,33 @@ app.proto.init = function (model) {
         }
     });
 
-    model.on('insert', '_page.list', function (index) {
-
+    model.on('insert', '_page.list', function () {
         let com = model.get('_page.list');
         let myId = model.get('_session.userId');
-
 
         if(docReady)
             triggerContentChange('messages');
 
         if (com[com.length - 1].userId != myId)
             playSound();
-
     });
 
 
-    timeSort = function (a, b) {
+    let timeSort = function (a, b) {
         return (a != null ? a.date : void 0) - (b != null ? b.date : void 0);
     };
 
-
     return model.sort('_page.doc.messages', timeSort).ref('_page.list');
+
 };
 
 ////////////////////////////////////////////////////////////////////////////
 // UI events
 ////////////////////////////////////////////////////////////////////////////
 
-app.proto.onScroll = function (element) {
-
+app.proto.onScroll = function () {
     let bottom, containerHeight, scrollBottom;
+
     bottom = this.list.offsetHeight;
     containerHeight = this.container.offsetHeight;
     scrollBottom = this.container.scrollTop + containerHeight;
@@ -946,25 +834,20 @@ app.proto.onScroll = function (element) {
 };
 
 app.proto.changeColorCode = function(){
-
     let  user = this.model.at('_page.doc.users.' + this.model.get('_session.userId'));
-    user.set('colorCode', getNewColor());
 
+    user.set('colorCode', getNewColor());
 };
 
 app.proto.runUnitTests = function(){
     let self = this;
-    let userId = this.model.get('_session.userId');
-
-    let room = this.model.get('_page.room');
-
     this.socket.emit("newFile");
     //require("./public/test/testsAgentAPI.js")(("http://localhost:3000/" + room), self.modelManager);
     // require("./public/test/testsCausalityAgent.js")(("http://localhost:3000/" + room), self.modelManager);
-    //  require("./public/test/testsModelManager.js")(self.modelManager, userId);
-
-    require("./public/test/testsUserOperations.js")(self.modelManager);
-    require("./public/test/testsMessages.js")(this);
+    require("./public/test/testsModelManager.js")(self.modelManager, self.model.get('_session.userId'));
+    //
+    // require("./public/test/testsUserOperations.js")(self.modelManager);
+    // require("./public/test/testsMessages.js")(this);
     require("./public/test/testOptions.js")(); //to print out results
 };
 
@@ -974,10 +857,7 @@ app.proto.runUnitTests = function(){
  * @param pc_url
  */
 app.proto.openPCQueryWindow = function(pc_url){
-
     this.model.push('_page.doc.pcQuery', {url: pc_url, graph:''});
-
-    // this.socket.emit('PCQuery', {url: pc_url, type:'sbgn'});
 };
 
 /*
@@ -1020,22 +900,18 @@ app.proto.connectTripsAgent = function(){
 
 
 app.proto.enterMessage = function(event){
-
     let self = this;
 
     if (event.keyCode === 13 && !event.shiftKey) {
        self.add(event);
-
         // prevent default behavior
         event.preventDefault();
-
     }
-
-
 };
 
-app.proto.add = function (event, model, filePath) {
+app.proto.add = function (event, model) {
     let self = this;
+
     if(!model)
         model = this.model;
 
@@ -1081,7 +957,8 @@ app.proto.add = function (event, model, filePath) {
         event.preventDefault();
 
         //change scroll position
-       $('#messages').scrollTop($('#messages')[0].scrollHeight  - $('.message').height());
+        var scrollHeight = $('#messages')[0].scrollHeight
+       $('#messages').scrollTop( scrollHeight - $('.message').height());
 
     });
 };
@@ -1096,6 +973,7 @@ app.proto.clearHistory = function () {
 
 app.proto.uploadFile = function(evt){
     let self = this;
+
     try{
         let room = this.model.get('_page.room');
         let fileStr = this.model.get("_page.newFile").split('\\');
@@ -1120,7 +998,6 @@ app.proto.uploadFile = function(evt){
 
         this.app.proto.add(evt,this.model, filePath);
 
-
     }
     catch(error){ //clicking cancel when the same file is selected causes error
         console.log(error);
@@ -1135,8 +1012,8 @@ app.proto.count = function (value) {
 
 
 app.proto.formatTime = function (message) {
-    let hours, minutes, seconds, period, time;
-    time = message && message.date;
+    let hours, minutes, seconds;
+    let time = message && message.date;
 
 
     if (!time) {
@@ -1161,23 +1038,18 @@ app.proto.formatTime = function (message) {
 
 
 app.proto.formatObj = function(obj){
-
     return JSON.stringify(obj, null, '\t');
 };
 
 
 app.proto.dynamicResize = function (images) {
     let win = $(window);
-
     let windowWidth = win.width();
     let windowHeight = win.height();
-
     let canvasWidth = 1200;
     let canvasHeight = 680;
 
-
     if (windowWidth > canvasWidth) {
-
         $("#canvas-tab-area").resizable({
                 alsoResize: '#inspector-tab-area',
                 minWidth: 860
@@ -1272,5 +1144,22 @@ function playSound() {
     catch (err) {
         return err;
     }
+}
 
+/***
+ * Local function to update children's positions with node
+ * @param positionDiff
+ * @param node
+ */
+function moveNodeAndChildren(positionDiff, node) {
+    let oldX = node.position("x");
+    let oldY = node.position("y");
+    node.position({
+        x: oldX + positionDiff.x,
+        y: oldY + positionDiff.y
+    });
+    let children = node.children();
+    children.forEach(function(child){
+        moveNodeAndChildren(positionDiff, child, true);
+    });
 }

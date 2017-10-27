@@ -632,7 +632,6 @@ module.exports = function(serverIp, modelManager){
                 },100);
             });
         });
-
     }
 
     function testMerge(){

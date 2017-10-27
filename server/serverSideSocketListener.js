@@ -8,10 +8,8 @@ let fs = require('fs');
  * @param callback
  */
 let executeCommandLineProcess = function (cmdStr, callback){
-
     try {
         let exec = require('child_process').exec;
-
 
         exec(cmdStr, function (error, stdout, stderr) {
             console.log('stdout: ' + stdout);
@@ -23,27 +21,26 @@ let executeCommandLineProcess = function (cmdStr, callback){
             }
 
             if (callback) callback();
-
         });
     }
     catch(error){
         if (callback) callback("Error " + error);
     }
-
-
 };
 
+/***
+ * Start listening to sockets
+ * @param io
+ * @param model: shared model
+ * @param cancerDataOrganizer: get mutation data from cbioportal
+ */
 module.exports.start = function(io, model, cancerDataOrganizer){
-
-
-
     let modelManagerList = {}; //not an array!
     let roomList = [];
     let humanList = [];
     let pnnlArr  = [];
     let tripsGeneralInterfaceInstance;
     let tripsCausalityInterfaceInstance;
-
 
     let request = require('request'); //REST call over http/https
 
@@ -55,12 +52,63 @@ module.exports.start = function(io, model, cancerDataOrganizer){
         "Content-Type": "application/json"
     };
 
-    let askHuman = function (userId, room, requestStr, data, callback){
+    io.sockets.on('connection', function (socket) {
 
+        socket.on('error', function (error) {
+            console.log(error);
+        });
+
+        listenToAgentRequests(socket);
+
+        listenToHumanRequests(socket);
+
+        listenToQueryRequests(socket); //can come from both human and agent
+
+
+        socket.on('disconnect', function() {
+            try {
+                if(socket.room) {
+                    modelManagerList[socket.room].deleteUser(socket.userId);
+                    //remove from humanlist
+                    let isHumanDisconnected = false;
+                    for (let i = humanList.length - 1; i >= 0; i--) {
+                        if (humanList[i].userId === socket.userId) {
+                            //human is disconnected, so disconnect all users
+                            isHumanDisconnected = true;
+                            humanList.splice(i, 1);
+                            break;
+                        }
+                    }
+
+                    if(isHumanDisconnected)
+                        modelManagerList[socket.room].deleteAllUsers();
+                }
+            }
+            catch(e){
+                console.log("Disconnect error " + e);
+            }
+
+            socket.subscribed = false; //why isn't the socket removed
+
+        });
+    });
+
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    //LOCAL FUNCTIONS
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /***
+     * Send a client query to do the clientside operation
+     * @param userId
+     * @param room
+     * @param requestStr
+     * @param data
+     * @param callback
+     */
+    let askHuman = function (userId, room, requestStr, data, callback){
         let roomMate = humanList.find(function(human){
             return(human.userId !== userId && human.room === room);
         }); //returns the first match
-
 
         if(roomMate!== null) {
             let clientSocket = io.sockets.connected[roomMate.socketId];
@@ -70,24 +118,22 @@ module.exports.start = function(io, model, cancerDataOrganizer){
                 console.log(requestStr);
                 if(callback) callback(val);
             });
-
         }
         else
             if(callback) callback("fail");
     };
 
-
+    /***
+     * Read all the gene names in causal path data
+     * @param callback
+     */
     let readGeneList = function(callback){
         let filePath = './agent-interaction/CausalPath/causative-data-centric.sif';
         let inStream = fs.createReadStream(filePath);
         let rl = readline.createInterface(inStream);
 
-
-
         let geneList = [];
         rl.on('line', function (line) {
-
-
             let vals = line.split("\t");
 
             let id1 = vals[0].toUpperCase();
@@ -95,7 +141,6 @@ module.exports.start = function(io, model, cancerDataOrganizer){
 
             geneList[id1] = true;
             geneList[id2] = true;
-
         });
 
         rl.on('close', function () {
@@ -104,22 +149,20 @@ module.exports.start = function(io, model, cancerDataOrganizer){
         });
     };
 
-
+    /***
+     * Read PNNL ovarian correlation data
+     * @param geneList
+     * @param callback
+     */
     let readPNNLData = function(geneList, callback){
-
-      //  if(Object.keys(pnnlList).length === 0) { //not already in memory
         if(pnnlArr.length <= 0){
-            //READ PNNL Data
-
-            let filePathCorr = './agent-interaction/CausalPath/PNNL-oletian-correlations.txt';
+            let filePathCorr = './agent-interaction/CausalPath/PNNL-ovarian-correlations.txt';
             let instreamCorr = fs.createReadStream(filePathCorr);
             let rlCorr = readline.createInterface(instreamCorr);
 
             let i = 0;
 
             rlCorr.on('line', function (line) {
-
-
                 let vals = line.split("\t");
 
                 let id1 = vals[0].toUpperCase();
@@ -135,12 +178,9 @@ module.exports.start = function(io, model, cancerDataOrganizer){
                     let geneName2 = idStr2[0];
                     let pSite2 = idStr2[1];
 
-
                   //  if(Number(vals[2]) < 0.95 ) {
 
                     if((geneList && (geneList[geneName1] || geneList[geneName2])) || !geneList){
-
-
                         pnnlArr.push({
                             id1: geneName1,
                             id2: geneName2,
@@ -149,8 +189,6 @@ module.exports.start = function(io, model, cancerDataOrganizer){
                             correlation: vals[2],
                             pVal: vals[3]
                         });
-
-
                         i++;
                         console.log(i);
                     }
@@ -168,448 +206,19 @@ module.exports.start = function(io, model, cancerDataOrganizer){
         }
 
     };
+
     /***
      *
-     * @param socket used for socket disconnections
+     * @param socket
      */
-    let listenToAgentRequests = function(socket){
-
-
-        socket.on('agentActiveRoomsRequest', function( callback){
-            callback(roomList);
-        });
-
-
-        socket.on('agentCurrentRoomRequest', function( callback){
-            callback(roomList[roomList.length - 1]);
-        });
-
-
-        //Agent requests
-
-
-        socket.on('agentPNNLRequest', function(data, callback){
-
-            readGeneList(function(geneList){
-                readPNNLData(geneList, callback);
-            });
-            console.log("Received request");
-
-
-        });
-
-
-        socket.on('agentUndoRequest', function(data, callback){ //from computer agent
-
-
-            try {
-                modelManagerList[data.room].undoCommand();
-                //we can wait here until agent request is performed
-
-                if(callback) callback("success");
-            }
-            catch(e){
-                console.log(e);
-                if(callback) callback("error");
-
-            }
-
-
-        });
-
-
-        socket.on('agentRedoRequest', function(data, callback){ //from computer agent
-
-            modelManagerList[data.room].redoCommand();
-            if(callback) callback();
-        });
-
-
-
-        socket.on('agentChangeNameRequest',function(data, callback){
-
-            modelManagerList[data.room].setName(data.userName);
-            if(callback) callback();
-
-        });
-
-
-
-        // //Agent requests
-        // socket.on('agentSetLayoutPropertiesRequest', function(data, callback){
-        //     modelManagerList[data.room].updateLayoutProperties(data);
-        //     if(callback) callback();
-        // });
-        //
-        // socket.on('agentGetLayoutPropertiesRequest', function(data, callback){
-        //     let props = modelManagerList[data.room].getLayoutProperties();
-        //     callback(props);
-        //
-        // });
-        //
-        // socket.on('agentSetGeneralPropertiesRequest', function(data, callback){
-        //     modelManagerList[data.room].updateGeneralProperties(data);
-        //     if(callback) callback();
-        // });
-        //
-        // socket.on('agentGetGeneralPropertiesRequest', function(data, callback){
-        //     let props = modelManagerList[data.room].getGeneralProperties();
-        //     callback(props);
-        //
-        // });
-        //
-        //
-        // socket.on('agentSetGridPropertiesRequest', function(data, callback){
-        //     modelManagerList[data.room].updateGridProperties(data);
-        //     if(callback) callback();
-        // });
-        //
-        // socket.on('agentGetGridPropertiesRequest', function(data, callback){
-        //     let props = modelManagerList[data.room].getGridProperties();
-        //     callback(props);
-        //
-        // });
-
-        socket.on('agentRunLayoutRequest', function(data, callback){
-            askHuman(socket.userId, data.room,  "runLayout", null, function(val){
-                if (callback) callback(val);
-            });
-
-
-        });
-
-        socket.on('agentAlignRequest',function(data, callback){
-
-            askHuman(socket.userId, data.room,  "align", data, function(val){
-                if (callback) callback(val);
-            });
-
-        });
-
-
-        socket.on('agentMergeGraphRequest', function(data, callback){
-
-            let requestStr;
-            if(data.type === "sbgn")
-                requestStr = "mergeSbgn";
-            else //default is json
-                requestStr = "mergeJsonWithCurrent";
-
-            askHuman(socket.userId, data.room,  requestStr, data.graph, function(val){
-                if (callback) callback(val);
-            });
-
-
-        });
-
-
-        //done via sockets as data conversion to json is done in menu-functions
-        socket.on('agentLoadFileRequest',  function(data, callback){
-
-            if(data.fileType.indexOf(".owl") > -1){
-
-
-                request.post({
-                    url: "http://localhost:8080/SBGNConverterServlet",
-                    headers: responseHeaders,
-                    form: {reqType: "sbgn", content: data.param}
-                }, function(error, response){
-
-                    if (error) {
-                        console.log(error);
-                    }
-                    else  {
-                        if(response.statusCode === 200) {
-                            askHuman(socket.userId, data.room,  "loadFile", data.content, function(val){
-                                if (callback) callback(val);
-                            });
-                        }
-
-                    }
-                });
-
-            }
-            else
-                askHuman(socket.userId, data.room,  "loadFile", data.content, function(val){
-                    if (callback) callback(val);
-                });
-            if (callback) callback("Error");
-
-        });
-        socket.on('agentNewFileRequest',  function(data, callback){
-            askHuman(socket.userId, data.room,  "newFile", null, function(val){
-                if (callback) callback(val);
-            });
-
-        });
-
-
-        socket.on('agentUpdateHighlightStatusRequest', function(data, callback){
-
-            askHuman(socket.userId, data.room,  "updateHighlight", data, function(val){
-
-                if(callback) callback(val);
-            });
-
-        });
-
-        socket.on('agentUpdateVisibilityStatusRequest', function(data, callback){
-
-
-            askHuman(socket.userId, data.room,  "updateVisibility", data, function(val){
-
-                if(callback) callback(val);
-            });
-
-
-        });
-
-        socket.on('agentUpdateExpandCollapseStatusRequest', function(data, callback){
-
-
-            askHuman(socket.userId, data.room,  "updateExpandCollapse", data, function(val){
-
-                if(callback) callback(val);
-            });
-
-
-        });
-
-
-        socket.on('agentAddCompoundRequest', function(data, callback) {
-            askHuman(socket.userId, data.room,  "addCompound", data, function(val){
-                if(callback) callback(val);
-            });
-        });
-
-        socket.on('agentCloneRequest', function(data, callback) {
-            askHuman(socket.userId, data.room,  "clone", data, function(val){
-                if(callback) callback(val);
-            });
-        });
-
-
-        socket.on('agentSearchByLabelRequest', function(data, callback) {
-            askHuman(socket.userId, data.room,  "searchByLabel", data, function(val){
-                if(callback) callback(val);
-            });
-        });
-        socket.on('agentGetNodeRequest',function(data, callback){
-            let node = modelManagerList[data.room].getModelNode(data.id);
-            if(callback) callback(node);
-        });
-        socket.on('agentGetEdgeRequest',function(data, callback){
-            let edge = modelManagerList[data.room].getModelEdge(data.id);
-            if(callback) callback(edge);
-        });
-
-        socket.on('agentAddNodeRequest',function(data, callback){
-            //Ask a human client to perform this operation as we don't know the node id
-            askHuman(socket.userId, data.room, "addNode", data,  function(nodeId){
-                if (callback) callback(nodeId);
-            });
-        });
-
-        socket.on('agentAddEdgeRequest',function(data,  callback){
-            //we know the edge id so add directly to the model
-            let status = modelManagerList[data.room].addModelEdge(data.id, data, "me");
-            if(callback) callback(status);
-        });
-
-
-        socket.on('agentDeleteElesRequest',function(data, callback){
-            askHuman(socket.userId, data.room,  "deleteEles", data, function(val){
-                if(callback) callback(val);
-            });
-        });
-
-        socket.on('agentMoveNodeRequest',function(data, callback){
-            let status = modelManagerList[data.room].changeModelNodeAttribute("position", data.id, data.pos);
-            if(callback) callback(status);
-        });
-
-        socket.on('agentChangeNodeAttributeRequest', function(data, callback){
-            let status = modelManagerList[data.room].changeModelNodeAttribute(data.attStr, data.id, data.attVal);
-            if(callback) callback(status);
-
-        });
-        socket.on('agentChangeEdgeAttributeRequest', function(data, callback){
-            let status = modelManagerList[data.room].changeModelEdgeAttribute(data.attStr, data.id, data.attVal);
-            if(callback) callback(status);
-        });
-
-        //Agent wants the history of operations
-        socket.on('agentOperationHistoryRequest', function(data, callback){ //
-            // from computer agent
-            let docPath = 'documents.' + data.room;
-            callback(model.get(docPath + '.history'))
-        });
-
-        //Agent wants the history of chat messages
-        socket.on('agentChatHistoryRequest', function(data, callback){ //from computer agent
-            let messagesQuery = model.query('messages', {
-                room: data.room
-            });
-            messagesQuery.fetch( function(err){
-                if(err) next(err);
-                callback(messagesQuery.get());
-            });
-        });
-
-        socket.on('agentSendImageRequest', function(data, callback){
-
-            console.log("agent sent an image");
-            let status = modelManagerList[socket.room].addImage(data);
-            if(callback) callback(status);
-
-        });
-
-
-        socket.on('agentCBioPortalQueryRequest', function(queryInfo, callback){
-            if(queryInfo.queryType === "cancerTypes") {
-                callback(cancerDataOrganizer.cancerStudies);
-            }
-
-            else if(queryInfo.queryType === "context") {
-                cancerDataOrganizer.getAllMutationCounts(queryInfo.proteinName, function (cancerData) {
-                    callback(cancerData);
-                });
-            }
-            else if(queryInfo.queryType === "alterations"){
-                cancerDataOrganizer.getMutationCountInContext(queryInfo.proteinName, queryInfo.studyId, function(mutationCount){
-                    callback(mutationCount);
-                });
-            }
-
-
-        });
-
-
-
-
-        socket.on('agentMessage', function( msg, callback){
-
-
-
-            msg.date = +(new Date);
-
-            msg.userName = socket.userName;
-
-            model.add('documents.' + msg.room + '.messages', msg);
-
-
-
-            //io.in(socket.room).emit("message", msg);
-
-            if(msg.comment){
-                if (msg.comment.indexOf("The most likely context") > -1) { //if agent told about context
-                    io.in(socket.room).emit("agentContextQuestion",msg.userId);
-                }
-            }
-
-            if(callback) callback("success");
-
-        });
-
-        //Agent wants the model
-        socket.on('agentPageDocRequest', function(data, callback){ //from computer agent
-
-
-            if(modelManagerList[data.room]!==null) {
-                let pageDoc = modelManagerList[data.room].getPageDoc();
-
-
-                callback(pageDoc);
-            }
-
-        });
-
-
-
-        //For testing purposes only
-        socket.on('agentManualDisconnect', function(){
-            try {
-                //do not delete socket but remove agent from the list of users
-                modelManagerList[socket.room].deleteUser(socket.userId);
-            }
-            catch(e){
-                console.log("Disconnect error " + e);
-            }
-
-            socket.subscribed = false; //why isn't the socket removed
-
-        });
-
-
-
-
-        /**
-         * This stores only species and organs information as cancerTypes require too many genes to be stored and
-         * node interactionCnt is already stored as a node attribute
-         */
-        socket.on('agentContextUpdate', function(data){
-            let docPath = 'documents.' + data.room;
-            model.set(docPath + '.context', data.param);
-        });
-
-
-
-        socket.on('agentConnectToTripsRequest', function(param){
-
-
-            console.log("Agent trips connection request");
-
-
-            if(param.isInterfaceAgent){
-                if(!tripsGeneralInterfaceInstance || !tripsGeneralInterfaceInstance.isConnectedToTrips()) {
-                    let TripsGeneralInterfaceModule = require('./trips/TripsGeneralInterfaceModule.js');
-                    tripsGeneralInterfaceInstance = new TripsGeneralInterfaceModule(param.userId, param.userName, socket, model, askHuman);
-
-
-
-                }
-                else {//already there is an instance
-                    tripsGeneralInterfaceInstance.updateWebSocket(socket);
-                    tripsGeneralInterfaceInstance.updateListeners(socket);
-
-                }
-
-            }
-            else {
-                console.log("trips causality module connection " + socket.id + " room: " + socket.room);
-
-                if(!tripsCausalityInterfaceInstance || !tripsCausalityInterfaceInstance.isConnectedToTrips()) {
-
-                    let TripsCausalityInterfaceModule = require('./trips/TripsCausalityInterfaceModule.js');
-                    tripsCausalityInterfaceInstance = new TripsCausalityInterfaceModule(param.userId, param.userName, socket, model);
-
-                }
-                else {
-
-                    tripsCausalityInterfaceInstance.updateWebSocket(socket);
-                }
-            }
-        });
-
-    };
-
-    io.sockets.on('connection', function (socket) {
-
-        socket.on('error', function (error) {
-            console.log(error);
-            //  socket.destroy()
-        });
-
-        listenToAgentRequests(socket);
+    let listenToHumanRequests = function(socket){
 
         socket.on('getDate',  function(msg, callback){
             callback(+(new Date));
-
             //relay the message to agents
             io.in(socket.room).emit('message', msg);
 
         });
-
 
         socket.on('subscribeHuman', function (data) {
             socket.userId = data.userId;
@@ -624,15 +233,10 @@ module.exports.start = function(io, model, cancerDataOrganizer){
             roomList.push(data.room);
             humanList.push({room:data.room, userId: data.userId, socketId: data.socketId});
 
-
-
             console.log("human subscribed");
-
 
             // noinspection Annotator
             model.subscribe('documents', function () {
-
-
                 let pageDoc = model.at('documents.' + data.room);
                 let docPath = 'documents.' + data.room;
                 let cy = model.at((docPath + '.cy'));
@@ -664,8 +268,8 @@ module.exports.start = function(io, model, cancerDataOrganizer){
                     });
 
                     context.subscribe(function () {
-
                     });
+
                     images.subscribe(function () {
                     });
 
@@ -680,28 +284,22 @@ module.exports.start = function(io, model, cancerDataOrganizer){
 
                     userIds.subscribe(function () {
                     });
+
                     noTrips.subscribe(function(){
-
-
                     });
 
                     users.subscribe(function () {
-
                         let ModelManager = require("../public/collaborative-app/modelManager.js");
-
 
                         modelManagerList[data.room] = new ModelManager(model, data.room);
                         modelManagerList[data.room].setName(data.userId, data.userName);
 
-                       //  //Add the user explicitly here
+                        //Add the user explicitly here
                          modelManagerList[data.room].addUser(data.userId);
 
                         model.set((docPath + '.noTrips'), (process.argv.length > 2) && (process.argv[2].toUpperCase().indexOf("TRIPS") > -1));
-
-
                     });
                 });
-
 
                 //Notify agents of model changes
                 model.on('insert', (docPath + '.history.**'), function (id, cmdInd) {
@@ -724,13 +322,10 @@ module.exports.start = function(io, model, cancerDataOrganizer){
                         }
                     }
 
-
-                    //
                     if (msg && msg.comment) {
                         if (msg.comment.indexOf("The most likely context") > -1) { //if agent told about context
                             io.in(socket.room).emit("agentContextQuestion", msg.userId);
                         }
-
                     }
 
                 });
@@ -740,7 +335,6 @@ module.exports.start = function(io, model, cancerDataOrganizer){
                     if (socket.subscribed)
                         io.in(socket.room).emit('imageFile', data.img);
                 });
-
 
                 //queryData is the element in the array
                 model.on('insert', (docPath + '.pcQuery'), function( ind, queryData){
@@ -767,6 +361,9 @@ module.exports.start = function(io, model, cancerDataOrganizer){
         });
 
 
+        /***
+         * Reset Clic conversation and the BA
+         */
         socket.on('resetConversationRequest', function(){
                 modelManagerList[socket.room].newModel();
 
@@ -783,13 +380,21 @@ module.exports.start = function(io, model, cancerDataOrganizer){
                 }
             });
 
-            }
-        );
+        });
 
-        //Run a shell script
+        //Run a shell script to run CausalityAgent.py
         socket.on('connectToCausalityAgentRequest', function(){
             executeCommandLineProcess(("python ../CausalityAgent/causality_sbgnviz_interface.py '../CausalityAgent/resources'"));
         });
+
+
+    };
+
+    /***
+     * Requests sent through the socket through agent API
+     * @param socket used for socket disconnections
+     */
+    let listenToAgentRequests = function(socket){
 
         socket.on('subscribeAgent', function (data, callback) {
             socket.userId = data.userId;
@@ -797,14 +402,11 @@ module.exports.start = function(io, model, cancerDataOrganizer){
             socket.subscribed = true;
             socket.userName = data.userName;
 
-
             socket.join(data.room);
 
             data.socketId = socket.id;
 
-
             try {
-
                 model.subscribe('documents', function () {
                     let pageDoc = model.at('documents.' + data.room);
                     let docPath = 'documents.' + data.room;
@@ -849,29 +451,24 @@ module.exports.start = function(io, model, cancerDataOrganizer){
                             });
 
                             noTrips.subscribe(function () {
-
                             });
 
                             userIds.subscribe(function () {
                                 let userIdsList = userIds.get();
                                 if (!userIdsList || userIdsList.indexOf(data.userId) < 0) {
                                     userIds.push(data.userId);
-
                                 }
                             });
 
                             users.subscribe(function () {
                                 users.set(data.userId, {name: data.userName, colorCode: data.colorCode});
                                 modelManagerList[data.room].setName(data.userId, data.userName);
-
                                 console.log("agent subscribed to room: " + data.room);
-
                             });
-                    });
+                        });
                     }
                     catch(e) {
                         console.log("Client not connected");
-
                     }
                 });
             }
@@ -879,44 +476,342 @@ module.exports.start = function(io, model, cancerDataOrganizer){
                 console.log("Model subscription unsuccessful");
             }
 
-         if(callback) callback();
+            if(callback) callback();
 
         });
 
+        socket.on('agentActiveRoomsRequest', function( callback){
+            callback(roomList);
+        });
 
+        socket.on('agentCurrentRoomRequest', function( callback){
+            callback(roomList[roomList.length - 1]);
+        });
 
-        socket.on('disconnect', function() {
+        socket.on('agentPNNLRequest', function(data, callback){
+            readGeneList(function(geneList){
+                readPNNLData(geneList, callback);
+            });
+        });
 
+        socket.on('agentUndoRequest', function(data, callback){ //from computer agent
             try {
+                modelManagerList[data.room].undoCommand();
+                //we can wait here until agent request is performed
+                if(callback) callback("success");
+            }
+            catch(e){
+                console.log(e);
+                if(callback) callback("error");
+            }
+        });
 
-                if(socket.room) {
-                    modelManagerList[socket.room].deleteUser(socket.userId);
+        socket.on('agentRedoRequest', function(data, callback){ //from computer agent
 
-                    //remove from humanlist
-                    let isHumanDisconnected = false;
-                    for (let i = humanList.length - 1; i >= 0; i--) {
-                        if (humanList[i].userId === socket.userId) {
-                            //human is disconnected, so disconnect all users
-                            isHumanDisconnected = true;
-                            humanList.splice(i, 1);
-                            break;
+            modelManagerList[data.room].redoCommand();
+            if(callback) callback();
+        });
+
+        socket.on('agentChangeNameRequest',function(data, callback){
+
+            modelManagerList[data.room].setName(data.userName);
+            if(callback) callback();
+        });
+
+        // //Agent requests
+        // socket.on('agentSetLayoutPropertiesRequest', function(data, callback){
+        //     modelManagerList[data.room].updateLayoutProperties(data);
+        //     if(callback) callback();
+        // });
+        //
+        // socket.on('agentGetLayoutPropertiesRequest', function(data, callback){
+        //     let props = modelManagerList[data.room].getLayoutProperties();
+        //     callback(props);
+        //
+        // });
+        //
+        // socket.on('agentSetGeneralPropertiesRequest', function(data, callback){
+        //     modelManagerList[data.room].updateGeneralProperties(data);
+        //     if(callback) callback();
+        // });
+        //
+        // socket.on('agentGetGeneralPropertiesRequest', function(data, callback){
+        //     let props = modelManagerList[data.room].getGeneralProperties();
+        //     callback(props);
+        //
+        // });
+        //
+        //
+        // socket.on('agentSetGridPropertiesRequest', function(data, callback){
+        //     modelManagerList[data.room].updateGridProperties(data);
+        //     if(callback) callback();
+        // });
+        //
+        // socket.on('agentGetGridPropertiesRequest', function(data, callback){
+        //     let props = modelManagerList[data.room].getGridProperties();
+        //     callback(props);
+        //
+        // });
+
+        socket.on('agentRunLayoutRequest', function(data, callback){
+            askHuman(socket.userId, data.room,  "runLayout", null, function(val){
+                if (callback) callback(val);
+            });
+        });
+
+        socket.on('agentAlignRequest',function(data, callback){
+            askHuman(socket.userId, data.room,  "align", data, function(val){
+                if (callback) callback(val);
+            });
+        });
+
+
+        socket.on('agentMergeGraphRequest', function(data, callback){
+            let requestStr;
+            if(data.type === "sbgn")
+                requestStr = "mergeSbgn";
+            else //default is json
+                requestStr = "mergeJsonWithCurrent";
+
+            askHuman(socket.userId, data.room,  requestStr, data.graph, function(val){
+                if (callback) callback(val);
+            });
+        });
+
+        //done via sockets as data conversion to json is done in menu-functions
+        socket.on('agentLoadFileRequest',  function(data, callback){
+            if(data.fileType.indexOf(".owl") > -1){
+                request.post({
+                    url: "http://localhost:8080/SBGNConverterServlet",
+                    headers: responseHeaders,
+                    form: {reqType: "sbgn", content: data.param}
+                }, function(error, response){
+
+                    if (error) {
+                        console.log(error);
+                    }
+                    else  {
+                        if(response.statusCode === 200) {
+                            askHuman(socket.userId, data.room,  "loadFile", data.content, function(val){
+                                if (callback) callback(val);
+                            });
                         }
-                    }
-                    if(isHumanDisconnected) {
-                        modelManagerList[socket.room].deleteAllUsers();
-                    }
-                }
 
+                    }
+                });
+            }
+            else
+                askHuman(socket.userId, data.room,  "loadFile", data.content, function(val){
+                    if (callback) callback(val);
+                });
+
+            if (callback) callback("Error");
+        });
+
+        socket.on('agentNewFileRequest',  function(data, callback){
+            askHuman(socket.userId, data.room,  "newFile", null, function(val){
+                if (callback) callback(val);
+            });
+        });
+
+        socket.on('agentUpdateHighlightStatusRequest', function(data, callback){
+            askHuman(socket.userId, data.room,  "updateHighlight", data, function(val){
+                if(callback) callback(val);
+            });
+        });
+
+        socket.on('agentUpdateVisibilityStatusRequest', function(data, callback){
+            askHuman(socket.userId, data.room,  "updateVisibility", data, function(val){
+                if(callback) callback(val);
+            });
+        });
+
+        socket.on('agentUpdateExpandCollapseStatusRequest', function(data, callback){
+            askHuman(socket.userId, data.room,  "updateExpandCollapse", data, function(val){
+                if(callback) callback(val);
+            });
+        });
+
+        socket.on('agentAddCompoundRequest', function(data, callback) {
+            askHuman(socket.userId, data.room,  "addCompound", data, function(val){
+                if(callback) callback(val);
+            });
+        });
+
+        socket.on('agentCloneRequest', function(data, callback) {
+            askHuman(socket.userId, data.room,  "clone", data, function(val){
+                if(callback) callback(val);
+            });
+        });
+
+        socket.on('agentSearchByLabelRequest', function(data, callback) {
+            askHuman(socket.userId, data.room,  "searchByLabel", data, function(val){
+                if(callback) callback(val);
+            });
+        });
+
+        socket.on('agentGetNodeRequest',function(data, callback){
+            let node = modelManagerList[data.room].getModelNode(data.id);
+            if(callback) callback(node);
+        });
+
+        socket.on('agentGetEdgeRequest',function(data, callback){
+            let edge = modelManagerList[data.room].getModelEdge(data.id);
+            if(callback) callback(edge);
+        });
+
+        socket.on('agentAddNodeRequest',function(data, callback){
+            //Ask a human client to perform this operation as we don't know the node id
+            askHuman(socket.userId, data.room, "addNode", data,  function(nodeId){
+                if (callback) callback(nodeId);
+            });
+        });
+
+        socket.on('agentAddEdgeRequest',function(data,  callback){
+            //we know the edge id so add directly to the model
+            let status = modelManagerList[data.room].addModelEdge(data.id, data, "me");
+            if(callback) callback(status);
+        });
+
+        socket.on('agentDeleteElesRequest',function(data, callback){
+            askHuman(socket.userId, data.room,  "deleteEles", data, function(val){
+                if(callback) callback(val);
+            });
+        });
+
+        socket.on('agentMoveNodeRequest',function(data, callback){
+            let status = modelManagerList[data.room].changeModelNodeAttribute("position", data.id, data.pos);
+            if(callback) callback(status);
+        });
+
+        socket.on('agentChangeNodeAttributeRequest', function(data, callback){
+            let status = modelManagerList[data.room].changeModelNodeAttribute(data.attStr, data.id, data.attVal);
+            if(callback) callback(status);
+
+        });
+        socket.on('agentChangeEdgeAttributeRequest', function(data, callback){
+            let status = modelManagerList[data.room].changeModelEdgeAttribute(data.attStr, data.id, data.attVal);
+            if(callback) callback(status);
+        });
+
+        //Agent wants the history of operations
+        socket.on('agentOperationHistoryRequest', function(data, callback){ //
+            // from computer agent
+            let docPath = 'documents.' + data.room;
+            callback(model.get(docPath + '.history'))
+        });
+
+        //Agent wants the history of chat messages
+        socket.on('agentChatHistoryRequest', function(data, callback){ //from computer agent
+            let messagesQuery = model.query('messages', {
+                room: data.room
+            });
+            messagesQuery.fetch( function(err){
+                if(err) next(err);
+                callback(messagesQuery.get());
+            });
+        });
+
+        socket.on('agentSendImageRequest', function(data, callback){
+            let status = modelManagerList[socket.room].addImage(data);
+            if(callback) callback(status);
+
+        });
+
+        socket.on('agentCBioPortalQueryRequest', function(queryInfo, callback){
+            if(queryInfo.queryType === "cancerTypes") {
+                callback(cancerDataOrganizer.cancerStudies);
+            }
+
+            else if(queryInfo.queryType === "context") {
+                cancerDataOrganizer.getAllMutationCounts(queryInfo.proteinName, function (cancerData) {
+                    callback(cancerData);
+                });
+            }
+            else if(queryInfo.queryType === "alterations"){
+                cancerDataOrganizer.getMutationCountInContext(queryInfo.proteinName, queryInfo.studyId, function(mutationCount){
+                    callback(mutationCount);
+                });
+            }
+        });
+
+        socket.on('agentMessage', function( msg, callback){
+            msg.date = +(new Date);
+            msg.userName = socket.userName;
+            model.add('documents.' + msg.room + '.messages', msg);
+            //io.in(socket.room).emit("message", msg);
+
+            if(msg.comment){
+                if (msg.comment.indexOf("The most likely context") > -1) { //if agent told about context
+                    io.in(socket.room).emit("agentContextQuestion",msg.userId);
+                }
+            }
+            if(callback) callback("success");
+        });
+
+        //Agent wants the model
+        socket.on('agentPageDocRequest', function(data, callback){ //from computer agent
+            if(modelManagerList[data.room]!==null) {
+                let pageDoc = modelManagerList[data.room].getPageDoc();
+                callback(pageDoc);
+            }
+        });
+
+        //For testing purposes only
+        socket.on('agentManualDisconnect', function(){
+            try {
+                //do not delete socket but remove agent from the list of users
+                modelManagerList[socket.room].deleteUser(socket.userId);
             }
             catch(e){
                 console.log("Disconnect error " + e);
             }
-
             socket.subscribed = false; //why isn't the socket removed
 
         });
 
+        /**
+         * This stores only species and organs information as cancerTypes require too many genes to be stored and
+         * node interactionCnt is already stored as a node attribute
+         */
+        socket.on('agentContextUpdate', function(data){
+            let docPath = 'documents.' + data.room;
+            model.set(docPath + '.context', data.param);
+        });
 
+
+        socket.on('agentConnectToTripsRequest', function(param){
+            console.log("Agent trips connection request");
+
+            if(param.isInterfaceAgent){
+                if(!tripsGeneralInterfaceInstance || !tripsGeneralInterfaceInstance.isConnectedToTrips()) {
+                    let TripsGeneralInterfaceModule = require('./trips/TripsGeneralInterfaceModule.js');
+                    tripsGeneralInterfaceInstance = new TripsGeneralInterfaceModule(param.userId, param.userName, socket, model, askHuman);
+                }
+                else {//already there is an instance
+                    tripsGeneralInterfaceInstance.updateWebSocket(socket);
+                    tripsGeneralInterfaceInstance.updateListeners(socket);
+                }
+            }
+            else {
+                console.log("trips causality module connection " + socket.id + " room: " + socket.room);
+
+                if(!tripsCausalityInterfaceInstance || !tripsCausalityInterfaceInstance.isConnectedToTrips()) {
+                    let TripsCausalityInterfaceModule = require('./trips/TripsCausalityInterfaceModule.js');
+                    tripsCausalityInterfaceInstance = new TripsCausalityInterfaceModule(param.userId, param.userName, socket, model);
+                }
+                else {
+                    tripsCausalityInterfaceInstance.updateWebSocket(socket);
+                }
+            }
+        });
+    };
+
+    /***
+     * Requests sent to other servers
+     * @param socket
+     */
+    let listenToQueryRequests = function(socket){
         socket.on('REACHQuery',  function(outputType, msg, callback){
             let queryParams = "text=" + msg + "&output=" + outputType; //fries";
 
@@ -946,7 +841,6 @@ module.exports.start = function(io, model, cancerDataOrganizer){
                 }
             });
         });
-
 
         socket.on('pdfConvertRequest', function(binData, callback){
 
@@ -1033,8 +927,6 @@ module.exports.start = function(io, model, cancerDataOrganizer){
             // req.end();
         });
 
-
-
         socket.on('BioPAXRequest', function(fileContent, reqType, callback){
 
             request.post({
@@ -1065,9 +957,7 @@ module.exports.start = function(io, model, cancerDataOrganizer){
 
                 }
             });
-
         });
 
-    });
-
+    };
 };
