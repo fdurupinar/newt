@@ -7,218 +7,218 @@
 var _ = require('underscore');
 
 
-module.exports = function (model, docId, sbgnviz) {
+
+class ModelManager{
 
 
+    constructor(model, docId){
+        this.model = model;
+        this.docId = docId;
+        // this.model.ref('_page.doc', 'documents.' + docId);
 
-    console.log("ModelManager " + docId);
-
-    model.ref('_page.doc', 'documents.' + docId);
-
-
-
-    return {
+    }
 
 
-        getModel: function () {
-            return model;
-        },
+    getModel() {
+        return this.model;
+    }
 
-        getPageDoc: function(){
-            return model.get('_page.doc');
-        },
-
-
-        addImage: function (data, user, noHistUpdate) {
-
-            var images = model.get('_page.doc.images');
-            if(images) {
-                for (var i = 0; i < images.length; i++){
-                    if(images[i].tabIndex === data.tabIndex) { //overwrite
-                        images[i] = data;
-                        if (!noHistUpdate)
-                            this.updateHistory({opName: 'overwrite', opTarget: 'image', opAttr: data.fileName});
-
-                        //overwrite images
-                        model.set('_page.doc.images', images);
-                        return;
-
-                    }
-
-                }
-
-            }
-
-            //if no such tab exists, insert a new tab
-            model.pass({user: user}).push('_page.doc.images', data);
-
-            if (!noHistUpdate)
-                this.updateHistory({opName: 'add', opTarget: 'image', opAttr: data.fileName});
-        },
-
-        getImages: function(){
-            var images = model.get('_page.doc.images');
-            return images;
-        },
-
-        setName: function (userId, userName) {
-
-            model.set('_page.doc.users.' + userId +'.name', userName);
-
-        },
-
-        getName: function (userId) {
-            return model.get('_page.doc.users.' + userId + '.name');
-        },
-
-        /***
-         *
-         * @param id of the user we want to change color of
-         * @param color
-         */
-        setColorCode: function(id, color){
-            model.set('_page.doc.users.' + id +'.colorCode', color);
-        },
-
-        getMessages: function(){
-            return model.get('_page.doc.messages');
-        },
-
-        getUsers: function(){
-            return model.get('_page.doc.users');
-        },
-        getUserIds: function(){
-            return model.get('_page.doc.userIds');
-        },
+    getPageDoc(){
+        return this.model.get('documents.' + this.docId);
+    }
 
 
-        addUser: function(userId){
+    addImage(data, user, noHistUpdate) {
 
+        var self = this;
+        var images = this.model.get('documents.' + this.docId + '.images');
+        if(images) {
+            for (var i = 0; i < images.length; i++){
+                if(images[i].tabIndex === data.tabIndex) { //overwrite
+                    images[i] = data;
+                    if (!noHistUpdate)
+                        this.updateHistory({opName: 'overwrite', opTarget: 'image', opAttr: data.fileName});
 
-            var userIds = model.get('_page.doc.userIds');
-
-            if(!userIds || userIds.indexOf(userId) < 0) //user not in the list
-                model.at('_page.doc.userIds').push(userId);
-
-
-        },
-
-        deleteAllUsers: function() {
-            var userIds = model.get('_page.doc.userIds');
-
-            for(var i = 0; i < userIds.length; i++){
-
-                model.pop('_page.doc.userIds');
-            }
-        },
-
-        deleteUser: function(userId){
-         //   model.del('_page.doc.users.'+ userId);
-            var userIds = model.get('_page.doc.userIds');
-
-            for(var i = 0; i < userIds.length; i++){
-
-                if(userIds[i] == userId ){
-                    model.remove('_page.doc.userIds', i) ; //remove from the index
-                    break;
+                    //overwrite images
+                    self.model.set('documents.' + self.docId + '.images', images);
+                    return;
                 }
             }
-        },
+        }
+
+        //if no such tab exists, insert a new tab
+        model.pass({user: user}).push('documents.' + this.docId + '.images', data);
+
+        if (!noHistUpdate)
+            this.updateHistory({opName: 'add', opTarget: 'image', opAttr: data.fileName});
+    }
+
+    getImages(){
+
+        return this.model.get('documents.' + this.docId + '.images');
+    }
+
+    setName (userId, userName) {
+
+        this.model.set('documents.' + this.docId + '.users.' + userId +'.name', userName);
+
+    }
+
+    getName (userId) {
+        return this.model.get('documents.' + this.docId + '.users.' + userId + '.name');
+    }
+
+    /***
+     *
+     * @param id of the user we want to change color of
+     * @param color
+     */
+    setColorCode(id, color){
+        this.model.set('documents.' + this.docId + '.users.' + id +'.colorCode', color);
+    }
+
+    getMessages(){
+        return this.model.get('documents.' + this.docId + '.messages');
+    }
+
+    getUsers(){
+        return this.model.get('documents.' + this.docId + '.users');
+    }
+    getUserIds(){
+        return this.model.get('documents.' + this.docId + '.userIds');
+    }
 
 
-        // updateLayoutProperties: function (layoutProperties, user, noHistUpdate) {
-        //
-        //     var currentLayoutProperties;
-        //     var lp = model.get('_page.doc.cy.layoutProperties');
-        //
-        //
-        //     currentLayoutProperties = _.clone(layoutProperties);
-        //
-        //
-        //
-        //     model.pass({user: user}).set('_page.doc.cy.layoutProperties',  currentLayoutProperties); //synclayout
-        //
-        //     if (!noHistUpdate)
-        //         this.updateHistory({
-        //             opName: 'update',
-        //             opTarget: 'layout properties',
-        //             opAttr: JSON.stringify(currentLayoutProperties),
-        //             param: currentLayoutProperties,
-        //             prevParam: lp
-        //
-        //         });
-        //     return currentLayoutProperties;
-        // },
-        //
-        // getLayoutProperties: function (layoutProperties, user, noHistUpdate) {
-        //    return model.get('_page.doc.cy.layoutProperties');
-        //
-        // },
-        //
-        // updateGeneralProperties: function (generalProperties, user, noHistUpdate) {
-        //
-        //     var currentGeneralProperties;
-        //     var lp = model.get('_page.doc.cy.generalProperties');
-        //
-        //
-        //     currentGeneralProperties = _.clone(generalProperties);
-        //
-        //
-        //     model.pass({user: user}).set('_page.doc.cy.generalProperties',  currentGeneralProperties); //synclayout
-        //
-        //     if (!noHistUpdate)
-        //         this.updateHistory({
-        //             opName: 'update',
-        //             opTarget: 'general properties',
-        //             opAttr: JSON.stringify(currentGeneralProperties),
-        //             param:currentGeneralProperties,
-        //             prevParam:lp
-        //         });
-        //     return currentGeneralProperties;
-        // },
-        //
-        // getGeneralProperties: function (generalProperties, user, noHistUpdate) {
-        //     return model.get('_page.doc.cy.generalProperties');
-        //
-        // },
-        //
-        // updateGridProperties: function (gridProperties, user, noHistUpdate) {
-        //
-        //     var currentGridProperties;
-        //     var lp = model.get('_page.doc.cy.gridProperties');
-        //
-        //
-        //     currentGridProperties = _.clone(gridProperties);
-        //
-        //
-        //     model.pass({user: user}).set('_page.doc.cy.gridProperties',  currentGridProperties); //synclayout
-        //
-        //     if (!noHistUpdate)
-        //         this.updateHistory({
-        //             opName: 'update',
-        //             opTarget: 'grid properties',
-        //             opAttr: JSON.stringify(currentGridProperties),
-        //             param:currentGridProperties,
-        //             prevParam:lp
-        //         });
-        //     return currentGridProperties;
-        // },
-        //
-        // getGridProperties: function (gridProperties, user, noHistUpdate) {
-        //     return model.get('_page.doc.cy.gridProperties');
-        //
-        // },
+    addUser(userId){
 
-        /***
-         *
-         * @param cmd  {opName, opTarget,  elType, elId, opAttr,param, prevParam}
-         * opName: set, load, open, add, select, unselect
-         * opTarget: element, element group,  model, sample,
+
+        var userIds = this.model.get('documents.' + this.docId + '.userIds');
+
+        if(!userIds || userIds.indexOf(userId) < 0) //user not in the list
+            this.model.at('documents.' + this.docId + '.userIds').push(userId);
+
+
+    }
+
+    deleteAllUsers(){
+        let self = this;
+        var userIds = this.model.get('documents.' + this.docId + '.userIds');
+
+
+        for(var i = 0; i < userIds.length; i++){
+            self.model.pop('documents.' + self.docId + '.userIds');
+        }
+    }
+
+    deleteUser(userId){
+        let self = this;
+
+        //   model.del('documents.' + this.docId + '.users.'+ userId);
+        var userIds = this.model.get('documents.' + this.docId + '.userIds');
+
+        for(var i = 0; i < userIds.length; i++){
+
+            if(userIds[i] == userId ){
+                self.model.remove('documents.' + self.docId + '.userIds', i) ; //remove from the index
+                break;
+            }
+        }
+    }
+
+
+    // updateLayoutProperties (layoutProperties, user, noHistUpdate) {
+    //
+    //     var currentLayoutProperties;
+    //     var lp = model.get('documents.' + this.docId + '.cy.layoutProperties');
+    //
+    //
+    //     currentLayoutProperties = _.clone(layoutProperties);
+    //
+    //
+    //
+    //     model.pass({user: user}).set('documents.' + this.docId + '.cy.layoutProperties',  currentLayoutProperties); //synclayout
+    //
+    //     if (!noHistUpdate)
+    //         this.updateHistory({
+    //             opName: 'update',
+    //             opTarget: 'layout properties',
+    //             opAttr: JSON.stringify(currentLayoutProperties),
+    //             param: currentLayoutProperties,
+    //             prevParam: lp
+    //
+    //         });
+    //     return currentLayoutProperties;
+    // },
+    //
+    // getLayoutProperties (layoutProperties, user, noHistUpdate) {
+    //    return model.get('documents.' + this.docId + '.cy.layoutProperties');
+    //
+    // },
+    //
+    // updateGeneralProperties (generalProperties, user, noHistUpdate) {
+    //
+    //     var currentGeneralProperties;
+    //     var lp = model.get('documents.' + this.docId + '.cy.generalProperties');
+    //
+    //
+    //     currentGeneralProperties = _.clone(generalProperties);
+    //
+    //
+    //     model.pass({user: user}).set('documents.' + this.docId + '.cy.generalProperties',  currentGeneralProperties); //synclayout
+    //
+    //     if (!noHistUpdate)
+    //         this.updateHistory({
+    //             opName: 'update',
+    //             opTarget: 'general properties',
+    //             opAttr: JSON.stringify(currentGeneralProperties),
+    //             param:currentGeneralProperties,
+    //             prevParam:lp
+    //         });
+    //     return currentGeneralProperties;
+    // },
+    //
+    // getGeneralProperties (generalProperties, user, noHistUpdate) {
+    //     return model.get('documents.' + this.docId + '.cy.generalProperties');
+    //
+    // },
+    //
+    // updateGridProperties (gridProperties, user, noHistUpdate) {
+    //
+    //     var currentGridProperties;
+    //     var lp = model.get('documents.' + this.docId + '.cy.gridProperties');
+    //
+    //
+    //     currentGridProperties = _.clone(gridProperties);
+    //
+    //
+    //     model.pass({user: user}).set('documents.' + this.docId + '.cy.gridProperties',  currentGridProperties); //synclayout
+    //
+    //     if (!noHistUpdate)
+    //         this.updateHistory({
+    //             opName: 'update',
+    //             opTarget: 'grid properties',
+    //             opAttr: JSON.stringify(currentGridProperties),
+    //             param:currentGridProperties,
+    //             prevParam:lp
+    //         });
+    //     return currentGridProperties;
+    // },
+    //
+    // getGridProperties (gridProperties, user, noHistUpdate) {
+    //     return model.get('documents.' + this.docId + '.cy.gridProperties');
+    //
+    // },
+
+    /***
+     *
+     * @param cmd  {opName, opTarget,  elType, elId, opAttr,param, prevParam}
+     * opName: set, load, open, add, select, unselect
+     * opTarget: element, element group,  model, sample,
          * elType: node, edge
          * opAttr: highlightColor, lineColor, borderColor etc.
          */
 
-        updateHistory: function (cmd) {
+        updateHistory (cmd) {
             var command = {
                 // userName: userName,
                 date: new Date,
@@ -234,46 +234,42 @@ module.exports = function (model, docId, sbgnviz) {
 
             if (cmd != null) {
 
-                var ind = model.push('_page.doc.history', command) - 1;
-
-
-
-
-                model.set('_page.doc.undoIndex', ind);
+                var ind = this.model.push('documents.' + this.docId + '.history', command) - 1;
+                this.model.set('documents.' + this.docId + '.undoIndex', ind);
             }
 
-        },
-        getLastCommand: function(){
-            var undoIndex = model.get('_page.doc.undoIndex');
-            var cmd = model.get('_page.doc.history.' + undoIndex);
+        }
+        getLastCommand(){
+            var undoIndex = this.model.get('documents.' + this.docId + '.undoIndex');
+            var cmd = this.model.get('documents.' + this.docId + '.history.' + undoIndex);
 
             return cmd;
 
-        },
+        }
 
-        getLastCommandName: function(){
-            var undoIndex = model.get('_page.doc.undoIndex');
-            var cmd = model.get('_page.doc.history.' + undoIndex);
+        getLastCommandName(){
+            var undoIndex = this.model.get('documents.' + this.docId + '.undoIndex');
+            var cmd = this.model.get('documents.' + this.docId + '.history.' + undoIndex);
 
             return cmd.opName;
 
-        },
+        }
 
-        getHistory: function () {
-            return model.get('_page.doc.history');
-        },
+        getHistory () {
+            return this.model.get('documents.' + this.docId + '.history');
+        }
 
-        printHistory: function(){
+        printHistory(){
             console.log("HISTORY:");
-            var hist = model.get('_page.doc.history');
+            var hist = this.model.get('documents.' + this.docId + '.history');
             for(var i = 0 ; i <hist.length;i++)
                 console.log(i + " " + hist[i].opName);
-        },
+        }
 
-        getUndoActionStr: function () {
+        getUndoActionStr(){
 
-            var undoIndex = model.get('_page.doc.undoIndex');
-            var cmd = model.get('_page.doc.history.' + undoIndex);
+            var undoIndex = this.model.get('documents.' + this.docId + '.undoIndex');
+            var cmd = this.model.get('documents.' + this.docId + '.history.' + undoIndex);
 
 
             var cmdStr = cmd.opName + " " + cmd.opTarget;
@@ -285,11 +281,11 @@ module.exports = function (model, docId, sbgnviz) {
 
             return cmdStr;
 
-        },
+        }
 
-        getRedoActionStr: function () {
-            var undoIndex = model.get('_page.doc.undoIndex');
-            var cmd = model.get('_page.doc.history.' + (undoIndex + 1));
+        getRedoActionStr () {
+            var undoIndex = this.model.get('documents.' + this.docId + '.undoIndex');
+            var cmd = this.model.get('documents.' + this.docId + '.history.' + (undoIndex + 1));
 
             var cmdStr = cmd.opName + " " + cmd.opTarget;
             if (cmd.opAttr != null)
@@ -298,19 +294,18 @@ module.exports = function (model, docId, sbgnviz) {
             //    cmdStr += " " + cmd.elId;
 
             return cmdStr;
-        },
-        isUndoPossible: function () {
-            return (model.get('_page.doc.undoIndex') > 0)
-        },
-        isRedoPossible: function () {
+        }
+        isUndoPossible () {
+            return (this.model.get('documents.' + this.docId + '.undoIndex') > 0)
+        }
 
-            console.log(model.get('_page.doc.undoIndex') + " " + model.get('_page.doc.history').length );
-            return (model.get('_page.doc.undoIndex') + 1 < model.get('_page.doc.history').length)
-        },
+        isRedoPossible () {
+            return (this.model.get('documents.' + this.docId + '.undoIndex') + 1 < this.model.get('documents.' + this.docId + '.history').length)
+        }
 
-        undoCommand: function () {
-            var undoInd = model.get('_page.doc.undoIndex');
-            var cmd = model.get('_page.doc.history.' + undoInd); // cmd: opName, opTarget, opAttr, elId, param
+        undoCommand () {
+            var undoInd = this.model.get('documents.' + this.docId + '.undoIndex');
+            var cmd = this.model.get('documents.' + this.docId + '.history.' + undoInd); // cmd: opName, opTarget, opAttr, elId, param
 
 
             if (cmd.opName == "set") {
@@ -365,16 +360,13 @@ module.exports = function (model, docId, sbgnviz) {
 
 
             undoInd = undoInd > 0 ? undoInd - 1 : 0;
-            model.set('_page.doc.undoIndex', undoInd);
+            this.model.set('documents.' + this.docId + '.undoIndex', undoInd);
 
-        },
+        }
 
-        redoCommand: function () {
-            var undoInd = model.get('_page.doc.undoIndex');
-            var cmd = model.get('_page.doc.history.' + (undoInd + 1)); // cmd: opName, opTarget, opAttr, elId, param
-
-            console.log("redo " + cmd.opName );
-            console.log(cmd.param );
+        redoCommand () {
+            var undoInd = this.model.get('documents.' + this.docId + '.undoIndex');
+            var cmd = this.model.get('documents.' + this.docId + '.history.' + (undoInd + 1)); // cmd: opName, opTarget, opAttr, elId, param
 
             if (cmd.opName == "set") {
                 if (cmd.opTarget == "element" && cmd.elType == "node")
@@ -427,98 +419,95 @@ module.exports = function (model, docId, sbgnviz) {
             }
 
 
-            undoInd = undoInd < model.get('_page.doc.history').length - 1 ? undoInd + 1 : model.get('_page.doc.history').length - 1;
+            undoInd = undoInd < this.model.get('documents.' + this.docId + '.history').length - 1 ? undoInd + 1 : model.get('documents.' + this.docId + '.history').length - 1;
 
-            model.set('_page.doc.undoIndex', undoInd);
+            this.model.set('documents.' + this.docId + '.undoIndex', undoInd);
 
-        },
+        }
 
 
-        getModelNode: function (id) {
-            var nodePath = model.at('_page.doc.cy.nodes.' + id);
+        getModelNode (id) {
+            var nodePath = this.model.at('documents.' + this.docId + '.cy.nodes.' + id);
             return nodePath.get();
-        },
+        }
 
-        getModelEdge: function (id) {
+        getModelEdge (id) {
 
-            var edgePath = model.at('_page.doc.cy.edges.' + id);
+            var edgePath = this.model.at('documents.' + this.docId + '.cy.edges.' + id);
 
             return edgePath.get();
-        },
+        }
 
-        selectModelNode: function (node, userId, user,  noHistUpdate) {
+        selectModelNode (node, userId, user,  noHistUpdate) {
 
-            var nodePath = model.at('_page.doc.cy.nodes.' + node.id());
+            var nodePath = this.model.at('documents.' + this.docId + '.cy.nodes.' + node.id());
             if (nodePath.get() == null)
                 return "Node id not found";
 
-            var userPath = model.at('_page.doc.users.' + userId);
+            var userPath = this.model.at('documents.' + this.docId + '.users.' + userId);
 
-
-
-            
-            model.pass({user: user}).set('_page.doc.cy.nodes.' + node.id()+ '.highlightColor', userPath.get('colorCode'));
+            this.model.pass({user: user}).set('documents.' + this.docId + '.cy.nodes.' + node.id()+ '.highlightColor', userPath.get('colorCode'));
 
 
             return "success";
 
-        },
+        }
 
 
-        selectModelEdge: function (edge, userId, user,  noHistUpdate) {
+        selectModelEdge (edge, userId, user,  noHistUpdate) {
 
-            var edgePath = model.at('_page.doc.cy.edges.' + edge.id());
+            var edgePath = this.model.at('documents.' + this.docId + '.cy.edges.' + edge.id());
             if (edgePath.get() == null)
                 return "Edge id not found";
-            var userPath = model.at('_page.doc.users.' + userId);
-            model.pass({user: user}).set('_page.doc.cy.edges.' + edge.id()+ '.highlightColor', userPath.get('colorCode'));
+            var userPath = this.model.at('documents.' + this.docId + '.users.' + userId);
+            this.model.pass({user: user}).set('documents.' + this.docId + '.cy.edges.' + edge.id()+ '.highlightColor', userPath.get('colorCode'));
 
 
 
 
             return "success";
 
-        },
-        unselectModelNode: function (node,  user, noHistUpdate) {
+        }
+        unselectModelNode (node,  user, noHistUpdate) {
 
-            var nodePath = model.at('_page.doc.cy.nodes.' + node.id());
+            var nodePath = this.model.at('documents.' + this.docId + '.cy.nodes.' + node.id());
 
             if (nodePath.get() == null)
                 return "Node id not found";
 
-            model.pass({user: user}).set('_page.doc.cy.nodes.' + node.id() + '.highlightColor', null);
+            this.model.pass({user: user}).set('documents.' + this.docId + '.cy.nodes.' + node.id() + '.highlightColor', null);
 
             return "success";
 
-        },
+        }
 
 
-        unselectModelEdge: function (edge,  user, noHistUpdate) {
+        unselectModelEdge (edge,  user, noHistUpdate) {
 
-            var edgePath = model.at('_page.doc.cy.edges.' + edge.id());
+            var edgePath = this.model.at('documents.' + this.docId + '.cy.edges.' + edge.id());
             if (edgePath.get() == null)
                 return "Edge id not found";
 
-            model.pass({user: user}).set('_page.doc.cy.edges.' + edge.id() + '.highlightColor', null);
+            this.model.pass({user: user}).set('documents.' + this.docId + '.cy.edges.' + edge.id() + '.highlightColor', null);
 
             return "success";
 
 
-        },
+        }
 
 
-        addModelNode: function (nodeId, param, user, noHistUpdate) {
+        addModelNode (nodeId, param, user, noHistUpdate) {
 
 
-            if (model.get("_page.doc.cy.nodes." + nodeId + '.id') != null)
+            if (this.model.get("documents.' + this.docId + '.cy.nodes." + nodeId + '.id') != null)
                 return "Node cannot be duplicated";
 
-            model.pass({user: user}).set('_page.doc.cy.nodes.' + nodeId + '.data.id', nodeId);
-            model.pass({user: user}).set('_page.doc.cy.nodes.' + nodeId + '.position', param.position);
-            model.pass({user: user}).set('_page.doc.cy.nodes.' + nodeId + '.data', param.data);
+            this.model.pass({user: user}).set('documents.' + this.docId + '.cy.nodes.' + nodeId + '.data.id', nodeId);
+            this.model.pass({user: user}).set('documents.' + this.docId + '.cy.nodes.' + nodeId + '.position', param.position);
+            this.model.pass({user: user}).set('documents.' + this.docId + '.cy.nodes.' + nodeId + '.data', param.data);
 
             //adding the node in cytoscape
-            model.pass({user: user}).set('_page.doc.cy.nodes.' + nodeId + '.addedLater', true);
+            this.model.pass({user: user}).set('documents.' + this.docId + '.cy.nodes.' + nodeId + '.addedLater', true);
 
 
 
@@ -536,19 +525,19 @@ module.exports = function (model, docId, sbgnviz) {
 
             return "success";
 
-        },
+        }
 
-        addModelEdge: function (edgeId, param, user, noHistUpdate) {
+        addModelEdge (edgeId, param, user, noHistUpdate) {
 
-            if (model.get("_page.doc.cy.edges." + edgeId + '.id') != null)
+            if (this.model.get("documents.' + this.docId + '.cy.edges." + edgeId + '.id') != null)
                 return "Edge cannot be duplicated";
 
-            model.pass({user: user}).set('_page.doc.cy.edges.' + edgeId + '.data.id', edgeId);
-            model.pass({user: user}).set('_page.doc.cy.edges.' + edgeId + '.data', param.data);
+            this.model.pass({user: user}).set('documents.' + this.docId + '.cy.edges.' + edgeId + '.data.id', edgeId);
+            this.model.pass({user: user}).set('documents.' + this.docId + '.cy.edges.' + edgeId + '.data', param.data);
 
 
             //adding the edge...other operations should be called after this
-            model.pass({user: user}).set('_page.doc.cy.edges.' + edgeId + '.addedLater', true);
+            this.model.pass({user: user}).set('documents.' + this.docId + '.cy.edges.' + edgeId + '.addedLater', true);
 
 
             if (!noHistUpdate)
@@ -563,7 +552,7 @@ module.exports = function (model, docId, sbgnviz) {
 
             return "success";
 
-        },
+        }
 
         /***
          *
@@ -574,7 +563,7 @@ module.exports = function (model, docId, sbgnviz) {
          * @param user
          * @param noHistUpdate
          */
-        addModelCompound: function (compoundId, compoundAtts, elList, paramList, user, noHistUpdate) {
+        addModelCompound (compoundId, compoundAtts, elList, paramList, user, noHistUpdate) {
 
 
             var prevParentList = [];
@@ -597,12 +586,13 @@ module.exports = function (model, docId, sbgnviz) {
                     prevParam:  prevParentList //TODO
                 });
 
-        },
+        }
 
         //change children's parents to their old parents
-        removeModelCompound: function (compoundId, childrenList, prevParentList, user, noHistUpdate) {
+        removeModelCompound (compoundId, childrenList, prevParentList, user, noHistUpdate) {
+            let self = this;
 
-            var nodePath = model.at('_page.doc.cy.nodes.' + compoundId);
+            var nodePath = this.model.at('documents.' + this.docId + '.cy.nodes.' + compoundId);
 
             var compoundAtts = {
                 id: compoundId,
@@ -614,7 +604,7 @@ module.exports = function (model, docId, sbgnviz) {
 
             var paramList = [];
             childrenList.forEach(function(child){
-                var data = model.get('_page.doc.cy.nodes.'+child.id + '.data');
+                var data = self.model.get('documents.' + self.docId + '.cy.nodes.'+child.id + '.data');
                 paramList.push(data);
             });
 
@@ -634,16 +624,15 @@ module.exports = function (model, docId, sbgnviz) {
                     param: prevParentList
                 });
 
-        },
+        }
 
 
 
         //attStr: attribute namein the model
         //historyData is for  sbgnStatesAndInfos only
-        changeModelElementGroupAttribute: function (attStr, elList, paramList, user, noHistUpdate) { //historyData){
-
+        changeModelElementGroupAttribute (attStr, elList, paramList, user, noHistUpdate) { //historyData){
+            let self = this;
             var prevParamList = [];
-            var self = this;
 
             if (!noHistUpdate) {
 
@@ -651,9 +640,9 @@ module.exports = function (model, docId, sbgnviz) {
 
                     var prevAttVal;
                     if (el.isNode)
-                        prevAttVal = model.get('_page.doc.cy.nodes.' + el.id + '.' + attStr);
+                        prevAttVal = self.model.get('documents.' + self.docId + '.cy.nodes.' + el.id + '.' + attStr);
                     else
-                        prevAttVal = model.get('_page.doc.cy.edges.' + el.id + '.' + attStr);
+                        prevAttVal = self.model.get('documents.' + self.docId + '.cy.edges.' + el.id + '.' + attStr);
 
 
                     prevParamList.push(prevAttVal);
@@ -684,25 +673,25 @@ module.exports = function (model, docId, sbgnviz) {
 
             return "success";
 
-        },
+        }
 
-        getModelNodeAttribute:function(attStr, nodeId){
-            var nodePath = model.at('_page.doc.cy.nodes.' + nodeId);
+        getModelNodeAttribute(attStr, nodeId){
+            var nodePath = this.model.at('documents.' + this.docId + '.cy.nodes.' + nodeId);
 
             return nodePath.get(attStr);
-        },
+        }
 
-        getModelEdgeAttribute:function(attStr, edgeId){
-            var edgePath = model.at('_page.doc.cy.edges.' + edgeId);
+        getModelEdgeAttribute(attStr, edgeId){
+            var edgePath = this.model.at('documents.' + this.docId + '.cy.edges.' + edgeId);
 
             return edgePath.get(attStr);
-        },
+        }
         //attStr: attribute namein the model
         //historyData is for  sbgnStatesAndInfos only
-        changeModelNodeAttribute: function (attStr, nodeId, attVal, user, noHistUpdate) { //historyData){
+        changeModelNodeAttribute (attStr, nodeId, attVal, user, noHistUpdate) { //historyData){
 
             var status = "Node id not found";
-            var nodePath = model.at('_page.doc.cy.nodes.' + nodeId);
+            var nodePath = this.model.at('documents.' + this.docId + '.cy.nodes.' + nodeId);
 
 
             var prevAttVal = nodePath.get(attStr);
@@ -729,7 +718,7 @@ module.exports = function (model, docId, sbgnviz) {
 
 
             if (attStr != 'interactionCount') {
-                model.increment('_page.doc.cy.nodes.' + nodeId + '.interactionCount', 1);
+                this.model.increment('documents.' + this.docId + '.cy.nodes.' + nodeId + '.interactionCount', 1);
 
                 if (!noHistUpdate) {
 
@@ -749,12 +738,12 @@ module.exports = function (model, docId, sbgnviz) {
 
             return status;
 
-        },
+        }
 
 
-        changeModelEdgeAttribute: function (attStr, edgeId, attVal, user, noHistUpdate) {
+        changeModelEdgeAttribute (attStr, edgeId, attVal, user, noHistUpdate) {
             var status = "Edge id not found";
-            var edgePath = model.at('_page.doc.cy.edges.' + edgeId);
+            var edgePath = this.model.at('documents.' + this.docId + '.cy.edges.' + edgeId);
             var prevAttVal = edgePath.get(attStr);
             edgePath.pass({user: user}).set(attStr, attVal);
 
@@ -762,9 +751,9 @@ module.exports = function (model, docId, sbgnviz) {
             var sourceId = edgePath.get('source');
             var targetId = edgePath.get('target');
             if (sourceId)
-                model.increment('_page.doc.cy.nodes.' + sourceId + '.interactionCount', 1);
+                this.model.increment('documents.' + this.docId + '.cy.nodes.' + sourceId + '.interactionCount', 1);
             if (targetId)
-                model.increment('_page.doc.cy.nodes.' + targetId + '.interactionCount', 1);
+                this.model.increment('documents.' + this.docId + '.cy.nodes.' + targetId + '.interactionCount', 1);
 
 
             if (!noHistUpdate) {
@@ -785,11 +774,11 @@ module.exports = function (model, docId, sbgnviz) {
 
 
             return status;
-        },
+        }
 
         //willUpdateHistory: Depending on the parent command, history will be updated or not
-        deleteModelNode: function (nodeId, user, noHistUpdate) {
-            var nodePath = model.at('_page.doc.cy.nodes.' + nodeId);
+        deleteModelNode (nodeId, user, noHistUpdate) {
+            var nodePath = this.model.at('documents.' + this.docId + '.cy.nodes.' + nodeId);
 
 
             if (nodePath.get() == null)
@@ -812,17 +801,17 @@ module.exports = function (model, docId, sbgnviz) {
 
             }
 
-            model.pass({user: user}).del(('_page.doc.cy.nodes.' + nodeId));
+            this.model.pass({user: user}).del(('documents.' + this.docId + '.cy.nodes.' + nodeId));
 
 
             return "success";
 
-        },
+        }
 
 
-        deleteModelEdge: function (edgeId, user, noHistUpdate) {
+        deleteModelEdge (edgeId, user, noHistUpdate) {
 
-            var edgePath = model.at('_page.doc.cy.edges.' + edgeId);
+            var edgePath = this.model.at('documents.' + this.docId + '.cy.edges.' + edgeId);
             if (edgePath.get() == null)
                 return "Edge id not found";
 
@@ -841,14 +830,14 @@ module.exports = function (model, docId, sbgnviz) {
 
             }
 
-            model.pass({user: user}).del(('_page.doc.cy.edges.' + edgeId));
+            this.model.pass({user: user}).del(('documents.' + this.docId + '.cy.edges.' + edgeId));
 
             return "success";
 
-        },
+        }
 
 
-        deleteModelElementGroup: function (selectedEles, user, noHistUpdate) {
+        deleteModelElementGroup (selectedEles, user, noHistUpdate) {
             var prevParamsNodes = [];
             var prevParamsEdges = [];
             var self = this;
@@ -856,7 +845,7 @@ module.exports = function (model, docId, sbgnviz) {
 
             if(selectedEles.edges!= null){
                 selectedEles.edges.forEach(function (edge) {
-                    var edgePath = model.at('_page.doc.cy.edges.' + edge.id);
+                    var edgePath = self.model.at('documents.' + self.docId + '.cy.edges.' + edge.id);
                     prevParamsEdges.push(edgePath.get());
                 });
 
@@ -868,7 +857,7 @@ module.exports = function (model, docId, sbgnviz) {
 
             if(selectedEles.nodes!= null) {
                 selectedEles.nodes.forEach(function (node) {
-                    var nodePath = model.at('_page.doc.cy.nodes.' + node.id);
+                    var nodePath = self.model.at('documents.' + self.docId + '.cy.nodes.' + node.id);
 
                     prevParamsNodes.push(nodePath.get());
                 });
@@ -887,9 +876,9 @@ module.exports = function (model, docId, sbgnviz) {
                 });
 
 
-        },
+        }
 
-        restoreModelElementGroup: function (elList, param, user, noHistUpdate) {
+        restoreModelElementGroup (elList, param, user, noHistUpdate) {
             var self = this;
             //Restore nodes first
 
@@ -917,12 +906,12 @@ module.exports = function (model, docId, sbgnviz) {
                     param: param
 
                 });
-        },
+        }
         /**
          *
          * Restore operations for global undo/redo
          */
-        restoreModelNode: function (nodeId, param, user, noHistUpdate) {
+        restoreModelNode (nodeId, param, user, noHistUpdate) {
 
             //param is the previous node data
             //history is updated as restore command
@@ -930,23 +919,24 @@ module.exports = function (model, docId, sbgnviz) {
 
             //No need to init -- data and position are updated in the next steps
 
-            //model.pass({user: user}).set('_page.doc.cy.nodes.' + nodeId + '.position', param.position);
-           // model.pass({user: user}).set('_page.doc.cy.nodes.' + nodeId + '.data', param.data);
+            //model.pass({user: user}).set('documents.' + this.docId + '.cy.nodes.' + nodeId + '.position', param.position);
+           // model.pass({user: user}).set('documents.' + this.docId + '.cy.nodes.' + nodeId + '.data', param.data);
 
             // for(att in param){
             //     if(param.hasOwnProperty(att) && att !== "addedLater"){
             //
             //         console.log(att);
             //         console.log(param);
-            //         model.pass({user:user}).set(('_page.doc.cy.nodes.' + nodeId + '.' + att), param[att]);
+            //         model.pass({user:user}).set(('documents.' + this.docId + '.cy.nodes.' + nodeId + '.' + att), param[att]);
             //     }
             // }
 
             if (!noHistUpdate)
                 this.updateHistory({opName: 'restore', opTarget: 'element', elType: 'node', elId: nodeId, param:param});
-        },
+        }
 
-        restoreModelEdge: function (edgeId, param, user, noHistUpdate) {
+
+        restoreModelEdge (edgeId, param, user, noHistUpdate) {
             //param is the previous edge data
             //history is updated as restore command
             this.addModelEdge(edgeId, param, user, true);
@@ -955,17 +945,17 @@ module.exports = function (model, docId, sbgnviz) {
             //
             // for(att in param){
             //     if(param.hasOwnProperty(att) && att !== "addedLater"){
-            //         model.pass({user:user}).set(('_page.doc.cy.edges.' + edgeId + '.' + att), param[att]);
+            //         model.pass({user:user}).set(('documents.' + this.docId + '.cy.edges.' + edgeId + '.' + att), param[att]);
             //     }
             // }
 
 
             if (!noHistUpdate)
                 this.updateHistory({opName: 'restore', opTarget: 'element', elType: 'edge', elId: edgeId, param:param});
-        },
+        }
 
 
-        restoreModelElement: function (elType, elId, param, user, noHistUpdate) {
+        restoreModelElement (elType, elId, param, user, noHistUpdate) {
 
             if (elType == "node")
                 this.restoreModelNode(elId, param, user, noHistUpdate);
@@ -973,7 +963,7 @@ module.exports = function (model, docId, sbgnviz) {
                 this.restoreModelEdge(elId, param, user, noHistUpdate);
 
 
-        },
+        }
 
 
         /**
@@ -982,29 +972,29 @@ module.exports = function (model, docId, sbgnviz) {
          * @param user
          * @param noHistUpdate
          */
-        restoreModel: function (modelCy, user, noHistUpdate) {
-            var prevParam = model.get('_page.doc.cy');
-            model.set('_page.doc.cy', modelCy);
+        restoreModel (modelCy, user, noHistUpdate) {
+            var prevParam = this.model.get('documents.' + this.docId + '.cy');
+            this.model.set('documents.' + this.docId + '.cy', modelCy);
 
             // this.setSampleInd(-1, null, true); //to get a new container
 
             if (!noHistUpdate)
                 this.updateHistory({opName: 'restore', prevParam: prevParam, param: modelCy, opTarget: 'model'});
 
-        },
+        }
 
         //should be called before loading a new graph to prevent id confusion
-        newModel: function (user, noHistUpdate) {
+        newModel (user, noHistUpdate) {
 
             var self = this;
-            var prevModelCy = model.get('_page.doc.cy');
+            var prevModelCy = this.model.get('documents.' + this.docId + '.cy');
 
 
             if (!noHistUpdate)
                 this.updateHistory({opName: 'new', prevParam: prevModelCy, opTarget: 'model'});
 
-            var edges = model.get('_page.doc.cy.edges');
-            var nodes = model.get('_page.doc.cy.nodes');
+            var edges = this.model.get('documents.' + this.docId + '.cy.edges');
+            var nodes = this.model.get('documents.' + this.docId + '.cy.nodes');
 
 
             for (var att in edges) {
@@ -1020,14 +1010,13 @@ module.exports = function (model, docId, sbgnviz) {
             }
 
 
-        },
+        }
 
 
         //should be called before loading a new graph to prevent id confusion
-        deleteAll: function (nodes, edges, user, noHistUpdate) {
+        deleteAll (nodes, edges, user, noHistUpdate) {
 
-            var self = this;
-
+            let self = this;
             if (!noHistUpdate)
                 this.updateHistory({opName: 'new', opTarget: 'model'});
 
@@ -1041,19 +1030,18 @@ module.exports = function (model, docId, sbgnviz) {
             });
 
 
-        },
+        }
 
         //convert model to array
-        getJsonFromModel: function () {
+        getJsonFromModel () {
 
-            var self = this;
-            var nodes = model.get('_page.doc.cy.nodes');
+            var nodes = this.model.get('documents.' + this.docId + '.cy.nodes');
 
 
             if (nodes == null)
                 return null;
 
-            var edges = model.get('_page.doc.cy.edges');
+            var edges = this.model.get('documents.' + this.docId + '.cy.edges');
 
             var jsonNodes = [];
             var jsonEdges = [];
@@ -1089,7 +1077,7 @@ module.exports = function (model, docId, sbgnviz) {
             return {nodes: jsonNodes, edges: jsonEdges};
 
 
-    },
+    }
 
 
         /***
@@ -1098,10 +1086,10 @@ module.exports = function (model, docId, sbgnviz) {
          * @param user: to make sure we don't update the data of same client
          * @param noHistUpdate
          */
-        initModelNode: function (node, user, noHistUpdate) {
+        initModelNode (node, user, noHistUpdate) {
 
 
-            var nodePath = model.at('_page.doc.cy.nodes.' + node.id());
+            var nodePath = this.model.at('documents.' + this.docId + '.cy.nodes.' + node.id());
 
             if (!noHistUpdate)
                 this.updateHistory({opName: 'init', opTarget: 'element', elType: 'node', elId: node.id()});
@@ -1177,11 +1165,11 @@ module.exports = function (model, docId, sbgnviz) {
 
 
 
-        },
-        initModelEdge: function (edge, user, noHistUpdate) {
+        }
+        initModelEdge (edge, user, noHistUpdate) {
 
 
-            var edgePath = model.at('_page.doc.cy.edges.' + edge.id());
+            var edgePath = this.model.at('documents.' + this.docId + '.cy.edges.' + edge.id());
 
 
             if (!noHistUpdate)
@@ -1215,7 +1203,7 @@ module.exports = function (model, docId, sbgnviz) {
 
 
 
-        },
+        }
 
 
 
@@ -1228,7 +1216,7 @@ module.exports = function (model, docId, sbgnviz) {
          * @param user
          * @param noHistUpdate
          */
-        initModel: function ( nodes, edges, appUtilities, user, noHistUpdate) {
+        initModel ( nodes, edges, appUtilities, user, noHistUpdate) {
 
             var self = this;
 
@@ -1244,18 +1232,18 @@ module.exports = function (model, docId, sbgnviz) {
             });
 
 
-            var newModelCy = model.get('_page.doc.cy');
+            var newModelCy = this.model.get('documents.' + this.docId + '.cy');
 
 
             // if(newModelCy) {
             //     if (newModelCy.layoutProperties == null)
-            //         model.set('_page.doc.cy.layoutProperties', _.clone(appUtilities.defaultLayoutProperties));
+            //         model.set('documents.' + this.docId + '.cy.layoutProperties', _.clone(appUtilities.defaultLayoutProperties));
             //
             //     if (newModelCy.generalProperties == null)
-            //         model.set('_page.doc.cy.generalProperties', _.clone(appUtilities.defaultGeneralProperties));
+            //         model.set('documents.' + this.docId + '.cy.generalProperties', _.clone(appUtilities.defaultGeneralProperties));
             //
             //     if (newModelCy.gridProperties == null)
-            //         model.set('_page.doc.cy.gridProperties', _.clone(appUtilities.defaultGridProperties));
+            //         model.set('documents.' + this.docId + '.cy.gridProperties', _.clone(appUtilities.defaultGridProperties));
             // }
 
 
@@ -1265,47 +1253,48 @@ module.exports = function (model, docId, sbgnviz) {
 
             console.log("Init model finished")
             //notifies other clients to update their cy graphs
-           model.pass({user:"me"}).set('_page.doc.cy.initTime', new Date());
+            this.model.pass({user:"me"}).set('documents.' + this.docId + '.cy.initTime', new Date());
 
-        },
+        }
 
 
 
-        setRollbackPoint: function () {
+        setRollbackPoint () {
             var modelCy = this.getModelCy();
-            model.set('_page.doc.prevCy', modelCy);
-        },
+            this.model.set('documents.' + this.docId + '.prevCy', modelCy);
+        }
 
-        getModelCy: function () {
-            return model.get('_page.doc.cy');
-        },
+        getModelCy () {
+            return this.model.get('documents.' + this.docId + '.cy');
+        }
 
         //for undo/redo only
-        mergeJsons: function (user, noHistUpdate) {
-            var modelCy = model.get('_page.doc.cy');
-            var prevModelCy = model.get('_page.doc.prevCy');
+        mergeJsons (user, noHistUpdate) {
+            var modelCy = this.model.get('documents.' + this.docId + '.cy');
+            var prevModelCy = this.model.get('documents.' + this.docId + '.prevCy');
 
             if (!noHistUpdate) {
 
                 this.updateHistory({opName: 'merge', prevParam: prevModelCy, param: modelCy, opTarget: 'model'});
             }
 
-        },
+        }
 
-        updateFactoidModel: function(factoidModel, user, noHistUpdate){
-            model.pass({user:user}).set('_page.doc.factoid', factoidModel);
+        updateFactoidModel(factoidModel, user, noHistUpdate){
+            this.model.pass({user:user}).set('documents.' + this.docId + '.factoid', factoidModel);
 
             if(!noHistUpdate){
-                var prevFactoidModel = model.get('_page.doc.factoid');
+                var prevFactoidModel = this.model.get('documents.' + this.docId + '.factoid');
                 this.updateHistory({opName:'factoid',  prevParam: prevFactoidModel, param: factoidModel, opTarget:'model'});
             }
 
-        },
+        }
 
-        getFactoidModel: function(){
-            return model.get('_page.doc.factoid');
+        getFactoidModel(){
+            return this.model.get('documents.' + this.docId + '.factoid');
         }
 
 
-    }
 }
+
+module.exports = ModelManager;

@@ -10,7 +10,6 @@ let _ = require('underscore');
 let oneColor = require('onecolor');
 
 
-
 const ONE_DAY = 1000 * 60 * 60 * 24;
 const ONE_HOUR = 1000 * 60 * 60;
 const ONE_MINUTE = 1000 * 60;
@@ -18,7 +17,7 @@ const BobId = "Bob123";
 
 let docReady = false;
 
-app.proto.tripsMode  = true;
+
 app.on('model', function (model) {
 
     model.fn('biggerTime', function (item) {
@@ -114,6 +113,7 @@ app.get('/:docId', function (page, model, arg, next) {
             let messages = model.at((docPath + '.messages'));
             let provenance = model.at((docPath + '.provenance'));
             let pcQuery = model.at((docPath + '.pcQuery'));
+            let noTrips = model.at((docPath + '.noTrips'));
 
             pysb.subscribe(function () {
             });
@@ -140,6 +140,10 @@ app.get('/:docId', function (page, model, arg, next) {
             });
 
             pcQuery.subscribe(function(){
+            });
+
+            noTrips.subscribe(function(){
+
             });
 
             userIds.subscribe(function () {
@@ -194,12 +198,19 @@ app.get('/:docId', function (page, model, arg, next) {
 app.proto.changeDuration = function () {
 
     return this.model.filter('_page.doc.messages', 'biggerTime').ref('_page.list');
-
 };
 
+/***
+ * Query windows always include the "query" string appended to regular docId
+ * @returns {boolean}
+ */
+app.proto.isQueryWindow = function(){
+    var docId = this.model.get('_page.doc.id');
+    return (docId.indexOf("_query_") > -1);
+};
 
 /***
- * Called only once in a browser after first page rendering
+ * Called only once in a browser after the first page rendering
  * @param model
  * @returns {*}
  */
@@ -212,8 +223,6 @@ app.proto.create = function (model) {
     docReady = true;
     let userId = model.get('_session.userId');
 
-    let isQueryWindow = false;
-
     self.socket = io();
     self.notyView = noty({layout: "bottom",theme:"bootstrapTheme", text: "Please wait while model is loading."});
 
@@ -223,20 +232,6 @@ app.proto.create = function (model) {
 
     };
 
-
-
-    let docId = model.get('_page.doc.id');
-    if(docId.indexOf("_query_") > -1) //if this is a query window don't connect to trips
-        self.tripsMode = false;
-
-
-    if(this.tripsMode)
-        $('#unitTestArea').hide();
-    else
-        $('#unitTestArea').show();
-
-
-
     //change scroll position
     $('#messages').scrollTop($('#messages')[0].scrollHeight  - $('.message').height());
 
@@ -245,7 +240,8 @@ app.proto.create = function (model) {
     let name = model.get('_page.doc.users.' + id +'.name');
 
     // Make modelManager instance accessible through window object as testModelManager to use it in Cypress tests
-    self.modelManager = window.testModelManager = require('./public/collaborative-app/modelManager.js')(model, model.get('_page.room'), sbgnviz);
+    let ModelManager = require('./public/collaborative-app/modelManager.js');
+    self.modelManager = window.testModelManager = new ModelManager(model, model.get('_page.room'));
     self.modelManager.setName( model.get('_session.userId'),name);
 
     let images = model.get('_page.doc.images');
@@ -267,21 +263,17 @@ app.proto.create = function (model) {
     self.factoidHandler = require('./public/collaborative-app/factoid/factoid-handler')(this) ;
     self.factoidHandler.initialize();
 
-
-
     // //If we get a message on a separate window
     window.addEventListener('message', function(event) {
-        if(event.data) { //initialization for a query winddow
-            isQueryWindow = true;
-
+        if(event.data) { //initialization for a query window
             self.modelManager.newModel("me"); //do not delete cytoscape, only the model
-
              chise.updateGraph(JSON.parse(event.data), function(){
                  self.modelManager.initModel(cy.nodes(), cy.edges(), appUtilities, "me");
              });
         }
 
     }, false);
+
 
 
     descendingSort = function (a, b) {
@@ -315,8 +307,10 @@ app.proto.create = function (model) {
     });
 
 
+
+
     //Loading cytoscape and clients
-    if(!isQueryWindow) { //initialization for a regular window
+    if(!self.isQueryWindow()) { //initialization for a regular window
 
         self.loadCyFromModel(function(isModelEmpty){
 
@@ -347,16 +341,10 @@ app.proto.create = function (model) {
     });
 
 
+
+
+
     this.atBottom = true;
-
-
-    //If there is already one connection to Bob, don't open another
-    let userIds = self.modelManager.getUserIds();
-
-
-    if(this.tripsMode && userIds.indexOf(BobId) < 0) { //there's no agent for Bob
-        this.connectTripsAgent();
-    }
 
 
     return model.on('all', '_page.list', (function (_this) {
@@ -403,8 +391,6 @@ app.proto.loadCyFromModel = function(callback){
 
         });
 
-
-
         // let props;
         // //update app utilities as well
         // props = self.modelManager.getLayoutProperties();
@@ -437,43 +423,6 @@ function moveNodeAndChildren(positionDiff, node, notCalcTopMostNodes) {
 app.proto.listenToNodeOperations = function(model){
 
     let self = this;
-
-    model.on('all', '_page.doc.factoid', function(op, val, prev, passed){
-
-        if(docReady &&  !passed.user) {
-            self.factoidHandler.setFactoidModel(val);
-            //reset to the center
-            // cy.panzoom().reset();
-
-        }
-
-
-    });
-
-    model.on('change', '_page.doc.pcQuery.*.graph', function(ind, data){
-            var loc = window.location.href;
-            if (loc[loc.length - 1] === "#") {
-                loc = loc.slice(0, -1);
-            }
-            var w = window.open((loc + "_query_" + ind), function () {
-    
-            });
-    
-            // //because window opening takes a while
-            setTimeout(function () {
-    
-                var json = chise.convertSbgnmlTextToJson(data);
-                w.postMessage(JSON.stringify(json), "*");
-            }, 2000);
-
-    });
-
-    model.on('change', '_page.doc.undoIndex', function (id, cmdInd) {
-
-        let cmd = model.get('_page.doc.history.' + id);
-        //modelOp = cmd.opName;
-        //console.log(modelOp);
-    });
 
 
     //Update inspector
@@ -834,6 +783,35 @@ app.proto.init = function (model) {
     this.listenToNodeOperations(model);
     this.listenToEdgeOperations(model);
 
+    // //Listen to other model operations
+    // model.on('all', '_page.doc.userIds.**', function(id, op, val, prev, passed){
+    //     console.log("User ids");
+    //     console.log(id);
+    //     console.log(op);
+    //     console.log(val);
+    //     console.log(prev);
+    // });
+
+
+
+    model.on('all', '_page.doc.noTrips', function(op, noTrips){
+
+        if(noTrips)
+            $('#unitTestArea').show();
+        else
+            $('#unitTestArea').hide();
+
+        console.log(noTrips);
+        //If there is already one connection to Bob, don't open another
+        let userIds = self.modelManager.getUserIds();
+
+        if(!noTrips && !self.isQueryWindow() &&  userIds.indexOf(BobId) < 0) { //there's no agent for Bob
+            self.connectTripsAgent();
+        }
+
+    });
+
+
     //Listen to other model operations
     model.on('all', '_page.doc.factoid.*', function(id, op, val, prev, passed){
         if(docReady &&  !passed.user) {
@@ -853,6 +831,31 @@ app.proto.init = function (model) {
             self.notyView.close();
         }
     });
+
+    model.on('change', '_page.doc.pcQuery.*.graph', function(ind, data){
+        var loc = window.location.href;
+        if (loc[loc.length - 1] === "#") {
+            loc = loc.slice(0, -1);
+        }
+        if (loc[loc.length - 1] === "?") {
+            loc = loc.slice(0, -1);
+        }
+
+
+
+        let w = window.open((loc + "_query_" + ind ), function () {
+
+        });
+
+
+        // //because window opening takes a while
+        setTimeout(function () {
+            var json = chise.convertSbgnmlTextToJson(data);
+            w.postMessage(JSON.stringify(json), "*");
+        }, 3000);
+
+    });
+
 
 
     //

@@ -1,17 +1,16 @@
-var readline = require('readline');
-var fs = require('fs');
+let readline = require('readline');
+let fs = require('fs');
 
 
 /***
  * Calls cmdStr on console and runs callback function with parameter content
  * @param cmdStr
- * @param content
  * @param callback
  */
-var executeCommandLineProcess = function (cmdStr, callback){
+let executeCommandLineProcess = function (cmdStr, callback){
 
     try {
-        var exec = require('child_process').exec;
+        let exec = require('child_process').exec;
 
 
         exec(cmdStr, function (error, stdout, stderr) {
@@ -36,17 +35,19 @@ var executeCommandLineProcess = function (cmdStr, callback){
 
 module.exports.start = function(io, model, cancerDataOrganizer){
 
-    var modelManagerList = [];
-    var roomList = [];
-    var humanList = [];
-    var pnnlArr  = [];
-    var tripsGeneralInterfaceInstance;
-    var tripsCausalityInterfaceInstance;
+
+
+    let modelManagerList = {}; //not an array!
+    let roomList = [];
+    let humanList = [];
+    let pnnlArr  = [];
+    let tripsGeneralInterfaceInstance;
+    let tripsCausalityInterfaceInstance;
 
 
     let request = require('request'); //REST call over http/https
 
-    var responseHeaders = {
+    let responseHeaders = {
         "access-control-allow-origin": "*",
         "access-control-allow-methods": "GET, POST, PUT, DELETE, OPTIONS",
         "access-control-allow-headers": "content-type, accept",
@@ -54,15 +55,15 @@ module.exports.start = function(io, model, cancerDataOrganizer){
         "Content-Type": "application/json"
     };
 
-    var askHuman = function (userId, room, requestStr, data, callback){
+    let askHuman = function (userId, room, requestStr, data, callback){
 
-        var roomMate = humanList.find(function(human){
+        let roomMate = humanList.find(function(human){
             return(human.userId !== userId && human.room === room);
         }); //returns the first match
 
 
         if(roomMate!== null) {
-            var clientSocket = io.sockets.connected[roomMate.socketId];
+            let clientSocket = io.sockets.connected[roomMate.socketId];
 
             clientSocket.emit(requestStr, data, function(val){
 
@@ -76,21 +77,21 @@ module.exports.start = function(io, model, cancerDataOrganizer){
     };
 
 
-    var readGeneList = function(callback){
-        var filePath = './agent-interaction/CausalPath/causative-data-centric.sif';
-        var instream = fs.createReadStream(filePath);
-        var rl = readline.createInterface(instream);
+    let readGeneList = function(callback){
+        let filePath = './agent-interaction/CausalPath/causative-data-centric.sif';
+        let inStream = fs.createReadStream(filePath);
+        let rl = readline.createInterface(inStream);
 
 
 
-        var geneList = [];
+        let geneList = [];
         rl.on('line', function (line) {
 
 
-            var vals = line.split("\t");
+            let vals = line.split("\t");
 
-            var id1 = vals[0].toUpperCase();
-            var id2 = vals[2].toUpperCase();
+            let id1 = vals[0].toUpperCase();
+            let id2 = vals[2].toUpperCase();
 
             geneList[id1] = true;
             geneList[id2] = true;
@@ -101,38 +102,38 @@ module.exports.start = function(io, model, cancerDataOrganizer){
 
             if(callback) callback(geneList);
         });
-    }
+    };
 
 
-    var readPNNLData = function(geneList, callback){
+    let readPNNLData = function(geneList, callback){
 
       //  if(Object.keys(pnnlList).length === 0) { //not already in memory
         if(pnnlArr.length <= 0){
             //READ PNNL Data
 
-            var filePathCorr = './agent-interaction/CausalPath/PNNL-ovarian-correlations.txt';
-            var instreamCorr = fs.createReadStream(filePathCorr);
-            var rlCorr = readline.createInterface(instreamCorr);
+            let filePathCorr = './agent-interaction/CausalPath/PNNL-oletian-correlations.txt';
+            let instreamCorr = fs.createReadStream(filePathCorr);
+            let rlCorr = readline.createInterface(instreamCorr);
 
-            var i = 0;
+            let i = 0;
 
             rlCorr.on('line', function (line) {
 
 
-                var vals = line.split("\t");
+                let vals = line.split("\t");
 
-                var id1 = vals[0].toUpperCase();
-                var id2 = vals[1].toUpperCase();
+                let id1 = vals[0].toUpperCase();
+                let id2 = vals[1].toUpperCase();
 
 
                 if (id1.indexOf('/') < 0 && id2.indexOf('/') < 0) { //exclude incorrect formats
-                    var idStr1 = id1.split('-');
-                    var geneName1 = idStr1[0];
-                    var pSite1 = idStr1[1];
+                    let idStr1 = id1.split('-');
+                    let geneName1 = idStr1[0];
+                    let pSite1 = idStr1[1];
 
-                    var idStr2 = id2.split('-');
-                    var geneName2 = idStr2[0];
-                    var pSite2 = idStr2[1];
+                    let idStr2 = id2.split('-');
+                    let geneName2 = idStr2[0];
+                    let pSite2 = idStr2[1];
 
 
                   //  if(Number(vals[2]) < 0.95 ) {
@@ -166,12 +167,12 @@ module.exports.start = function(io, model, cancerDataOrganizer){
             if (callback) callback(pnnlArr);
         }
 
-    }
+    };
     /***
      *
      * @param socket used for socket disconnections
      */
-    var listenToAgentRequests = function(socket){
+    let listenToAgentRequests = function(socket){
 
 
         socket.on('agentActiveRoomsRequest', function( callback){
@@ -196,7 +197,6 @@ module.exports.start = function(io, model, cancerDataOrganizer){
 
 
         });
-
 
 
         socket.on('agentUndoRequest', function(data, callback){ //from computer agent
@@ -242,7 +242,7 @@ module.exports.start = function(io, model, cancerDataOrganizer){
         // });
         //
         // socket.on('agentGetLayoutPropertiesRequest', function(data, callback){
-        //     var props = modelManagerList[data.room].getLayoutProperties();
+        //     let props = modelManagerList[data.room].getLayoutProperties();
         //     callback(props);
         //
         // });
@@ -253,7 +253,7 @@ module.exports.start = function(io, model, cancerDataOrganizer){
         // });
         //
         // socket.on('agentGetGeneralPropertiesRequest', function(data, callback){
-        //     var props = modelManagerList[data.room].getGeneralProperties();
+        //     let props = modelManagerList[data.room].getGeneralProperties();
         //     callback(props);
         //
         // });
@@ -265,7 +265,7 @@ module.exports.start = function(io, model, cancerDataOrganizer){
         // });
         //
         // socket.on('agentGetGridPropertiesRequest', function(data, callback){
-        //     var props = modelManagerList[data.room].getGridProperties();
+        //     let props = modelManagerList[data.room].getGridProperties();
         //     callback(props);
         //
         // });
@@ -289,7 +289,7 @@ module.exports.start = function(io, model, cancerDataOrganizer){
 
         socket.on('agentMergeGraphRequest', function(data, callback){
 
-            var requestStr;
+            let requestStr;
             if(data.type === "sbgn")
                 requestStr = "mergeSbgn";
             else //default is json
@@ -317,13 +317,8 @@ module.exports.start = function(io, model, cancerDataOrganizer){
 
                     if (error) {
                         console.log(error);
-                    } else  {
-
-
-
-                        //console.log(body);
-                        console.log(response.statusCode);
-
+                    }
+                    else  {
                         if(response.statusCode === 200) {
                             askHuman(socket.userId, data.room,  "loadFile", data.content, function(val){
                                 if (callback) callback(val);
@@ -382,190 +377,105 @@ module.exports.start = function(io, model, cancerDataOrganizer){
 
 
         socket.on('agentAddCompoundRequest', function(data, callback) {
-
-
             askHuman(socket.userId, data.room,  "addCompound", data, function(val){
-
                 if(callback) callback(val);
             });
-
         });
 
         socket.on('agentCloneRequest', function(data, callback) {
-
-
             askHuman(socket.userId, data.room,  "clone", data, function(val){
-
                 if(callback) callback(val);
             });
-
         });
 
 
         socket.on('agentSearchByLabelRequest', function(data, callback) {
-
             askHuman(socket.userId, data.room,  "searchByLabel", data, function(val){
-
                 if(callback) callback(val);
             });
-
         });
         socket.on('agentGetNodeRequest',function(data, callback){
-            var node = modelManagerList[data.room].getModelNode(data.id);
-            callback(node);
-
+            let node = modelManagerList[data.room].getModelNode(data.id);
+            if(callback) callback(node);
         });
         socket.on('agentGetEdgeRequest',function(data, callback){
-
-            var edge = modelManagerList[data.room].getModelEdge(data.id);
-
-            callback(edge);
-
+            let edge = modelManagerList[data.room].getModelEdge(data.id);
+            if(callback) callback(edge);
         });
 
         socket.on('agentAddNodeRequest',function(data, callback){
-
-            // if(useBiopax) {
-            //     var msg;
-            //
-            //     request.post({
-            //         url: "http://localhost:8080/PaxtoolsServlet",
-            //         headers: responseHeaders,
-            //         form: {reqType: "addNode", content: data.param}
-            //     }, function (error, response, body) {
-            //
-            //
-            //         if (error) {
-            //             if (callback)
-            //                 callback("Node adding error: ");
-            //
-            //         } else { //only open the window if a proper response is returned
-            //
-            //             var nodeId = menuList[data.userId].addNode(null, data.param.x, data.param.y, data.param.sbgnclass, data.param.sbgnlabel, true);
-            //
-            //             console.log(body);
-            //             if (response.statusCode == 200) {
-            //                 if (callback) callback(nodeId);
-            //             }
-            //             else{
-            //                 if (callback)
-            //                     callback("Node adding error: " + response.statusCode);
-            //             }
-            //
-            //
-            //
-            //         }
-            //     });
-            // }
-            // else{
-            //  var nodeId = menuList[data.userId].addNode(null, data.param.x, data.param.y, data.param.sbgnclass, data.param.sbgnlabel, true);
-
             //Ask a human client to perform this operation as we don't know the node id
-
             askHuman(socket.userId, data.room, "addNode", data,  function(nodeId){
                 if (callback) callback(nodeId);
             });
-
-
         });
 
         socket.on('agentAddEdgeRequest',function(data,  callback){
             //we know the edge id so add directly to the model
-
-
-            var status = modelManagerList[data.room].addModelEdge(data.id, data, "me");
+            let status = modelManagerList[data.room].addModelEdge(data.id, data, "me");
             if(callback) callback(status);
         });
 
 
         socket.on('agentDeleteElesRequest',function(data, callback){
-
             askHuman(socket.userId, data.room,  "deleteEles", data, function(val){
-
-
-
                 if(callback) callback(val);
             });
-
-
-
-            // var status = modelManagerList[data.userId].deleteModelNode(data.id);
-            // if(callback) callback(status);
-
         });
 
         socket.on('agentMoveNodeRequest',function(data, callback){
-            var status = modelManagerList[data.room].changeModelNodeAttribute("position", data.id, data.pos);
+            let status = modelManagerList[data.room].changeModelNodeAttribute("position", data.id, data.pos);
             if(callback) callback(status);
-
         });
 
         socket.on('agentChangeNodeAttributeRequest', function(data, callback){
-            var status = modelManagerList[data.room].changeModelNodeAttribute(data.attStr, data.id, data.attVal);
+            let status = modelManagerList[data.room].changeModelNodeAttribute(data.attStr, data.id, data.attVal);
             if(callback) callback(status);
 
         });
         socket.on('agentChangeEdgeAttributeRequest', function(data, callback){
-            var status = modelManagerList[data.room].changeModelEdgeAttribute(data.attStr, data.id, data.attVal);
-
+            let status = modelManagerList[data.room].changeModelEdgeAttribute(data.attStr, data.id, data.attVal);
             if(callback) callback(status);
-
         });
 
         //Agent wants the history of operations
         socket.on('agentOperationHistoryRequest', function(data, callback){ //
             // from computer agent
-            var docPath = 'documents.' + data.room;
-
+            let docPath = 'documents.' + data.room;
             callback(model.get(docPath + '.history'))
-
-
         });
 
         //Agent wants the history of chat messages
         socket.on('agentChatHistoryRequest', function(data, callback){ //from computer agent
-
-
-            messagesQuery = model.query('messages', {
+            let messagesQuery = model.query('messages', {
                 room: data.room
             });
-
             messagesQuery.fetch( function(err){
                 if(err) next(err);
-
-
                 callback(messagesQuery.get());
             });
-
         });
-        socket.on('agentSendImageRequest', function(data, callback){
-            console.log("agent sent an image");
 
-            var status = modelManagerList[socket.room].addImage(data);
+        socket.on('agentSendImageRequest', function(data, callback){
+
+            console.log("agent sent an image");
+            let status = modelManagerList[socket.room].addImage(data);
             if(callback) callback(status);
 
         });
 
 
         socket.on('agentCBioPortalQueryRequest', function(queryInfo, callback){
-
             if(queryInfo.queryType === "cancerTypes") {
-
                 callback(cancerDataOrganizer.cancerStudies);
-
-
             }
 
             else if(queryInfo.queryType === "context") {
-
                 cancerDataOrganizer.getAllMutationCounts(queryInfo.proteinName, function (cancerData) {
-
                     callback(cancerData);
-
                 });
             }
             else if(queryInfo.queryType === "alterations"){
-
                 cancerDataOrganizer.getMutationCountInContext(queryInfo.proteinName, queryInfo.studyId, function(mutationCount){
                     callback(mutationCount);
                 });
@@ -606,7 +516,7 @@ module.exports.start = function(io, model, cancerDataOrganizer){
 
 
             if(modelManagerList[data.room]!==null) {
-                var pageDoc = modelManagerList[data.room].getPageDoc();
+                let pageDoc = modelManagerList[data.room].getPageDoc();
 
 
                 callback(pageDoc);
@@ -637,14 +547,14 @@ module.exports.start = function(io, model, cancerDataOrganizer){
          * This stores only species and organs information as cancerTypes require too many genes to be stored and
          * node interactionCnt is already stored as a node attribute
          */
-        socket.on('agentContextUpdate', function(data, callback){
-            var docPath = 'documents.' + data.room;
+        socket.on('agentContextUpdate', function(data){
+            let docPath = 'documents.' + data.room;
             model.set(docPath + '.context', data.param);
         });
 
 
 
-        socket.on('agentConnectToTripsRequest', function(param, callback){
+        socket.on('agentConnectToTripsRequest', function(param){
 
 
             console.log("Agent trips connection request");
@@ -652,7 +562,7 @@ module.exports.start = function(io, model, cancerDataOrganizer){
 
             if(param.isInterfaceAgent){
                 if(!tripsGeneralInterfaceInstance || !tripsGeneralInterfaceInstance.isConnectedToTrips()) {
-                    var TripsGeneralInterfaceModule = require('./trips/TripsGeneralInterfaceModule.js');
+                    let TripsGeneralInterfaceModule = require('./trips/TripsGeneralInterfaceModule.js');
                     tripsGeneralInterfaceInstance = new TripsGeneralInterfaceModule(param.userId, param.userName, socket, model, askHuman);
 
 
@@ -670,7 +580,7 @@ module.exports.start = function(io, model, cancerDataOrganizer){
 
                 if(!tripsCausalityInterfaceInstance || !tripsCausalityInterfaceInstance.isConnectedToTrips()) {
 
-                    var TripsCausalityInterfaceModule = require('./trips/TripsCausalityInterfaceModule.js');
+                    let TripsCausalityInterfaceModule = require('./trips/TripsCausalityInterfaceModule.js');
                     tripsCausalityInterfaceInstance = new TripsCausalityInterfaceModule(param.userId, param.userName, socket, model);
 
                 }
@@ -685,15 +595,12 @@ module.exports.start = function(io, model, cancerDataOrganizer){
 
     io.sockets.on('connection', function (socket) {
 
-
-
-        var socketRoom;
         socket.on('error', function (error) {
             console.log(error);
             //  socket.destroy()
         });
 
-        listenToAgentRequests(socket, socketRoom);
+        listenToAgentRequests(socket);
 
         socket.on('getDate',  function(msg, callback){
             callback(+(new Date));
@@ -709,7 +616,6 @@ module.exports.start = function(io, model, cancerDataOrganizer){
             socket.room = data.room;
             socket.userName = data.userName;
             socket.subscribed = true;
-            socketRoom = socket.room;
 
             socket.join(data.room);
 
@@ -723,23 +629,26 @@ module.exports.start = function(io, model, cancerDataOrganizer){
             console.log("human subscribed");
 
 
+            // noinspection Annotator
             model.subscribe('documents', function () {
 
 
-                var pageDoc = model.at('documents.' + data.room);
-                var docPath = 'documents.' + data.room;
-                var cy = model.at((docPath + '.cy'));
-                var pysb = model.at((docPath + '.pysb'));
-                var history = model.at((docPath + '.history'));
-                var undoIndex = model.at((docPath + '.undoIndex'));
-                var context = model.at((docPath + '.context'));
-                var images = model.at((docPath + '.images'));
+                let pageDoc = model.at('documents.' + data.room);
+                let docPath = 'documents.' + data.room;
+                let cy = model.at((docPath + '.cy'));
+                let pysb = model.at((docPath + '.pysb'));
+                let history = model.at((docPath + '.history'));
+                let undoIndex = model.at((docPath + '.undoIndex'));
+                let context = model.at((docPath + '.context'));
+                let images = model.at((docPath + '.images'));
 
-                var users = model.at((docPath + '.users'));//user lists with names and color codes
-                var userIds = model.at((docPath + '.userIds')); //used for keeping a list of subscribed users
-                var messages = model.at((docPath + '.messages'));
+                let users = model.at((docPath + '.users'));//user lists with names and color codes
+                let userIds = model.at((docPath + '.userIds')); //used for keeping a list of subscribed users
+                let messages = model.at((docPath + '.messages'));
                 let provenance = model.at((docPath + '.provenance'));
                 let pcQuery = model.at((docPath + '.pcQuery'));
+
+                let noTrips = model.at((docPath + '.noTrips'));
 
                 pageDoc.subscribe(function () {
                     pysb.subscribe(function () {
@@ -770,16 +679,25 @@ module.exports.start = function(io, model, cancerDataOrganizer){
                     });
 
                     userIds.subscribe(function () {
+                    });
+                    noTrips.subscribe(function(){
+
 
                     });
 
                     users.subscribe(function () {
 
-                        modelManagerList[data.room] = require("../public/collaborative-app/modelManager.js")(model, data.room);
+                        let ModelManager = require("../public/collaborative-app/modelManager.js");
+
+
+                        modelManagerList[data.room] = new ModelManager(model, data.room);
                         modelManagerList[data.room].setName(data.userId, data.userName);
 
                        //  //Add the user explicitly here
                          modelManagerList[data.room].addUser(data.userId);
+
+                        model.set((docPath + '.noTrips'), (process.argv.length > 2) && (process.argv[2].toUpperCase().indexOf("TRIPS") > -1));
+
 
                     });
                 });
@@ -788,7 +706,7 @@ module.exports.start = function(io, model, cancerDataOrganizer){
                 //Notify agents of model changes
                 model.on('insert', (docPath + '.history.**'), function (id, cmdInd) {
                         if (socket.subscribed) { //humans are connected through sockets as well,check userType to prevent notifying twice
-                            var cmd = model.get(docPath + '.history.' + cmdInd);
+                            let cmd = model.get(docPath + '.history.' + cmdInd);
                             //console.log(cmd.opName);
                             io.in(socket.room).emit('operation', cmd);
                         }
@@ -800,7 +718,7 @@ module.exports.start = function(io, model, cancerDataOrganizer){
 
                     //it means message is newly inserted
                     if (!id) {
-                        for (var att in msg) {
+                        for (let att in msg) {
                             if (msg.hasOwnProperty(att))
                                 msg = msg[att];
                         }
@@ -833,17 +751,12 @@ module.exports.start = function(io, model, cancerDataOrganizer){
 
                             if (error) {
                                 console.log(error);
-                            } else { //only open the window if a proper response is returned
+                            }
+                            else { //only open the window if a proper response is returned
 
-                                //     console.log(body);
-                                console.log(response.statusCode);
                                 if (response.statusCode === 200) {
                                     model.set(docPath + '.pcQuery.' + ind + '.graph', body);
-                                    // socket.emit("openPCQueryWindow", {graph: body});
                                 }
-                                // else {
-                                //     // socket.emit("openPCQueryWindow", "error");
-                                // }
                             }
                         });
                     }
@@ -855,7 +768,7 @@ module.exports.start = function(io, model, cancerDataOrganizer){
 
 
         socket.on('resetConversationRequest', function(){
-                modelManagerList[socket.room].newModel()
+                modelManagerList[socket.room].newModel();
 
             //Reset through clic
             request({
@@ -863,7 +776,7 @@ module.exports.start = function(io, model, cancerDataOrganizer){
                 headers: responseHeaders,
                 form: ''
 
-            }, function (error, response, body) {
+            }, function (error) {
 
                 if (error) {
                     console.log(error);
@@ -893,21 +806,22 @@ module.exports.start = function(io, model, cancerDataOrganizer){
             try {
 
                 model.subscribe('documents', function () {
-                    var pageDoc = model.at('documents.' + data.room);
-                    var docPath = 'documents.' + data.room;
-                    var cy = model.at((docPath + '.cy'));
-                    var pysb = model.at((docPath + '.pysb'));
-                    var history = model.at((docPath + '.history'));
-                    var undoIndex = model.at((docPath + '.undoIndex'));
-                    var context = model.at((docPath + '.context'));
-                    var images = model.at((docPath + '.images'));
+                    let pageDoc = model.at('documents.' + data.room);
+                    let docPath = 'documents.' + data.room;
+                    let cy = model.at((docPath + '.cy'));
+                    let pysb = model.at((docPath + '.pysb'));
+                    let history = model.at((docPath + '.history'));
+                    let undoIndex = model.at((docPath + '.undoIndex'));
+                    let context = model.at((docPath + '.context'));
+                    let images = model.at((docPath + '.images'));
 
 
-                    var users = model.at((docPath + '.users'));//user lists with names and color codes
-                    var userIds = model.at((docPath + '.userIds')); //used for keeping a list of subscribed users
-                    var messages = model.at((docPath + '.messages'));
-                    var provenance = model.at((docPath + '.provenance'));
-                    var pcQuery = model.at((docPath + '.pcQuery'));
+                    let users = model.at((docPath + '.users'));//user lists with names and color codes
+                    let userIds = model.at((docPath + '.userIds')); //used for keeping a list of subscribed users
+                    let messages = model.at((docPath + '.messages'));
+                    let provenance = model.at((docPath + '.provenance'));
+                    let pcQuery = model.at((docPath + '.pcQuery'));
+                    let noTrips = model.at((docPath + '.noTrips'));
 
                     if(!data.room)
                         return;
@@ -934,22 +848,26 @@ module.exports.start = function(io, model, cancerDataOrganizer){
                             pcQuery.subscribe(function () {
                             });
 
+                            noTrips.subscribe(function () {
+
+                            });
+
                             userIds.subscribe(function () {
-                                var userIdsList = userIds.get();
+                                let userIdsList = userIds.get();
                                 if (!userIdsList || userIdsList.indexOf(data.userId) < 0) {
                                     userIds.push(data.userId);
 
                                 }
                             });
 
-                                users.subscribe(function () {
+                            users.subscribe(function () {
+                                users.set(data.userId, {name: data.userName, colorCode: data.colorCode});
+                                modelManagerList[data.room].setName(data.userId, data.userName);
 
+                                console.log("agent subscribed to room: " + data.room);
 
-                                    users.set(data.userId, {name: data.userName, colorCode: data.colorCode});
-                                    modelManagerList[data.room].setName(data.userId, data.userName);
-
-                                });
-                        });
+                            });
+                    });
                     }
                     catch(e) {
                         console.log("Client not connected");
@@ -975,10 +893,9 @@ module.exports.start = function(io, model, cancerDataOrganizer){
                     modelManagerList[socket.room].deleteUser(socket.userId);
 
                     //remove from humanlist
-                    var isHumanDisconnected = false;
-                    for (var i = humanList.length - 1; i >= 0; i--) {
+                    let isHumanDisconnected = false;
+                    for (let i = humanList.length - 1; i >= 0; i--) {
                         if (humanList[i].userId === socket.userId) {
-                            console.log(humanList[i].userId);
                             //human is disconnected, so disconnect all users
                             isHumanDisconnected = true;
                             humanList.splice(i, 1);
@@ -986,20 +903,9 @@ module.exports.start = function(io, model, cancerDataOrganizer){
                         }
                     }
                     if(isHumanDisconnected) {
-                        modelManagerList[socketRoom].deleteAllUsers();
+                        modelManagerList[socket.room].deleteAllUsers();
                     }
                 }
-                //else //delete all users
-                 //   modelManagerList[socketRoom].deleteAllUsers();
-
-                // //remove from modelManagerList
-                // for(var i = modelManagerList.length - 1; i >=0 ; i--){
-                //     if(modelManagerList[i].userId == socket.userId){
-                //         modelManagerList.splice(i,1);
-                //         break;
-                //     }
-                // }
-
 
             }
             catch(e){
@@ -1012,7 +918,7 @@ module.exports.start = function(io, model, cancerDataOrganizer){
 
 
         socket.on('REACHQuery',  function(outputType, msg, callback){
-            var queryParams = "text=" + msg + "&output=" + outputType; //fries";
+            let queryParams = "text=" + msg + "&output=" + outputType; //fries";
 
 
             request({
@@ -1044,7 +950,7 @@ module.exports.start = function(io, model, cancerDataOrganizer){
 
         socket.on('pdfConvertRequest', function(binData, callback){
 
-            var pdf2Text = require('pdf2text');
+            let pdf2Text = require('pdf2text');
 
             pdf2Text(binData).then(function(pages) {
                 if(callback) callback(pages);
@@ -1078,15 +984,12 @@ module.exports.start = function(io, model, cancerDataOrganizer){
         socket.on('PCQuery', function(queryData, callback){
 
 
-            var req = request(queryData.url , function (error, response, body) {
-                console.log(queryData.url);
+            request(queryData.url , function (error, response, body) {
 
                 if (error) {
                     console.log(error);
                 } else  { //only open the window if a proper response is returned
 
-                    //     console.log(body);
-                    console.log(response.statusCode);
                     if(response.statusCode === 200) {
                         if(callback)
                             callback(body);
@@ -1104,7 +1007,7 @@ module.exports.start = function(io, model, cancerDataOrganizer){
 
         socket.on('MergePCQuery', function(queryData, callback){
 
-            var req = request(queryData.url , function (error, response, body) {
+            request(queryData.url , function (error, response, body) {
 
 
                 if (error) {
@@ -1133,10 +1036,6 @@ module.exports.start = function(io, model, cancerDataOrganizer){
 
 
         socket.on('BioPAXRequest', function(fileContent, reqType, callback){
-
-
-            console.log(callback);
-
 
             request.post({
                 //url: "http://localhost:8080/PaxtoolsServlet",
@@ -1171,4 +1070,4 @@ module.exports.start = function(io, model, cancerDataOrganizer){
 
     });
 
-}
+};

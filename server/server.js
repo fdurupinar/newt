@@ -78,15 +78,13 @@ function setup(app, options, cb) {
         next('404: ' + req.url);
     });
 
+
     app.writeScripts( backend, publicDir, {extensions: ['.coffee']}, function(err) {
 
-
-
-        var model = backend.createModel();
+        let model = backend.createModel();
 
 
         cb(err, expressApp, handlers.upgrade, model);
-
     });
 
 
