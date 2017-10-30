@@ -45,7 +45,7 @@ module.exports = function(modelManager, userId){
 
     function initModelNodeTest(id){
         QUnit.test('modelManager.initModelNode()', function(assert) {
-            modelManager.initModelNode(cy.getElementById(id), "me", true);
+            modelManager.initModelNode(cy.getElementById(id), null, true);
 
             var node = cy.getElementById(id);
             var modelNode = modelManager.getModelNode(id);
@@ -63,11 +63,16 @@ module.exports = function(modelManager, userId){
     function addModelEdgeTest(id1, id2){
         QUnit.test('modelManager.addModelEdge()', function(assert) {
             var id = (id1 + "-"+ id2);
-            modelManager.addModelEdge(id, {data: {id: id, source: id1, target: id2, class: "consumption"}},"me", true);
+            modelManager.addModelEdge(id, {data: {id: id, source: id1, target: id2, class: "consumption"}});
 
             var modelEdge = modelManager.getModelEdge(id);
             var edge = cy.getElementById(id);
-            assert.ok(edge,"Edge added to cytoscape");
+            assert.ok(edge, "Edge added to cytoscape");
+
+            console.log(id);
+            console.log(modelEdge);
+            console.log(edge);
+
 
             for(var att in modelEdge.data){
                 assert.propEqual(modelEdge.data[att], edge.data(att), "Model edge " + att + " correctly added.");
@@ -90,7 +95,7 @@ module.exports = function(modelManager, userId){
 
     function initModelEdgeTest(id) {
         QUnit.test('modelManager.initModelEdge()', function (assert) {
-            modelManager.initModelEdge(cy.getElementById(id));
+            modelManager.initModelEdge(cy.getElementById(id), null, true); //no history
 
             var edge = cy.getElementById(id);
             var modelEdge = modelManager.getModelEdge(id);
@@ -347,48 +352,52 @@ module.exports = function(modelManager, userId){
     }
 
     setNameTest(userId);
+    
+    var node1Id = "node1";
+    var node2Id = "node2";
+    var edgeId = node1Id + "-" + node2Id;
 
-    setTimeout(addModelNodeTest, 100, "node1");
-    setTimeout(initModelNodeTest, 100, "node1");
-    setTimeout(getModelNodeTest, 100, "node1");
+    setTimeout(addModelNodeTest, 100, node1Id);
+    setTimeout(initModelNodeTest, 100, node1Id);
+    setTimeout(getModelNodeTest, 100, node1Id);
 
-    setTimeout(addModelNodeTest, 100, "node2");
-    setTimeout(initModelNodeTest, 200, "node2");
+    setTimeout(addModelNodeTest, 100, node2Id);
+    setTimeout(initModelNodeTest, 200, node2Id);
 
-    // setTimeout(undoAddNodeTest, 200, "node2");
-    // setTimeout(redoAddNodeTest, 300, "node2");
+    setTimeout(undoAddNodeTest, 200, node2Id);
+    setTimeout(redoAddNodeTest, 300, node2Id);
 
-    setTimeout(selectModelNodeTest, 500, "node1");
-    setTimeout(unselectModelNodeTest, 1000, "node1");
-
-
-
-    setTimeout(addModelEdgeTest, 1000, "node1", "node2");
-    setTimeout(initModelEdgeTest, 1000, "node1-node2");
-
-    // setTimeout(undoAddEdgeTest, 1500, "node2");
-    // setTimeout(redoAddEdgeTest, 2000, "node2");
+    setTimeout(selectModelNodeTest, 500, node2Id);
+    setTimeout(unselectModelNodeTest, 1000, node2Id);
 
 
-    setTimeout(getModelEdgeTest, 2000, "node1-node2");
 
-    setTimeout(selectModelEdgeTest, 1500, "edge1-edge2");
-    setTimeout(unselectModelEdgeTest, 2000, "edge1-edge2");
+    setTimeout(addModelEdgeTest, 1000, node1Id, node2Id);
+    setTimeout(initModelEdgeTest, 1000, edgeId);
 
-
-    setTimeout(changeModelNodeAttributeTest, 1000, "node1");
-    setTimeout(changeModelEdgeAttributeTest, 2000, "node1-node2");
-
-    setTimeout(deleteModelEdgeTest, 2500, "node1-node2");
-
-    // setTimeout(undoDeleteEdgeTest, 3000, "node2");
-    // setTimeout(redoDeleteEdgeTest, 3500, "node2");
+    setTimeout(undoAddEdgeTest, 1500, edgeId);
+    setTimeout(redoAddEdgeTest, 2000, edgeId);
 
 
-    setTimeout(deleteModelNodeTest, 3000, "node1");
+    setTimeout(getModelEdgeTest, 2000, edgeId);
 
-    // setTimeout(undoDeleteNodeTest, 3500, "node2");
-    // setTimeout(redoDeleteNodeTest, 4000, "node2");
+    setTimeout(selectModelEdgeTest, 2000, edgeId);
+    setTimeout(unselectModelEdgeTest, 2000, edgeId);
+
+
+    setTimeout(changeModelNodeAttributeTest, 2000, node1Id);
+    setTimeout(changeModelEdgeAttributeTest, 2000, edgeId);
+
+    setTimeout(deleteModelEdgeTest, 2500, edgeId);
+
+    setTimeout(undoDeleteEdgeTest, 3000, edgeId);
+    setTimeout(redoDeleteEdgeTest, 3500, edgeId);
+
+
+    setTimeout(deleteModelNodeTest, 4000, node1Id);
+
+    setTimeout(undoDeleteNodeTest, 4500, node1Id);
+    setTimeout(redoDeleteNodeTest, 5000, node1Id);
 
 
 
