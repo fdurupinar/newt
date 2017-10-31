@@ -31,7 +31,7 @@ module.exports =  function(app) {
                     cy.remove(cy.elements());
                     app.modelManager.newModel("me"); //do not delete cytoscape, only the model
                     //close all the other tabs
-                    model.set('_page.doc.images', null);
+                    app.model.set('_page.doc.images', null);
                     app.dynamicResize(); //to clean the canvas 
 
                     if (callback) callback("success");
