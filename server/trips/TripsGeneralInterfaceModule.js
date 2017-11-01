@@ -148,7 +148,7 @@ class TripsGeneralInterfaceModule extends TripsInterfaceModule {
                 'contactmap': {ind: 2, label: 'CM'},
                 'influencemap': {ind: 3, label: 'IM'},
                 'simulation': {ind: 4, label: 'SIM'}
-            }
+            };
 
 
             let imgPath = trimDoubleQuotes(contentObj.path);
@@ -161,6 +161,8 @@ class TripsGeneralInterfaceModule extends TripsInterfaceModule {
                     }
 
                     let imgContent = 'data:image/png;base64,' + fileContent.toString('base64');
+
+                    console.log(imgContent);
 
                     let imgData = {
                         img: imgContent,
@@ -224,8 +226,10 @@ class TripsGeneralInterfaceModule extends TripsInterfaceModule {
     addProvenance(text){
         let self = this;
         let contentObj = KQML.keywordify(text.content);
-        contentObj.html = trimDoubleQuotes(contentObj.html);
-        contentObj.pc = trimDoubleQuotes(contentObj.pc);
+        if(contentObj.html)
+            contentObj.html = trimDoubleQuotes(contentObj.html);
+        if(contentObj.pc)
+            contentObj.pc = trimDoubleQuotes(contentObj.pc);
         //we can directly update the model
         if(contentObj.pc)
             self.model.push('documents.' + this.room + '.provenance', {html:contentObj.html, pc: contentObj.pc, userName: self.agentName});
