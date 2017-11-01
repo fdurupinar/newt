@@ -41,7 +41,7 @@ class ModelManager{
         }
 
         //if no such tab exists, insert a new tab
-        model.pass({user: user}).push('documents.' + this.docId + '.images', data);
+        this.model.pass({user: user}).push('documents.' + this.docId + '.images', data);
 
         if (!noHistUpdate)
             this.updateHistory({opName: 'add', opTarget: 'image', opAttr: data.fileName});
@@ -109,14 +109,14 @@ class ModelManager{
     // updateLayoutProperties (layoutProperties, user, noHistUpdate) {
     //
     //     let currentLayoutProperties;
-    //     let lp = model.get('documents.' + this.docId + '.cy.layoutProperties');
+    //     let lp = this.model.get('documents.' + this.docId + '.cy.layoutProperties');
     //
     //
     //     currentLayoutProperties = _.clone(layoutProperties);
     //
     //
     //
-    //     model.pass({user: user}).set('documents.' + this.docId + '.cy.layoutProperties',  currentLayoutProperties); //synclayout
+    //     this.model.pass({user: user}).set('documents.' + this.docId + '.cy.layoutProperties',  currentLayoutProperties); //synclayout
     //
     //     if (!noHistUpdate)
     //         this.updateHistory({
@@ -131,20 +131,20 @@ class ModelManager{
     // },
     //
     // getLayoutProperties (layoutProperties, user, noHistUpdate) {
-    //    return model.get('documents.' + this.docId + '.cy.layoutProperties');
+    //    return this.model.get('documents.' + this.docId + '.cy.layoutProperties');
     //
     // },
     //
     // updateGeneralProperties (generalProperties, user, noHistUpdate) {
     //
     //     let currentGeneralProperties;
-    //     let lp = model.get('documents.' + this.docId + '.cy.generalProperties');
+    //     let lp = this.model.get('documents.' + this.docId + '.cy.generalProperties');
     //
     //
     //     currentGeneralProperties = _.clone(generalProperties);
     //
     //
-    //     model.pass({user: user}).set('documents.' + this.docId + '.cy.generalProperties',  currentGeneralProperties); //synclayout
+    //     this.model.pass({user: user}).set('documents.' + this.docId + '.cy.generalProperties',  currentGeneralProperties); //synclayout
     //
     //     if (!noHistUpdate)
     //         this.updateHistory({
@@ -158,20 +158,20 @@ class ModelManager{
     // },
     //
     // getGeneralProperties (generalProperties, user, noHistUpdate) {
-    //     return model.get('documents.' + this.docId + '.cy.generalProperties');
+    //     return this.model.get('documents.' + this.docId + '.cy.generalProperties');
     //
     // },
     //
     // updateGridProperties (gridProperties, user, noHistUpdate) {
     //
     //     let currentGridProperties;
-    //     let lp = model.get('documents.' + this.docId + '.cy.gridProperties');
+    //     let lp = this.model.get('documents.' + this.docId + '.cy.gridProperties');
     //
     //
     //     currentGridProperties = _.clone(gridProperties);
     //
     //
-    //     model.pass({user: user}).set('documents.' + this.docId + '.cy.gridProperties',  currentGridProperties); //synclayout
+    //     this.model.pass({user: user}).set('documents.' + this.docId + '.cy.gridProperties',  currentGridProperties); //synclayout
     //
     //     if (!noHistUpdate)
     //         this.updateHistory({
@@ -185,7 +185,7 @@ class ModelManager{
     // },
     //
     // getGridProperties (gridProperties, user, noHistUpdate) {
-    //     return model.get('documents.' + this.docId + '.cy.gridProperties');
+    //     return this.model.get('documents.' + this.docId + '.cy.gridProperties');
     //
     // },
 
@@ -352,7 +352,7 @@ class ModelManager{
             this.restoreModel(cmd.param);
         }
 
-        undoInd = undoInd < this.model.get('documents.' + this.docId + '.history').length - 1 ? undoInd + 1 : model.get('documents.' + this.docId + '.history').length - 1;
+        undoInd = undoInd < this.model.get('documents.' + this.docId + '.history').length - 1 ? undoInd + 1 : this.model.get('documents.' + this.docId + '.history').length - 1;
         this.model.set('documents.' + this.docId + '.undoIndex', undoInd);
     }
 
@@ -850,18 +850,6 @@ class ModelManager{
 
         //No need to init -- data and position are updated in the next steps
 
-        //model.pass({user: user}).set('documents.' + this.docId + '.cy.nodes.' + nodeId + '.position', param.position);
-       // model.pass({user: user}).set('documents.' + this.docId + '.cy.nodes.' + nodeId + '.data', param.data);
-
-        // for(att in param){
-        //     if(param.hasOwnProperty(att) && att !== "addedLater"){
-        //
-        //         console.log(att);
-        //         console.log(param);
-        //         model.pass({user:user}).set(('documents.' + this.docId + '.cy.nodes.' + nodeId + '.' + att), param[att]);
-        //     }
-        // }
-
         if (!noHistUpdate)
             this.updateHistory({opName: 'restore', opTarget: 'element', elType: 'node', elId: nodeId, param:param});
     }
@@ -872,13 +860,6 @@ class ModelManager{
         //history is updated as restore command
         this.addModelEdge(edgeId, param, user, true);
         //No need to init -- data and position are updated in the next steps
-
-        //
-        // for(att in param){
-        //     if(param.hasOwnProperty(att) && att !== "addedLater"){
-        //         model.pass({user:user}).set(('documents.' + this.docId + '.cy.edges.' + edgeId + '.' + att), param[att]);
-        //     }
-        // }
 
 
         if (!noHistUpdate)
@@ -1144,13 +1125,13 @@ class ModelManager{
 
         // if(newModelCy) {
         //     if (newModelCy.layoutProperties == null)
-        //         model.set('documents.' + this.docId + '.cy.layoutProperties', _.clone(appUtilities.defaultLayoutProperties));
+        //         self.model.set('documents.' + this.docId + '.cy.layoutProperties', _.clone(appUtilities.defaultLayoutProperties));
         //
         //     if (newModelCy.generalProperties == null)
-        //         model.set('documents.' + this.docId + '.cy.generalProperties', _.clone(appUtilities.defaultGeneralProperties));
+        //         self.model.set('documents.' + this.docId + '.cy.generalProperties', _.clone(appUtilities.defaultGeneralProperties));
         //
         //     if (newModelCy.gridProperties == null)
-        //         model.set('documents.' + this.docId + '.cy.gridProperties', _.clone(appUtilities.defaultGridProperties));
+        //         self.model.set('documents.' + this.docId + '.cy.gridProperties', _.clone(appUtilities.defaultGridProperties));
         // }
 
 
