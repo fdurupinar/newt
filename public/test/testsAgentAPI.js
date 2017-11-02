@@ -29,7 +29,6 @@ module.exports = function(serverIp, modelManager){
     }
 
 
-
     function testLoadModel() {
         QUnit.test('Connect to server and load model', function (assert) {
             assert.expect(3);

@@ -68,7 +68,7 @@ module.exports.start = function(io, model, cancerDataOrganizer){
         socket.on('disconnect', function() {
             try {
                 if(socket.room) {
-                    modelManagerList[socket.room].deleteUser(socket.userId);
+                    modelManagerList[socket.room].deleteUserId(socket.userId);
                     //remove from humanlist
                     let isHumanDisconnected = false;
                     for (let i = humanList.length - 1; i >= 0; i--) {
@@ -80,8 +80,10 @@ module.exports.start = function(io, model, cancerDataOrganizer){
                         }
                     }
 
-                    if(isHumanDisconnected)
+                    if(isHumanDisconnected) {
+                        console.log("human disconnected");
                         modelManagerList[socket.room].deleteAllUsers();
+                    }
                 }
             }
             catch(e){
@@ -235,6 +237,7 @@ module.exports.start = function(io, model, cancerDataOrganizer){
 
             console.log("human subscribed");
 
+
             // noinspection Annotator
             model.subscribe('documents', function () {
                 let pageDoc = model.at('documents.' + data.room);
@@ -292,10 +295,11 @@ module.exports.start = function(io, model, cancerDataOrganizer){
                         let ModelManager = require("../public/collaborative-app/modelManager.js");
 
                         modelManagerList[data.room] = new ModelManager(model, data.room);
-                        modelManagerList[data.room].setName(data.userId, data.userName);
+
 
                         //Add the user explicitly here
-                         modelManagerList[data.room].addUser(data.userId);
+                         modelManagerList[data.room].addUser(data.userId, data.userName);
+                        //modelManagerList[data.room].setName(data.userId, data.userName); done up
 
                         model.set((docPath + '.noTrips'), (process.argv.length > 2) && (process.argv[2].toUpperCase().indexOf("TRIPS") > -1));
                     });
@@ -450,7 +454,7 @@ module.exports.start = function(io, model, cancerDataOrganizer){
                             pcQuery.subscribe(function () {
                             });
 
-                            noTrips.subscribe(function () {
+                            noTrips.subscribe(function () { 
                             });
 
                             userIds.subscribe(function () {
@@ -461,8 +465,9 @@ module.exports.start = function(io, model, cancerDataOrganizer){
                             });
 
                             users.subscribe(function () {
-                                users.set(data.userId, {name: data.userName, colorCode: data.colorCode});
-                                modelManagerList[data.room].setName(data.userId, data.userName);
+                                // users.set(data.userId, {name: data.userName, colorCode: data.colorCode});
+                                // modelManagerList[data.room].setName(data.userId, data.userName);
+                                modelManagerList[data.room].addUser(data.userId, data.userName, data.colorCode);
                                 console.log("agent subscribed to room: " + data.room);
                             });
                         });
@@ -517,41 +522,6 @@ module.exports.start = function(io, model, cancerDataOrganizer){
             modelManagerList[data.room].setName(data.userName);
             if(callback) callback();
         });
-
-        // //Agent requests
-        // socket.on('agentSetLayoutPropertiesRequest', function(data, callback){
-        //     modelManagerList[data.room].updateLayoutProperties(data);
-        //     if(callback) callback();
-        // });
-        //
-        // socket.on('agentGetLayoutPropertiesRequest', function(data, callback){
-        //     let props = modelManagerList[data.room].getLayoutProperties();
-        //     callback(props);
-        //
-        // });
-        //
-        // socket.on('agentSetGeneralPropertiesRequest', function(data, callback){
-        //     modelManagerList[data.room].updateGeneralProperties(data);
-        //     if(callback) callback();
-        // });
-        //
-        // socket.on('agentGetGeneralPropertiesRequest', function(data, callback){
-        //     let props = modelManagerList[data.room].getGeneralProperties();
-        //     callback(props);
-        //
-        // });
-        //
-        //
-        // socket.on('agentSetGridPropertiesRequest', function(data, callback){
-        //     modelManagerList[data.room].updateGridProperties(data);
-        //     if(callback) callback();
-        // });
-        //
-        // socket.on('agentGetGridPropertiesRequest', function(data, callback){
-        //     let props = modelManagerList[data.room].getGridProperties();
-        //     callback(props);
-        //
-        // });
 
         socket.on('agentRunLayoutRequest', function(data, callback){
             askHuman(socket.userId, data.room,  "runLayout", null, function(val){
@@ -761,7 +731,7 @@ module.exports.start = function(io, model, cancerDataOrganizer){
         socket.on('agentManualDisconnect', function(){
             try {
                 //do not delete socket but remove agent from the list of users
-                modelManagerList[socket.room].deleteUser(socket.userId);
+                modelManagerList[socket.room].deleteUserId(socket.userId);
             }
             catch(e){
                 console.log("Disconnect error " + e);

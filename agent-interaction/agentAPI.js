@@ -10,7 +10,7 @@
  */
 
 
-function Agent (name, id) {
+function Agent (name, id, ioLib) {
     //public
     this.agentId = id;
     this.agentName = name;
@@ -25,17 +25,25 @@ function Agent (name, id) {
     this.pageDoc;
     this.socket;
     this.room;
+    if(ioLib)
+        this.io = ioLib;
+    else
+        this.io = io;
 
 
 }
 
+Agent.prototype.setIO = function(ioLib, callback){
+    this.io = ioLib;
+    if(callback) callback();
+}
 /**
  *
  * @param url Server address
  * @param callback
  * @returns socket Io socket to the node.js server
  */
-Agent.prototype.connectToServer = function (url, callback) {
+Agent.prototype.connectToServer = function (url,  callback) {
 
 
     var self = this;
@@ -49,7 +57,12 @@ Agent.prototype.connectToServer = function (url, callback) {
         serverIp = url.slice(0,sInd);
         self.room = url.slice(sInd, url.length);
     }
-    this.socket =  io(serverIp); //server connection
+    //
+    // if(io)
+    //     this.socket =  io(serverIp); //server connection
+    // else
+        this.socket =  this.io(serverIp); //server connection
+
 
     var p1 = new Promise(function (resolve, reject) {
         if (self.room == ""  || self.room == null) {

@@ -233,15 +233,9 @@ class TripsCausalityInterfaceModule extends TripsInterfaceModule{
 
         //Listen to requests for common upstreams
         pattern = { 0: 'request', 1:'&key', content: [ 'find-common-upstreams',  '.', '*']};
+
         self.tm.addHandler(pattern, function (text) { //listen to requests
             let contentObj = KQML.keywordify(text.content);
-            //
-            // console.log(contentObj.genes);
-            // self.getTermName(contentObj.genes, function (genes) {
-            //     console.log(genes);
-            // });
-             //self.getTermName(contentObj.target, function (target) {
-
 
             let geneNames = [];
             // contentObj.genes.forEach(function(gene){

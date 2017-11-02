@@ -147,43 +147,11 @@ app.get('/:docId', function (page, model, arg, next) {
             });
 
             userIds.subscribe(function () {
-                let userId = model.get('_session.userId');
-                let userIdsList = userIds.get();
 
-                if (!userIdsList) {
-                    userIdsList = [userId];
-                    userIds.push(userId);
-                    self.firstUser = true;
-                }
-                else if (userIdsList.indexOf(userId) < 0) { //does not exist
-                    userIds.push(userId);
-                    self.firstUser = true;
-                }
-                else //user exists
-                    self.firstUser = false;
+            });
 
-                userIdsList = userIds.get();
-
-                users.subscribe(function () {
-
-                    console.log("User is being subscribed");
-
-                    let colorCode = null;
-                    let userName = null;
-                    if (users.get(userId)) {
-                        userName = users.get(userId).name;
-                        colorCode = users.get(userId).colorCode;
-                    }
-                    if (!userName)
-                        userName = 'User ' + userIdsList.length;
-                    if (!colorCode)
-                        colorCode = getNewColor();
-
-
-                    users.set(userId, {name: userName, colorCode: colorCode});
-
-                    return page.render();
-                });
+            users.subscribe(function () {
+                return page.render();
             });
 
         });
@@ -224,12 +192,19 @@ app.proto.create = function (model) {
     self.listenToUIOperations(model);
 
     let id = model.get('_session.userId');
-    let name = model.get('_page.doc.users.' + id +'.name');
+
 
     // Make modelManager instance accessible through window object as testModelManager to use it in Cypress tests
     let ModelManager = require('./public/collaborative-app/modelManager.js');
     self.modelManager = window.testModelManager = new ModelManager(model, model.get('_page.room'));
-    self.modelManager.setName( model.get('_session.userId'),name);
+    this.docId = model.get('_page.doc.id');
+    window.testApp = this;
+    window.sessionUserId = model.get('_session.userId');
+
+
+    self.modelManager.addUser(model.get('_session.userId'));
+
+    // self.modelManager.setName( model.get('_session.userId'),name);
 
 
     self.dynamicResize(model.get('_page.doc.images'));
@@ -281,41 +256,6 @@ app.proto.init = function (model) {
     this.listenToNodeOperations(model);
     this.listenToEdgeOperations(model);
     this.listenToModelOperations(model);
-
-    //
-    // model.on('all', '_page.doc.cy.layoutProperties', function(op, val) {
-    //     if (docReady){
-    //         for(let att in val){ //assign each attribute separately to keep the functions in currentlayoutproperties
-    //             if(appUtilities.currentLayoutProperties[att])
-    //                 appUtilities.currentLayoutProperties[att] = val[att];
-    //         }
-    //
-    //     }
-    //
-    // });
-    //
-    // model.on('all', '_page.doc.cy.generalProperties', function(op, val) {
-    //     if (docReady){
-    //         for(let att in val){ //assign each attribute separately to keep the functions in currentgeneralproperties
-    //             if(appUtilities.currentGeneralProperties[att])
-    //                 appUtilities.currentGeneralProperties[att] = val[att];
-    //         }
-    //
-    //     }
-    //
-    // });
-    //
-    // model.on('all', '_page.doc.cy.gridProperties', function(op, val) {
-    //     if (docReady){
-    //         for(let att in val){ //assign each attribute separately to keep the functions in currentgridproperties
-    //             if(appUtilities.currentGridProperties[att])
-    //                 appUtilities.currentGridProperties[att] = val[att];
-    //         }
-    //
-    //     }
-    //
-    // });
-    //
 
 };
 
@@ -417,21 +357,12 @@ app.proto.loadCyFromModel = function(callback){
                 //reset to the center
                 cy.panzoom().reset();
 
+
                 if(callback) callback(false);
             });
 
         });
 
-        // let props;
-        // //update app utilities as well
-        // props = self.modelManager.getLayoutProperties();
-        // if(props) appUtilities.currentLayoutProperties = props;
-        //
-        // props = self.modelManager.getGeneralProperties();
-        // if(props) appUtilities.currentGeneralProperties = props;
-        //
-        // props = self.modelManager.getGridProperties();
-        // if(props) appUtilities.currentGridProperties = props;
 
 
     }
@@ -733,12 +664,9 @@ app.proto.listenToEdgeOperations = function(model){
 app.proto.listenToModelOperations = function(model){
     let self = this;
 
-    model.on('all', '_page.doc.noTrips', function(op, noTrips){
 
-        if(noTrips)
-            $('#unitTestArea').show();
-        else
-            $('#unitTestArea').hide();
+
+    model.on('all', '_page.doc.noTrips', function(op, noTrips){
 
         //If there is already one connection to Bob, don't open another
         let userIds = self.modelManager.getUserIds();
@@ -805,8 +733,9 @@ app.proto.listenToModelOperations = function(model){
         if(docReady)
             triggerContentChange('messages');
 
-        if (com[com.length - 1].userId != myId)
-            playSound();
+        if (docReady && com[com.length - 1].userId != myId)
+            $('#notificationAudio')[0].play();
+
     });
 
 
@@ -834,22 +763,11 @@ app.proto.onScroll = function () {
 };
 
 app.proto.changeColorCode = function(){
-    let  user = this.model.at('_page.doc.users.' + this.model.get('_session.userId'));
 
-    user.set('colorCode', getNewColor());
+    this.modelManager.changeColorCode(this.model.get('_session.userId'));
+
 };
 
-app.proto.runUnitTests = function(){
-    let self = this;
-    this.socket.emit("newFile");
-    //require("./public/test/testsAgentAPI.js")(("http://localhost:3000/" + room), self.modelManager);
-    // require("./public/test/testsCausalityAgent.js")(("http://localhost:3000/" + room), self.modelManager);
-    require("./public/test/testsModelManager.js")(self.modelManager, self.model.get('_session.userId'));
-    //
-    // require("./public/test/testsUserOperations.js")(self.modelManager);
-    // require("./public/test/testsMessages.js")(this);
-    require("./public/test/testOptions.js")(); //to print out results
-};
 
 /***
  * Client requests the server to send a pc query
@@ -1120,14 +1038,6 @@ app.proto.dynamicResize = function (images) {
 ////////////////////////////////////////////////////////////////////////////
 //Local functions
 ////////////////////////////////////////////////////////////////////////////
-function getNewColor(){
-    let gR = 1.618033988749895; //golden ratio
-    let h = Math.floor((Math.random() * gR * 360));//Math.floor((cInd * gR - Math.floor(cInd * gR))*360);
-    let cHsl = [h, 70 + Math.random() * 30, 60 + Math.random() * 10];
-    let strHsl = 'hsl('+cHsl[0]  +', '+ cHsl[1] + '%, ' + cHsl[2] +'%)';
-
-    return oneColor(strHsl).hex();
-}
 
 
 function triggerContentChange(divId){
@@ -1135,16 +1045,6 @@ function triggerContentChange(divId){
     $(('#' + divId)).trigger('contentchanged');
 }
 
-function playSound() {
-    try {
-        document.getElementById('notificationAudio').play();
-        if (!document)
-            throw err;
-    }
-    catch (err) {
-        return err;
-    }
-}
 
 /***
  * Local function to update children's positions with node

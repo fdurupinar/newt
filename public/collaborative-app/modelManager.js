@@ -5,7 +5,6 @@
  *	Author: Funda Durupinar Babur<f.durupinar@gmail.com>
  */
 
-let _ = require('underscore');
 
 
 class ModelManager{
@@ -68,33 +67,67 @@ class ModelManager{
         this.model.set('documents.' + this.docId + '.users.' + id +'.colorCode', color);
     }
 
+    changeColorCode(id){
+        this.model.set('documents.' + this.docId + '.users.' + id +'.colorCode', getNewColor());
+    }
+
     getMessages(){
         return this.model.get('documents.' + this.docId + '.messages');
     }
 
-    getUsers(){
-        return this.model.get('documents.' + this.docId + '.users');
+    /***
+     * User information for current and previous users
+     * No need to be active users
+     * @param userId
+     */
+    getUserId(userId){
+        return this.model.get('documents.' + this.docId + '.users.' + userId);
     }
+
+
+    /***
+     * Active users on the document
+     */
     getUserIds(){
         return this.model.get('documents.' + this.docId + '.userIds');
     }
 
-    addUser(userId){
+    /***
+     * Add an active userId to the document and update 'users' info
+     * @param userId
+     * @param userName
+     * @param colorCode
+     */
+    addUser(userId, userName, colorCode){
         let userIds = this.model.get('documents.' + this.docId + '.userIds');
         if(!userIds || userIds.indexOf(userId) < 0) //user not in the list
             this.model.at('documents.' + this.docId + '.userIds').push(userId);
+
+
+        let users = this.model.at('documents.' + this.docId + '.users');
+
+        if(!users.get(userId)){
+            if(!userName) {
+                let userCnt = this.getUserIds().length;
+                userName = "User" + userCnt;
+            }
+            if(!colorCode)
+                colorCode = getNewColor();
+
+            this.setName(userId, userName);
+            this.setColorCode(userId, colorCode);
+        }
     }
 
     deleteAllUsers(){
         let self = this;
         let userIds = this.model.get('documents.' + this.docId + '.userIds');
-
-        for(let i = 0; i < userIds.length; i++){
-            self.model.pop('documents.' + self.docId + '.userIds');
+        for(let i = userIds.length - 1; i>=0; i--){
+            self.deleteUserId(userIds[i]);
         }
     }
 
-    deleteUser(userId){
+    deleteUserId(userId){
         let self = this;
 
         let userIds = this.model.get('documents.' + this.docId + '.userIds');
@@ -106,88 +139,6 @@ class ModelManager{
         }
     }
 
-    // updateLayoutProperties (layoutProperties, user, noHistUpdate) {
-    //
-    //     let currentLayoutProperties;
-    //     let lp = this.model.get('documents.' + this.docId + '.cy.layoutProperties');
-    //
-    //
-    //     currentLayoutProperties = _.clone(layoutProperties);
-    //
-    //
-    //
-    //     this.model.pass({user: user}).set('documents.' + this.docId + '.cy.layoutProperties',  currentLayoutProperties); //synclayout
-    //
-    //     if (!noHistUpdate)
-    //         this.updateHistory({
-    //             opName: 'update',
-    //             opTarget: 'layout properties',
-    //             opAttr: JSON.stringify(currentLayoutProperties),
-    //             param: currentLayoutProperties,
-    //             prevParam: lp
-    //
-    //         });
-    //     return currentLayoutProperties;
-    // },
-    //
-    // getLayoutProperties (layoutProperties, user, noHistUpdate) {
-    //    return this.model.get('documents.' + this.docId + '.cy.layoutProperties');
-    //
-    // },
-    //
-    // updateGeneralProperties (generalProperties, user, noHistUpdate) {
-    //
-    //     let currentGeneralProperties;
-    //     let lp = this.model.get('documents.' + this.docId + '.cy.generalProperties');
-    //
-    //
-    //     currentGeneralProperties = _.clone(generalProperties);
-    //
-    //
-    //     this.model.pass({user: user}).set('documents.' + this.docId + '.cy.generalProperties',  currentGeneralProperties); //synclayout
-    //
-    //     if (!noHistUpdate)
-    //         this.updateHistory({
-    //             opName: 'update',
-    //             opTarget: 'general properties',
-    //             opAttr: JSON.stringify(currentGeneralProperties),
-    //             param:currentGeneralProperties,
-    //             prevParam:lp
-    //         });
-    //     return currentGeneralProperties;
-    // },
-    //
-    // getGeneralProperties (generalProperties, user, noHistUpdate) {
-    //     return this.model.get('documents.' + this.docId + '.cy.generalProperties');
-    //
-    // },
-    //
-    // updateGridProperties (gridProperties, user, noHistUpdate) {
-    //
-    //     let currentGridProperties;
-    //     let lp = this.model.get('documents.' + this.docId + '.cy.gridProperties');
-    //
-    //
-    //     currentGridProperties = _.clone(gridProperties);
-    //
-    //
-    //     this.model.pass({user: user}).set('documents.' + this.docId + '.cy.gridProperties',  currentGridProperties); //synclayout
-    //
-    //     if (!noHistUpdate)
-    //         this.updateHistory({
-    //             opName: 'update',
-    //             opTarget: 'grid properties',
-    //             opAttr: JSON.stringify(currentGridProperties),
-    //             param:currentGridProperties,
-    //             prevParam:lp
-    //         });
-    //     return currentGridProperties;
-    // },
-    //
-    // getGridProperties (gridProperties, user, noHistUpdate) {
-    //     return this.model.get('documents.' + this.docId + '.cy.gridProperties');
-    //
-    // },
 
     /***
      *
@@ -1123,17 +1074,6 @@ class ModelManager{
         let newModelCy = this.model.get('documents.' + this.docId + '.cy');
 
 
-        // if(newModelCy) {
-        //     if (newModelCy.layoutProperties == null)
-        //         self.model.set('documents.' + this.docId + '.cy.layoutProperties', _.clone(appUtilities.defaultLayoutProperties));
-        //
-        //     if (newModelCy.generalProperties == null)
-        //         self.model.set('documents.' + this.docId + '.cy.generalProperties', _.clone(appUtilities.defaultGeneralProperties));
-        //
-        //     if (newModelCy.gridProperties == null)
-        //         self.model.set('documents.' + this.docId + '.cy.gridProperties', _.clone(appUtilities.defaultGridProperties));
-        // }
-
 
         if (!noHistUpdate) {
             this.updateHistory({opName: 'init', param: newModelCy, opTarget: 'model'});
@@ -1186,3 +1126,14 @@ class ModelManager{
 }
 
 module.exports = ModelManager;
+
+function getNewColor(){
+    let oneColor = require('onecolor');
+
+    let gR = 1.618033988749895; //golden ratio
+    let h = Math.floor((Math.random() * gR * 360));//Math.floor((cInd * gR - Math.floor(cInd * gR))*360);
+    let cHsl = [h, 70 + Math.random() * 30, 60 + Math.random() * 10];
+    let strHsl = 'hsl('+cHsl[0]  +', '+ cHsl[1] + '%, ' + cHsl[2] +'%)';
+
+    return oneColor(strHsl).hex();
+}
