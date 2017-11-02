@@ -162,7 +162,6 @@ class TripsGeneralInterfaceModule extends TripsInterfaceModule {
 
                     let imgContent = 'data:image/png;base64,' + fileContent.toString('base64');
 
-                    console.log(imgContent);
 
                     let imgData = {
                         img: imgContent,
