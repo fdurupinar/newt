@@ -24,7 +24,9 @@ let executeCommandLineProcess = function (cmdStr, callback){
         });
     }
     catch(error){
-        if (callback) callback("Error " + error);
+        console.log(error);
+        if(callback) callback();
+
     }
 };
 
@@ -122,7 +124,7 @@ module.exports.start = function(io, model, cancerDataOrganizer){
             });
         }
         else
-            if(callback) callback("fail");
+        if(callback) callback();
     };
 
     /***
@@ -507,20 +509,32 @@ module.exports.start = function(io, model, cancerDataOrganizer){
             }
             catch(e){
                 console.log(e);
-                if(callback) callback("error");
+                if(callback) callback();
             }
         });
 
         socket.on('agentRedoRequest', function(data, callback){ //from computer agent
-
-            modelManagerList[data.room].redoCommand();
-            if(callback) callback();
+            try {
+                modelManagerList[data.room].redoCommand();
+                if (callback) callback();
+            }
+            catch(e){
+                console.log(e);
+                if(callback) callback();
+            }
         });
 
         socket.on('agentChangeNameRequest',function(data, callback){
 
-            modelManagerList[data.room].setName(data.userName);
-            if(callback) callback();
+            try {
+                modelManagerList[data.room].setName(data.userName);
+                if (callback) callback();
+            }
+            catch(e){
+                console.log(e);
+                if(callback) callback();
+
+            }
         });
 
         socket.on('agentRunLayoutRequest', function(data, callback){
@@ -575,7 +589,7 @@ module.exports.start = function(io, model, cancerDataOrganizer){
                     if (callback) callback(val);
                 });
 
-            if (callback) callback("Error");
+            if(callback) callback();
         });
 
         socket.on('agentNewFileRequest',  function(data, callback){
@@ -621,13 +635,25 @@ module.exports.start = function(io, model, cancerDataOrganizer){
         });
 
         socket.on('agentGetNodeRequest',function(data, callback){
-            let node = modelManagerList[data.room].getModelNode(data.id);
-            if(callback) callback(node);
+            try {
+                let node = modelManagerList[data.room].getModelNode(data.id);
+                if (callback) callback(node);
+            }
+            catch(e){
+                console.log(e);
+                if(callback) callback();
+            }
         });
 
         socket.on('agentGetEdgeRequest',function(data, callback){
-            let edge = modelManagerList[data.room].getModelEdge(data.id);
-            if(callback) callback(edge);
+            try {
+                let edge = modelManagerList[data.room].getModelEdge(data.id);
+                if (callback) callback(edge);
+            }
+            catch(e){
+                console.log(e);
+                if(callback) callback();
+            }
         });
 
         socket.on('agentAddNodeRequest',function(data, callback){
@@ -638,9 +664,15 @@ module.exports.start = function(io, model, cancerDataOrganizer){
         });
 
         socket.on('agentAddEdgeRequest',function(data,  callback){
-            //we know the edge id so add directly to the model
-            let status = modelManagerList[data.room].addModelEdge(data.id, data, "me");
-            if(callback) callback(status);
+            try {
+                //we know the edge id so add directly to the model
+                let status = modelManagerList[data.room].addModelEdge(data.id, data, "me");
+                if (callback) callback(status);
+            }
+            catch(e){
+                console.log(e);
+                if(callback) callback();
+            }
         });
 
         socket.on('agentDeleteElesRequest',function(data, callback){
@@ -650,18 +682,38 @@ module.exports.start = function(io, model, cancerDataOrganizer){
         });
 
         socket.on('agentMoveNodeRequest',function(data, callback){
-            let status = modelManagerList[data.room].changeModelNodeAttribute("position", data.id, data.pos);
-            if(callback) callback(status);
+            try {
+                let status = modelManagerList[data.room].changeModelNodeAttribute("position", data.id, data.pos);
+                if (callback) callback(status);
+            }
+            catch(e){
+                console.log(e);
+                if(callback) callback();
+            }
         });
 
         socket.on('agentChangeNodeAttributeRequest', function(data, callback){
-            let status = modelManagerList[data.room].changeModelNodeAttribute(data.attStr, data.id, data.attVal);
-            if(callback) callback(status);
+            try {
+                let status = modelManagerList[data.room].changeModelNodeAttribute(data.attStr, data.id, data.attVal);
+                if (callback) callback(status);
+            }
+            catch(e){
+                console.log(e);
+                if(callback) callback();
+
+            }
 
         });
         socket.on('agentChangeEdgeAttributeRequest', function(data, callback){
-            let status = modelManagerList[data.room].changeModelEdgeAttribute(data.attStr, data.id, data.attVal);
-            if(callback) callback(status);
+            try {
+                let status = modelManagerList[data.room].changeModelEdgeAttribute(data.attStr, data.id, data.attVal);
+                if (callback) callback(status);
+            }
+            catch(e){
+                console.log(e);
+                if(callback) callback();
+
+            }
         });
 
         //Agent wants the history of operations
@@ -683,8 +735,15 @@ module.exports.start = function(io, model, cancerDataOrganizer){
         });
 
         socket.on('agentSendImageRequest', function(data, callback){
-            let status = modelManagerList[socket.room].addImage(data);
-            if(callback) callback(status);
+            try {
+                let status = modelManagerList[socket.room].addImage(data);
+                if (callback) callback(status);
+            }
+            catch(e){
+                console.log(e);
+                if(callback) callback();
+
+            }
 
         });
 
@@ -721,9 +780,16 @@ module.exports.start = function(io, model, cancerDataOrganizer){
 
         //Agent wants the model
         socket.on('agentPageDocRequest', function(data, callback){ //from computer agent
-            if(modelManagerList[data.room]!==null) {
+            try {
+
                 let pageDoc = modelManagerList[data.room].getPageDoc();
                 callback(pageDoc);
+
+            }
+            catch(e){
+                console.log(e);
+                if(callback) callback();
+
             }
         });
 
@@ -885,8 +951,7 @@ module.exports.start = function(io, model, cancerDataOrganizer){
 
                     }
                     else{
-                        if(callback)
-                            callback("fail");
+                        if(callback) callback();
 
                     }
 

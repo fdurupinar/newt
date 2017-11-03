@@ -43,11 +43,25 @@ describe('Agent API Test', function () {
             });
 
        });
+    }
 
+
+    function changeName() {
+        it('changeName', function (done) {
+            agent.changeName("HAL", function () {
+                setTimeout(function () { //should wait here as well
+                    expect(agent.agentName).to.equal("HAL");
+                    done();
+                }, 100);
+
+            });
+
+        });
     }
 
     newAgent();
     agentProperties();
     loadModel();
+    changeName();
 
 });

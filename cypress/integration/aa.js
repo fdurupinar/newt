@@ -4,9 +4,9 @@
  * TODO: look at order of runs
  */
 describe('Window access', function () {
-    before(()=>{
+
+    it('Access global window object', function (done) {
         cy.visit('http://localhost:3000');
-        it('Access global window object', function (done) {
             cy.window().should(function (window) {
                 expect(window.testApp).to.be.ok;
                 expect(window.testApp.model).to.be.ok;
@@ -15,10 +15,8 @@ describe('Window access', function () {
                 expect(window.location.hostname).to.eq('localhost');
 
                 done();
-            })
-        });
+            });
     });
-
 
 });
 

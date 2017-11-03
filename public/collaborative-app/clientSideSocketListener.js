@@ -20,7 +20,7 @@ module.exports =  function(app) {
                 }
                 catch (e) {
                     console.log(e);
-                    if (callback) callback("fail");
+                    if(callback) callback();
 
                 }
 
@@ -38,7 +38,7 @@ module.exports =  function(app) {
                 }
                 catch (e) {
                     console.log(e);
-                    if (callback) callback("fail");
+                    if(callback) callback();
 
                 }
             });
@@ -50,7 +50,7 @@ module.exports =  function(app) {
                 }
                 catch (e) {
                     console.log(e);
-                    if (callback) callback("fail");
+                    if(callback) callback();
 
                 }
             });
@@ -69,7 +69,7 @@ module.exports =  function(app) {
                 }
                 catch (e) {
                     console.log(e);
-                    if (callback) callback("fail");
+                    if(callback) callback();
 
                 }
             });
@@ -109,7 +109,7 @@ module.exports =  function(app) {
                 }
                 catch (e) {
                     console.log(e);
-                    if (callback) callback("fail");
+                    if(callback) callback();
 
                 }
             });
@@ -126,7 +126,7 @@ module.exports =  function(app) {
                 }
                 catch (e) {
                     console.log(e);
-                    if (callback) callback("fail");
+                    if(callback) callback();
 
                 }
             });
@@ -145,7 +145,7 @@ module.exports =  function(app) {
                 }
                 catch (e) {
                     console.log(e);
-                    if (callback) callback("fail");
+                    if(callback) callback();
 
                 }
             });
@@ -167,7 +167,7 @@ module.exports =  function(app) {
                 }
                 catch (e) {
                     console.log(e);
-                    if (callback) callback("fail");
+                    if (callback) callback();
 
                 }
 
@@ -195,7 +195,7 @@ module.exports =  function(app) {
                 }
                 catch (e) {
                     console.log(e);
-                    if (callback) callback("fail");
+                    if (callback) callback();
 
                 }
             });
@@ -211,7 +211,7 @@ module.exports =  function(app) {
                 }
                 catch (e) {
                     console.log(e);
-                    if (callback) callback("fail");
+                    if (callback) callback();
 
                 }
             });
@@ -238,7 +238,7 @@ module.exports =  function(app) {
                 }
                 catch (e) {
                     console.log(e);
-                    if (callback) callback("fail");
+                    if (callback) callback();
 
                 }
             });
@@ -262,7 +262,7 @@ module.exports =  function(app) {
                 }
                 catch (e) {
                     console.log(e);
-                    if (callback) callback("fail");
+                    if (callback) callback();
 
                 }
             });
@@ -288,7 +288,7 @@ module.exports =  function(app) {
                 }
                 catch (e) {
                     console.log(e);
-                    if (callback) callback("fail");
+                    if (callback) callback();
 
                 }
 
@@ -309,7 +309,7 @@ module.exports =  function(app) {
                 }
                 catch (e) {
                     console.log(e);
-                    if (callback) callback("fail");
+                    if (callback) callback();
 
                 }
             });
