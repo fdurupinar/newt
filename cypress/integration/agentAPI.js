@@ -207,6 +207,40 @@ describe('Agent API Test', function () {
         });
     }
 
+    function moveNodeRequest(pos){
+        it('agent.moveNodeRequest', function (done) {
+            cy.window().should(function (window) {
+                let modelManager = window.testApp.modelManager;
+                let nodeId = modelManager.getModelNodesArr()[0].id;
+                agent.sendRequest("agentMoveNodeRequest", {id: nodeId,  pos:pos}, function(){
+                    setTimeout(function () { //should wait here as well
+                        var val = modelManager.getModelNodeAttribute("position", nodeId);
+                        expect(val).to.be.deep.equal(pos);
+                        done();
+                    },100);
+                });
+            });
+        });
+    }
+
+
+    function aligRequest(){
+        it('agent.alignRequest', function (done) {
+            cy.window().should(function (window) {
+                let modelManager = window.testApp.modelManager;
+                let nodeId = modelManager.getModelNodesArr()[0].id;
+                agent.sendRequest("agentAlignRequest", {nodeIds: '*', alignTo:nodeId, horizontal:"none", vertical:"center"}, function(res){
+                    setTimeout(function () { //should wait here as well
+                        expect(res).to.equal("success");
+                        done();
+                    },100);
+                });
+
+            });
+        });
+    }
+
+
     newAgent();
     checkAgentProperties();
     loadModel();
@@ -218,10 +252,19 @@ describe('Agent API Test', function () {
     addEdgeRequest({data:{class: "consumption"}});
 
 
+    moveNodeRequest({x:100, y:80});
+    aligRequest();
+
+
+
     deleteElesRequest("simple");
     undoDeleteRequest();
 
     deleteElesRequest("smart");
     undoDeleteRequest();
     redoDeleteRequest();
+
+
+
+
 });
