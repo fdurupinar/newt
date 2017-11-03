@@ -30,7 +30,7 @@ describe('Chat Test', function () {
             cy.window().should(function (window) {
                 let app = window.testApp;
                 let messages = app.model.get('_page.list');
-                let msg1 = messages[0];
+                let msg1 = messages[messages.length-1];
                 let userId = app.model.get('_session.userId');
                 expect(userId).to.be.ok;
                 expect(userId).to.equal(msg1.userId);

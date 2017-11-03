@@ -11,9 +11,17 @@ module.exports = function(modelManager, socket, userId){
     //A new sample or file is loaded --update model and inform others
     $(document).on("sbgnvizLoadSampleEnd sbgnvizLoadFileEnd",  function(event, file){
         console.log("Loading new sample");
+        //remove annotations view
+
         modelManager.newModel("me"); //do not delete cytoscape, only the model
         modelManager.initModel(cy.nodes(), cy.edges(), appUtilities);
 
+    setTimeout(function(){
+        cy.elements().forEach(function(ele){
+            ele.data("annotationsView", null);
+            ele._private.data.annotationsView = null;
+        });
+    },1000);
     });
 
 
@@ -43,6 +51,11 @@ module.exports = function(modelManager, socket, userId){
         }
 
         setTimeout(function () {
+            //remove annotations view first
+            cy.elements().forEach(function(ele){
+                ele.data("annotationsView", null);
+                ele._private.data.annotationsView = null;
+            });
             modelManager.initModel(cy.nodes(), cy.edges(), appUtilities, "me");
 
 
@@ -138,13 +151,18 @@ module.exports = function(modelManager, socket, userId){
         else if (actionName === "changeBendPoints") {
 
             var modelElList = [];
-            var paramList = []
+            var paramList = [];
 
 
-            modelElList.push({id: args.edge.id(), isNode: false});
+            modelElList.push({id: res.edge.id(), isNode: false});
 
+            res.edge.data("annotationsView", null);
+            res.edge._private.data.annotationsView = null;
 
-            paramList.push({weights: args.edge.data('cyedgebendeditingWeights'), distances:args.edge.data('cyedgebendeditingDistances')});
+            console.log(res.edge._private.data.annotationsView);
+            console.log(res.edge._private.data);
+            console.log(res.edge.data());
+            paramList.push({weights: args.edge.data('cyedgebendeditingWeights'), distances:res.edge.data('cyedgebendeditingDistances')});
 
             modelManager.changeModelElementGroupAttribute("bendPoints", modelElList, paramList, "me");
 

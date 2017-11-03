@@ -121,12 +121,12 @@ string after http:<ip>:3000/ in the server address.
 |"agentSetGeneralPropertiesRequest"  | {room:< room >, userId:< agentId >} |
 |"agentSetGridPropertiesRequest"  | {room:< room >, userId:< agentId >} |
 |  “agentRunLayoutRequest”            | {room:< room >, userId:< agentId >}                          |
-|  “agentAddNodeRequest”              | {room:< room >, userId:< agentId >,x: < position x >,           |
-|                                     | y: < position y >,         |
-|                                     | class: < sbgn class >}   |
-|  “agentAddEdgeRequest”              | {room:< room >, userId:< agentId >,source: < source node id >,  |
+|  “agentAddNodeRequest”              | {room:< room >, userId:< agentId >,{{position: x: < position x >,           |
+|                                     | y: < position y >}, data:{         |
+|                                     | class: < sbgn class >}}   |
+|  “agentAddEdgeRequest”              | {room:< room >, userId:< agentId >, {data:{source: < source node id >,  |
 |                                     | target: < target node id >,   |
-|                                     | class: < sbgn class >}    |
+|                                     | class: < sbgn class >}}}    |
 |"agentSearchByLabelRequest"          | {room:< room >, userId:< agentId >,label: < label to be highlighted>}   |
 |"agentDeleteElesRequest"             | {room:< room >, userId:< agentId >,type: < "smart" or "simple" > elementIds: < element ids to delete simply >} |
 |"agentUpdateVisibilityStatusRequest"       | {room:< room >, userId:< agentId >,val:< "hide" or "show" or "showAll" >,  elementIds:< array of element ids or null for showAll >|

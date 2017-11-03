@@ -436,10 +436,12 @@ inspectorUtilities.handleSBGNInspector = function () {
           addCollapsibleSection("biogene", "Properties from EntrezGene", true);
           fillBioGeneContainer(selectedEles[0]);
       }
-
+/*
+FUNDA
       // annotations handling part
       addCollapsibleSection("annotations", "Custom Properties", false);
       annotHandler.fillAnnotationsContainer(selectedEles[0]);
+      */
     }
 
     if (type == "node") {

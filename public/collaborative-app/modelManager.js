@@ -312,6 +312,27 @@ class ModelManager{
         return nodePath.get();
     }
 
+    getModelNodesArr(){
+        let nodes = this.model.get('documents.' + this.docId + '.cy.nodes');
+        let nodeArr = [];
+        for(var att in nodes){
+            if(nodes.hasOwnProperty(att))
+                nodeArr.push(nodes[att]);
+        }
+        
+        return nodeArr;
+    }
+
+    getModelEdgesArr(){
+        let edges = this.model.get('documents.' + this.docId + '.cy.edges');
+        let edgeArr = [];
+        for(var att in edges){
+            if(edges.hasOwnProperty(att))
+                edgeArr.push(edges[att]);
+        }
+
+        return edgeArr;
+    }
     getModelEdge (id) {
         let edgePath = this.model.at('documents.' + this.docId + '.cy.edges.' + id);
         return edgePath.get();
@@ -377,6 +398,14 @@ class ModelManager{
 
     }
 
+    /***
+     *
+     * @param nodeId
+     * @param param {position:, data:}
+     * @param user
+     * @param noHistUpdate
+     * @returns {*}
+     */
 
     addModelNode (nodeId, param, user, noHistUpdate) {
 
@@ -409,6 +438,14 @@ class ModelManager{
 
     }
 
+    /***
+     *
+     * @param edgeId
+     * @param param: {data:}
+     * @param user
+     * @param noHistUpdate
+     * @returns {*}
+     */
     addModelEdge (edgeId, param, user, noHistUpdate) {
 
         if (this.model.get("documents.' + this.docId + '.cy.edges." + edgeId + '.id') != null)
@@ -971,7 +1008,7 @@ class ModelManager{
             if(nodeData == null)
                 nodeData = node._private.data;
 
-            //nodeData.annotationsView = null; //cyclic
+
 
             if(nodeData.statesandinfos) {
 

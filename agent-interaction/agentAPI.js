@@ -83,8 +83,6 @@ Agent.prototype.connectToServer = function (url,  callback) {
 
         self.socket.emit("subscribeAgent", {userName: self.agentName, room: self.room, userId: self.agentId, colorCode: self.colorCode }, function () {
 
-
-
             if (callback != null) callback(self.socket);
 
         });
@@ -93,7 +91,6 @@ Agent.prototype.connectToServer = function (url,  callback) {
     }),  function (xhr, status, error) {
         api.set('content.text', "Error retrieving data: " + error);
     };
-
 
 }
 
@@ -112,8 +109,6 @@ Agent.prototype.disconnect = function(callback){
     });
 
     // this.socket.disconnect();
-
-
 
 };
 
@@ -261,8 +256,8 @@ Agent.prototype.getEdgeRequest = function(id, callback){
  *     <li>reqName: "agentSendImageRequest", param: {img,fileName, tabIndex} </li>
  *     <li>reqName: "agentSetLayoutProperties", param: {name, nodeRepulsion, nodeOverlap, idealEdgeLength, edgeElasticity, nestingFactor, gravity, numIter, tile, animate, randomize} </li>
  *     <li>reqName: "agentRunLayoutRequest", param:null </li>
- *     <li>reqName: "agentAddNodeRequest", param:{x y, class} </li>
- *     <li>reqName: "agentAddEdgeRequest", param:{source, target, class} </li>\
+ *     <li>reqName: "agentAddNodeRequest", param: {{data: {class: class}, position:{x:x, y:y}} </li>
+ *     <li>reqName: "agentAddEdgeRequest", param:{{data:source, target, class}} </li>\
  *     <li>reqName: "agentChangeNodeAttributeRequest", param:{id, attStr, attVal} </li>
  *     <li>reqName: "agentChangeEdgeAttributeRequest", param:{id, attStr, attVal} </li>
  *     <li>reqName: "agentMoveNodeRequest", param:{id, pos} </li>

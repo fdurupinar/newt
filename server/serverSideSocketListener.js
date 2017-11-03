@@ -666,8 +666,9 @@ module.exports.start = function(io, model, cancerDataOrganizer){
         socket.on('agentAddEdgeRequest',function(data,  callback){
             try {
                 //we know the edge id so add directly to the model
+                //second parameter needs to have a data field
                 let status = modelManagerList[data.room].addModelEdge(data.id, data, "me");
-                if (callback) callback(status);
+                if (callback) callback(data.id);
             }
             catch(e){
                 console.log(e);

@@ -10,7 +10,6 @@ describe('Agent API Test', function () {
     let agentName = "testAgent";
 
 
-
     function newAgent() {
        it('new Agent', function () {
            let Agent = require("../../agent-interaction/agentAPI.js");
@@ -19,7 +18,7 @@ describe('Agent API Test', function () {
         });
     }
 
-    function agentProperties(){
+    function checkAgentProperties(){
         it('Agent properties', function() {
             expect(agent.agentId).to.be.equal(agentId);
             expect(agent.agentName).to.be.equal(agentName);
@@ -30,7 +29,7 @@ describe('Agent API Test', function () {
 
 
     function loadModel() {
-       it('connectToServer', function (done) {
+       it('agent.connectToServer', function (done) {
             agent.connectToServer("http://localhost:3000/",  function (socket) {
                 expect(socket).to.be.ok;
                 agent.loadModel( function () {
@@ -47,7 +46,7 @@ describe('Agent API Test', function () {
 
 
     function changeName() {
-        it('changeName', function (done) {
+        it('agent.changeName', function (done) {
             agent.changeName("HAL", function () {
                 setTimeout(function () { //should wait here as well
                     expect(agent.agentName).to.equal("HAL");
@@ -59,9 +58,170 @@ describe('Agent API Test', function () {
         });
     }
 
+    function sendMessage() {
+        it('agent.sendMessage', function (done) {
+            cy.window().should(function (window) {
+                let model = window.testApp.model;
+                let testMsg = "hello my name is <b> Bob </b>";
+                agent.sendRequest("agentMessage", {comment: testMsg, targets: "*"}, function (data) {
+                    setTimeout(function () { //should wait here as well
+                        expect(data).to.equal("success");
+                        let messages = model.get('_page.list');
+                        expect(messages[messages.length -1].comment).equal(testMsg);
+                        done();
+                    }, 100);
+                });
+            });
+
+        });
+    }
+
+    function sendGetRequest(){
+
+        it('agent.getNode', function(done) {
+            let node1 = "agentNode1";
+            agent.getNodeRequest(node1, function () {
+                equal(agent.selectedNode.id).to.equal(node1);
+                done();
+            });
+
+        });
+        it('agent.getEdge', function(done) {
+            let edge1 = "agentNode1-agentNode2";
+            agent.getEdgeRequest(edge1, function () {
+                equal(agent.selectedEdge.id).to.equal(edge1);
+                done();
+            });
+        });
+    }
+
+    function addNodeRequest(props, attr) {
+
+        it('agent.addNode', function (done) {
+            cy.window().should(function (window) {
+                let modelManager = window.testApp.modelManager;
+                agent.sendRequest("agentAddNodeRequest", props, function (nodeId) {
+                    setTimeout(function () { //should wait here as well
+                        var val = modelManager.getModelNode(nodeId);
+
+                        expect(val).to.be.ok;
+                        expect(val.data.class).to.equal(props.data.class);
+                        expect(val.position.x).to.equal(props.position.x);
+                        expect(val.position.y).to.equal(props.position.y);
+                        done();
+                    }, 100);
+                });
+            });
+        });
+
+    }
+
+
+    function addEdgeRequest(props) {
+        it('agent.addEdge', function (done) {
+            cy.window().should(function (window) {
+                let modelManager = window.testApp.modelManager;
+                let nodes = modelManager.getModelNodesArr();
+                let source = nodes[0].data.id;
+                let target = nodes[1].data.id;
+                props.data.source = source;
+                props.data.target = target;
+                props.id = source + "-" + target;
+                agent.sendRequest("agentAddEdgeRequest", props, function (edgeId) {
+                    setTimeout(function () { //should wait here as well
+                        var val = modelManager.getModelEdge(edgeId);
+                        expect(props.id).to.equal(edgeId);
+                        expect(val).to.be.ok;
+                        expect(val.data.class).to.equal(props.data.class);
+                        expect(val.data.source).to.equal(props.data.source);
+                        expect(val.data.target).to.equal(props.data.target);
+                        done();
+                    }, 100);
+                });
+            });
+        });
+    }
+
+    function deleteElesRequest(type){
+        it('agent.agentDeleteElesRequest', function (done) {
+            cy.window().should(function (window) {
+                let modelManager = window.testApp.modelManager;
+                let nodes = modelManager.getModelNodesArr();
+                let edges = modelManager.getModelEdgesArr();
+                let eles  = [edges[0].data.id, nodes[0].data.id, nodes[1].data.id] ;
+                agent.sendRequest("agentDeleteElesRequest", {elementIds: eles, type: type}, function (deletedCnt) {
+                    setTimeout(function () { //should wait here as well
+                        var valEdge = modelManager.getModelEdge(eles[0]);
+                        expect(valEdge).to.be.not.ok;
+                        var valNode1 = modelManager.getModelNode(eles[1]);
+                        expect(valNode1).to.be.not.ok;
+                        var valNode2 = modelManager.getModelNode(eles[2]);
+                        expect(valNode2).to.be.not.ok;
+
+                        done();
+
+                    }, 1000);
+
+                });
+            });
+        });
+    }
+
+    function undoDeleteRequest() {
+        it('agent.undoDeleteRequest', function (done) {
+            cy.window().should(function (window) {
+                let modelManager = window.testApp.modelManager;
+                agent.sendRequest("agentUndoRequest", null, function (undoActionStr) {
+                    setTimeout(function () { //should wait here as well
+                        var val = modelManager.getModelNodesArr();
+                        expect(val.length).to.equal(2);
+
+                        var val = modelManager.getModelEdgesArr();
+                        expect(val.length).to.equal(1);
+
+                        done();
+                    }, 100);
+
+                });
+            });
+        });
+    }
+
+    function redoDeleteRequest() {
+        it('agent.redoDeleteRequest', function (done) {
+            cy.window().should(function (window) {
+                let modelManager = window.testApp.modelManager;
+                agent.sendRequest("agentRedoRequest", null, function (undoActionStr) {
+                    setTimeout(function () { //should wait here as well
+                        var val = modelManager.getModelNodesArr();
+                        expect(val.length).to.equal(0);
+
+                        var val = modelManager.getModelEdgesArr();
+                        expect(val.length).to.equal(0);
+
+                        done();
+                    }, 100);
+
+                });
+            });
+        });
+    }
+
     newAgent();
-    agentProperties();
+    checkAgentProperties();
     loadModel();
     changeName();
+    sendMessage();
 
+    addNodeRequest({position: {x: 30, y: 40 }, data:{class: "macromolecule"}});
+    addNodeRequest({position: {x: 50, y: 60} , data:{class: "process"}});
+    addEdgeRequest({data:{class: "consumption"}});
+
+
+    deleteElesRequest("simple");
+    undoDeleteRequest();
+
+    deleteElesRequest("smart");
+    undoDeleteRequest();
+    redoDeleteRequest();
 });

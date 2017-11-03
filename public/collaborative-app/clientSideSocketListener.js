@@ -56,13 +56,14 @@ module.exports =  function(app) {
             });
 
 
-            app.socket.on('addNode', function (data, callback) {
+            app.socket.on('addNode', function (param, callback) {
                 try {
                     //does not trigger cy events
-                    var newNode = chise.elementUtilities.addNode(data.x, data.y, data.class);
+                    var newNode = chise.elementUtilities.addNode(param.position.x, param.position.y, param.data.class);
 
                     //notifies other clients
-                    app.modelManager.addModelNode(newNode.id(), data, "me");
+
+                    app.modelManager.addModelNode(newNode.id(), param, "me");
                     app.modelManager.initModelNode(newNode, "me");
 
                     if (callback) callback(newNode.id());
@@ -81,31 +82,20 @@ module.exports =  function(app) {
                     cy.elements().unselect();
 
 
+                    //first delete edges
                     data.elementIds.forEach(function (id) {
                         cy.getElementById(id).select();
                     });
 
 
-                    if (data.type === "simple")
-                        $("#delete-selected-simple").trigger('click');
-                    else { //"smart"
-                        $("#delete-selected-smart").trigger('click');
+                    let deletedCnt = cy.elements(':selected').length;
+                    if (data.type === "simple"){
+                        chise.deleteElesSimple(cy.elements(':selected'));
                     }
+                    else
+                        chise.deleteNodesSmart(cy.elements(':selected'));
 
-
-                    var p1 = new Promise(function (resolve) {
-
-                        var modelOp = app.modelManager.getLastCommandName();
-
-                        if (modelOp === "delete") {
-                            resolve("success");
-                        }
-                    });
-                    p1.then(function () {
-
-                        if (callback) callback("deleted!!");
-                    });
-
+                    if(callback) callback("success");
                 }
                 catch (e) {
                     console.log(e);
