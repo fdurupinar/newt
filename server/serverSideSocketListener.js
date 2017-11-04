@@ -795,15 +795,18 @@ module.exports.start = function(io, model, cancerDataOrganizer){
         });
 
         //For testing purposes only
-        socket.on('agentManualDisconnect', function(){
+        socket.on('agentManualDisconnect', function(callback){
             try {
                 //do not delete socket but remove agent from the list of users
                 modelManagerList[socket.room].deleteUserId(socket.userId);
+                socket.subscribed = false; //why isn't the socket removed
+                if(callback) callback("success");
             }
             catch(e){
                 console.log("Disconnect error " + e);
+                if(callback) callback();
             }
-            socket.subscribed = false; //why isn't the socket removed
+
 
         });
 
