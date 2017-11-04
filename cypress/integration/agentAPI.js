@@ -240,6 +240,18 @@ describe('Agent API Test', function () {
         });
     }
 
+    function disconnect(){
+        it('Agent disconnect', function(done) {
+
+            agent.disconnect(function(){
+                expect(agent.socket.subscribed).to.be.not.ok;
+                done();
+            });
+
+
+        });
+
+    }
 
     newAgent();
     checkAgentProperties();
@@ -256,13 +268,14 @@ describe('Agent API Test', function () {
     aligRequest();
 
 
-
     deleteElesRequest("simple");
     undoDeleteRequest();
 
     deleteElesRequest("smart");
     undoDeleteRequest();
     redoDeleteRequest();
+
+    disconnect();
 
 
 
