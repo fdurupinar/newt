@@ -88,7 +88,6 @@ module.exports =  function(app) {
                     });
 
 
-                    let deletedCnt = cy.elements(':selected').length;
                     if (data.type === "simple"){
                         chise.deleteElesSimple(cy.elements(':selected'));
                     }
@@ -265,13 +264,18 @@ module.exports =  function(app) {
 
                     data.elementIds.forEach(function (nodeId) {
 
+                        console.log(nodeId);
                         cy.getElementById(nodeId).select();
                     });
 
-                    if (data.val === "complex")
-                        $("#add-complex-for-selected").trigger('click');
-                    else
-                        $("#add-compartment-for-selected").trigger('click');
+                      chise.createCompoundForGivenNodes(cy.nodes(':selected'), data.val);
+
+
+
+                    // if (data.val === "complex")
+                    //     $("#add-complex-for-selected").trigger('click');
+                    // else
+                    //     $("#add-compartment-for-selected").trigger('click');
 
 
                     if (callback) callback("success");

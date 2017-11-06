@@ -114,6 +114,7 @@ module.exports.start = function(io, model, cancerDataOrganizer){
             return(human.userId !== userId && human.room === room);
         }); //returns the first match
 
+
         if(roomMate!== null) {
             let clientSocket = io.sockets.connected[roomMate.socketId];
 
@@ -557,7 +558,9 @@ module.exports.start = function(io, model, cancerDataOrganizer){
             else //default is json
                 requestStr = "mergeJsonWithCurrent";
 
+
             askHuman(socket.userId, data.room,  requestStr, data.graph, function(val){
+
                 if (callback) callback(val);
             });
         });

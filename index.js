@@ -410,7 +410,8 @@ app.proto.listenToNodeOperations = function(model){
     });
 
     model.on('all', '_page.doc.cy.nodes.*.position', function(id, op, pos,prev, passed){
-        if(docReady && !passed.user) {
+        if(docReady && !passed.user && cy.getElementById(id).length>0) {
+
             let posDiff = {x: (pos.x - cy.getElementById(id).position("x")), y:(pos.y - cy.getElementById(id).position("y"))} ;
             moveNodeAndChildren(posDiff, cy.getElementById(id)); //children need to be updated manually here
             //parent as well
@@ -423,7 +424,7 @@ app.proto.listenToNodeOperations = function(model){
         //call it here so that everyone can highlight their own textbox
         self.factoidHandler.highlightSentenceInText(id, val);
 
-        if(docReady && !passed.user) {
+        if(docReady && !passed.user && cy.getElementById(id).length>0) {
             if(!val){
                 cy.getElementById(id).css({
                     "overlay-color": null,
@@ -443,7 +444,7 @@ app.proto.listenToNodeOperations = function(model){
 
     //Called by agents to change bbox
     model.on('all', '_page.doc.cy.nodes.*.data.bbox.*', function(id, att, op, val,prev, passed){
-        if(docReady && !passed.user) {
+        if(docReady && !passed.user && cy.getElementById(id).length>0) {
             let newAtt = cy.getElementById(id).data("bbox");
             newAtt[att] = val;
             cy.getElementById(id).data("bbox", newAtt);
@@ -455,7 +456,7 @@ app.proto.listenToNodeOperations = function(model){
 
     //Called by agents to change specific properties of data
     model.on('all', '_page.doc.cy.nodes.*.data.*', function(id, att, op, val,prev, passed){
-        if(docReady && !passed.user) {
+        if(docReady && !passed.user && cy.getElementById(id).length>0) {
             cy.getElementById(id).data(att, val);
             if(att === "parent")
                 cy.getElementById(id).move({"parent":val});
@@ -464,7 +465,7 @@ app.proto.listenToNodeOperations = function(model){
 
 
     model.on('all', '_page.doc.cy.nodes.*.data', function(id,  op, data,prev, passed){
-        if(docReady && !passed.user) {
+        if(docReady && !passed.user && cy.getElementById(id).length>0) {
             cy.getElementById(id)._private.data = data;
 
             //to update parent
@@ -480,7 +481,7 @@ app.proto.listenToNodeOperations = function(model){
 
 
     model.on('all', '_page.doc.cy.nodes.*.expandCollapseStatus', function(id, op, val,prev, passed){
-        if(docReady && !passed.user) {
+        if(docReady && !passed.user && cy.getElementById(id).length>0) {
             let expandCollapse = cy.expandCollapse('get'); //we can't call chise.expand or collapse directly as it causes infinite calls
             if(val === "collapse")
                 expandCollapse.collapse(cy.getElementById(id));
@@ -491,7 +492,7 @@ app.proto.listenToNodeOperations = function(model){
 
 
     model.on('all', '_page.doc.cy.nodes.*.highlightStatus', function(id, op, highlightStatus, prev, passed){ //this property must be something that is only changed during insertion
-        if(docReady && !passed.user) {
+        if(docReady && !passed.user && cy.getElementById(id).length>0) {
             try{
                 let viewUtilities = cy.viewUtilities('get');
 
@@ -510,7 +511,7 @@ app.proto.listenToNodeOperations = function(model){
     });
 
     model.on('all', '_page.doc.cy.nodes.*.visibilityStatus', function(id, op, visibilityStatus, prev, passed){ //this property must be something that is only changed during insertion
-        if(docReady && !passed.user) {
+        if(docReady && !passed.user && cy.getElementById(id).length>0) {
             try{
                 let viewUtilities = cy.viewUtilities('get');
                 if(visibilityStatus === "hide") {
@@ -546,7 +547,7 @@ app.proto.listenToEdgeOperations = function(model){
 
 
     model.on('all', '_page.doc.cy.edges.*.highlightColor', function(id, op, val,prev, passed){
-        if(docReady && !passed.user) {
+        if(docReady && !passed.user && cy.getElementById(id).length>0) {
             if(val == null){
                 cy.getElementById(id).css({
                     "overlay-color": null,
@@ -565,7 +566,7 @@ app.proto.listenToEdgeOperations = function(model){
     });
 
     model.on('all', '_page.doc.cy.edges.*', function(id, op, val, prev, passed){
-        if(docReady &&  !passed.user) {
+        if(docReady &&  !passed.user && cy.getElementById(id).length>0) {
             let edge  = model.get('_page.doc.cy.edges.' + id); //check
 
             if(!edge|| !edge.id){ //edge is deleted
@@ -588,7 +589,7 @@ app.proto.listenToEdgeOperations = function(model){
     });
 
     model.on('all', '_page.doc.cy.edges.*.data', function(id, op, data,prev, passed){
-        if(docReady && !passed.user) {
+        if(docReady && !passed.user && cy.getElementById(id).length>0) {
             //cy.getElementById(id).data(data); //can't call this if cy element does not have a field called "data"
             cy.getElementById(id)._private.data = data;
             cy.getElementById(id).updateStyle();
@@ -596,12 +597,12 @@ app.proto.listenToEdgeOperations = function(model){
     });
 
     model.on('all', '_page.doc.cy.edges.*.data.*', function(id, att, op, val,prev, passed){
-        if(docReady && !passed.user)
+        if(docReady && !passed.user && cy.getElementById(id).length>0)
             cy.getElementById(id).data(att, val);
     });
 
     model.on('all', '_page.doc.cy.edges.*.bendPoints', function(id, op, bendPoints, prev, passed){ //this property must be something that is only changed during insertion
-        if(docReady && !passed.user) {
+        if(docReady && !passed.user && cy.getElementById(id).length>0) {
             try{
                 let edge = cy.getElementById(id);
                 if(bendPoints.weights && bendPoints.weights.length > 0) {
@@ -627,7 +628,7 @@ app.proto.listenToEdgeOperations = function(model){
     });
 
     model.on('all', '_page.doc.cy.edges.*.highlightStatus', function(id, op, highlightStatus, prev, passed){ //this property must be something that is only changed during insertion
-        if(docReady && !passed.user) {
+        if(docReady && !passed.user && cy.getElementById(id).length>0) {
             let viewUtilities = cy.viewUtilities('get');
             try{
                 if(highlightStatus === "highlighted")
@@ -642,7 +643,7 @@ app.proto.listenToEdgeOperations = function(model){
     });
 
     model.on('all', '_page.doc.cy.edges.*.visibilityStatus', function(id, op, visibilityStatus, prev, passed){ //this property must be something that is only changed during insertion
-        if(docReady && !passed.user) {
+        if(docReady && !passed.user && cy.getElementById(id).length>0) {
             let viewUtilities = cy.viewUtilities('get');
             try{
                 if(visibilityStatus === "hide")

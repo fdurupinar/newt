@@ -430,8 +430,10 @@ module.exports = function(modelManager, socket, userId){
 
         }
         else if(actionName === "createCompoundForGivenNodes"){
-            var paramList = [];
-            var modelElList = [];
+            let paramListData = [];
+            let paramListPosition = [];
+            let modelElList = [];
+            let modelNodeList = [];
 
 
             //Last element is the compound, skip it and add the children
@@ -441,31 +443,21 @@ module.exports = function(modelManager, socket, userId){
 
                 modelElList.push({id: ele.id(), isNode: true});
                 ele.data("annotationsView", null);
-                paramList.push(ele.data()); //includes parent information
+                paramListData.push(ele.data()); //includes parent information
 
             }
-            //
-            // res.children().forEach(function (ele) {
-            //     //var ele = param.ele;
-            //
-            //     modelElList.push({id: ele.id(), isNode: true});
-            //
-            //     paramList.push(ele.data()); //includes parent information
-            //
-            // });
-
 
             var compoundId = res.newEles[0].data("parent");
             var compound = cy.getElementById(compoundId);
 
-            var compoundAtts = {x: compound.position("x"), y: compound.position("y"), class:compound.data("class")};
 
+            var compoundAtts = {position:{x: compound.position("x"), y: compound.position("y")}, data:{class:compound.data("class")}};
 
-            modelManager.addModelCompound(compound.id(), compoundAtts, modelElList,paramList, "me" );
-
+            modelManager.addModelCompound(compound.id(), compoundAtts, modelElList,paramListData, "me" ); //handles data field update
 
             //assign other node properties-- css and data
             modelManager.initModelNode(compound,"me", true); //init with default values  -- no history update
+
 
 
         }

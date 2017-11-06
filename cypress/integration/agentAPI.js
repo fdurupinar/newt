@@ -3,6 +3,7 @@
  */
 
 let io = require('socket.io-client');
+let globalTestData = require('../testData/globalTestData.js');
 
 describe('Agent API Test', function () {
     let agent;
@@ -23,10 +24,8 @@ describe('Agent API Test', function () {
             expect(agent.agentId).to.be.equal(agentId);
             expect(agent.agentName).to.be.equal(agentName);
             expect(agent.colorCode).to.be.equal("#00bfff");
-
         });
     }
-
 
     function loadModel() {
        it('agent.connectToServer', function (done) {
@@ -40,10 +39,8 @@ describe('Agent API Test', function () {
                     });
                 });
             });
-
        });
     }
-
 
     function changeName() {
         it('agent.changeName', function (done) {
@@ -240,9 +237,66 @@ describe('Agent API Test', function () {
         });
     }
 
+    function addCompound(type, inds){
+
+        it('agent.addCompoundRequest', function(done) {
+            cy.window().should(function (window) {
+                let modelManager = window.testApp.modelManager;
+                //add first two nodes
+                let  elementIds = [];
+                inds.forEach(function(ind){
+                    elementIds.push( modelManager.getModelNodesArr()[ind].id);
+                });
+
+                agent.sendRequest("agentAddCompoundRequest", {val:type, elementIds:elementIds}, function(data){
+                    setTimeout(function () {
+
+                        var node = modelManager.getModelNode(elementIds[0]);
+
+                        expect(data).to.equal("success");
+                        expect(node.data.parent).to.be.ok;
+                        var parent = modelManager.getModelNode(node.data.parent);
+                        expect(parent.data.class).to.equal(type);
+                        done();
+                    },100);
+                });
+            });
+        });
+    }
+
+
+    function merge(){
+        it('agent.merge', function(done) {
+            expect(globalTestData.sbgnData).to.be.ok;
+
+            agent.sendRequest('agentMergeGraphRequest', {type: 'sbgn', graph: globalTestData.sbgnData}, function (data) {
+                expect(data).to.be.ok;
+                done();
+            });
+        });
+    }
+
+    function newFile(){
+        it('agent.newFileRequest', function(done) {
+            cy.window().should(function (window) {
+                let modelManager = window.testApp.modelManager;
+                let jQuery = window.jQuery;
+
+                agent.sendRequest("agentNewFileRequest", null, function(){
+                    setTimeout(function () { //should wait here as well
+                        var cy = modelManager.getModelCy();
+                        expect(jQuery.isEmptyObject(cy.nodes) && jQuery.isEmptyObject(cy.edges)).to.equal(true);
+                        done();
+                    },100);
+                });
+            });
+        });
+    }
+
+
+
     function disconnect(){
         it('Agent disconnect', function(done) {
-
             agent.disconnect(function(){
                 expect(agent.socket.subscribed).to.be.not.ok;
                 done();
@@ -260,23 +314,29 @@ describe('Agent API Test', function () {
     sendMessage();
 
     addNodeRequest({position: {x: 30, y: 40 }, data:{class: "macromolecule"}});
-    addNodeRequest({position: {x: 50, y: 60} , data:{class: "process"}});
+    addNodeRequest({position: {x: 50, y: 60 }, data:{class: "macromolecule"}});
+    addNodeRequest({position: {x: 70, y: 80 }, data:{class: "macromolecule"}});
+    addNodeRequest({position: {x: 90, y: 100} , data:{class: "process"}});
     addEdgeRequest({data:{class: "consumption"}});
 
 
-    moveNodeRequest({x:100, y:80});
-    aligRequest();
+    addCompound("compartment", [0,1]); //complexes cannot have edges
+    addCompound("complex", [2,3]); //complexes cannot have edges
 
-
-    deleteElesRequest("simple");
-    undoDeleteRequest();
-
-    deleteElesRequest("smart");
-    undoDeleteRequest();
-    redoDeleteRequest();
-
-    disconnect();
-
+    // moveNodeRequest({x:100, y:80});
+    // aligRequest();
+    //
+    // deleteElesRequest("simple");
+    // undoDeleteRequest();
+    //
+    // deleteElesRequest("smart");
+    // undoDeleteRequest();
+    // redoDeleteRequest();
+    //
+    // newFile();
+    //
+    // merge();
+    // disconnect();
 
 
 
