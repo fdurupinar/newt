@@ -342,10 +342,8 @@ module.exports =  function(app) {
 
             app.socket.on("mergeSbgn", function (sbgn, callback) {
 
-
                 var newJson = sbgnviz.convertSbgnmlTextToJson(sbgn);
-                this.mergeJsonWithCurrent(newJson, callback);
-
+                self.mergeJsonWithCurrent(newJson, callback);
 
             });
 
