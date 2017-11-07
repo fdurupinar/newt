@@ -2,7 +2,7 @@
  * Tests for non-cy-related modelManager methods
  */
 
-const testData = require('../testData/globalTestData.js');
+
 
 
 describe('modelManager User Operations Test', function () {
@@ -70,33 +70,38 @@ describe('modelManager User Operations Test', function () {
 
     function addImage() {
         it('Add image', function () {
-            cy.window().should(function (window) {
-                let modelManager = window.testApp.modelManager;
-                let $ = window.$;
-                let imageTabList = ['RXN', 'CM', 'IM', 'SIM'];
+            cy.fixture('modelRXN.png').then((content) => {
 
-                // because file reading is not possible on the client side, store img in mwmory
+                cy.window().should(function (window) {
+                    let modelManager = window.testApp.modelManager;
+                    let $ = window.$;
+                    let imageTabList = ['RXN', 'CM', 'IM', 'SIM'];
 
-                for (let i = 0; i < imageTabList.length; i++) {
-                    let imgData = {
-                        img: testData.imageContent,
-                        tabIndex: i,
-                        tabLabel: imageTabList[i],
-                        fileName: "testImage"
-                    };
+                    // because file reading is not possible on the client side, store img in mwmory
+
+                        for (let i = 0; i < imageTabList.length; i++) {
 
 
-                    modelManager.addImage(imgData);
-                    let images = modelManager.getImages();
-                    let lastImage = images[i];
+                            let imgData = {
+                                img: ("data:image/png;base64," + content),
+                                tabIndex: i,
+                                tabLabel: imageTabList[i],
+                                fileName: "modelRXN"
+                            };
 
-                    expect(images).to.be.ok;
-                    expect(lastImage.tabIndex).to.equal(imgData.tabIndex);
-                    expect(lastImage.tabLabel).to.equal(imgData.tabLabel);
-                    setTimeout(() => {
-                        expect($("#static-image-container-" + lastImage.tabIndex)).to.be.ok;
-                    }, 100);
-                }
+
+                            modelManager.addImage(imgData);
+                            let images = modelManager.getImages();
+                            let lastImage = images[i];
+
+                            expect(images).to.be.ok;
+                            expect(lastImage.tabIndex).to.equal(imgData.tabIndex);
+                            expect(lastImage.tabLabel).to.equal(imgData.tabLabel);
+                            setTimeout(() => {
+                                expect($("#static-image-container-" + lastImage.tabIndex)).to.be.ok;
+                            }, 100);
+                        }
+                    });
 
             });
 

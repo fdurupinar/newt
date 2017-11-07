@@ -723,7 +723,6 @@ class ModelManager{
 
         this.model.pass({user: user}).del(('documents.' + this.docId + '.cy.nodes.' + nodeId));
 
-
         return "success";
 
     }
