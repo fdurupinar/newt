@@ -246,6 +246,21 @@ describe('Agent API Test', function () {
         });
     }
 
+    function layoutRequest() {
+        it('agent.layoutRequest', function (done) {
+            cy.window().should(function (window) {
+                let modelManager = window.testApp.modelManager;
+                let nodeId = modelManager.getModelNodesArr()[0].id;
+                agent.sendRequest("agentRunLayoutRequest", null, function (val) {
+                    setTimeout(function () { //should wait here as well
+                        expect(val).to.equal("success");
+                        done();
+                    }, 100);
+                });
+            });
+        });
+    }
+
     function addCompound(type, inds){
 
         it('agent.addCompoundRequest', function(done) {
@@ -388,16 +403,174 @@ describe('Agent API Test', function () {
         });
     }
 
+    function hideShow(){
+        it('agent.hide', function(done) {
+            cy.window().should(function (window) {
+                let modelManager = window.testApp.modelManager;
+                let id = modelManager.getModelNodesArr()[0].id;
 
-    function merge(){
-        it('agent.merge', function(done) {
-            expect(globalTestData.sbgnData).to.be.ok;
-
-            agent.sendRequest('agentMergeGraphRequest', {type: 'sbgn', graph: globalTestData.sbgnData}, function (data) {
-                expect(data).to.be.ok;
-                done();
+                agent.sendRequest("agentUpdateVisibilityStatusRequest", {
+                    val: "hide",
+                    elementIds: [id]
+                }, function (out) {
+                    setTimeout(function () { //should wait here as well
+                        var vStatus = modelManager.getModelNodeAttribute("visibilityStatus", id);
+                        expect(vStatus).to.equal("hide");
+                        done();
+                    }, 100);
+                });
             });
         });
+
+        it('agent.show', function(done) {
+            cy.window().should(function (window) {
+                let modelManager = window.testApp.modelManager;
+                let id = modelManager.getModelNodesArr()[0].id;
+
+                agent.sendRequest("agentUpdateVisibilityStatusRequest", {
+                    val: "show",
+                    elementIds: [id]
+                }, function (out) {
+                    setTimeout(function () { //should wait here as well
+                        var vStatus = modelManager.getModelNodeAttribute("visibilityStatus", id);
+                        expect(vStatus).to.equal("hide");
+                        done();
+                    }, 100);
+                });
+            });
+        });
+
+
+        it('agent.show', function(done) {
+            cy.window().should(function (window) {
+                let modelManager = window.testApp.modelManager;
+                let id = modelManager.getModelNodesArr()[0].id;
+
+                agent.sendRequest("agentUpdateVisibilityStatusRequest", {
+                    val: "showAll"
+                }, function (out) {
+                    setTimeout(function () { //should wait here as well
+                        var vStatus = modelManager.getModelNodeAttribute("visibilityStatus", id);
+                        expect(vStatus).to.equal("show");
+                        done();
+                    }, 100);
+                });
+            });
+        });
+    }
+
+    function highlight(){
+        it('agent.highlightNeighbors', function(done) {
+            cy.window().should(function (window) {
+                let modelManager = window.testApp.modelManager;
+                let id = modelManager.getModelNodesArr()[0].id;
+                let neighborId = modelManager.getModelNodesArr()[2].id;
+
+                agent.sendRequest("agentUpdateHighlightStatusRequest", {val:"neighbors", elementIds:[id]}, function(out){
+                    setTimeout(function () { //should wait here as well
+                        var vStatus = modelManager.getModelNodeAttribute("highlightStatus", neighborId);
+                        expect(vStatus).to.equal("highlighted") ;
+                        done();
+                    },100);
+                });
+
+            });
+        });
+
+        it('agent.highlightProcesses', function(done) {
+            cy.window().should(function (window) {
+                let modelManager = window.testApp.modelManager;
+                let id = modelManager.getModelNodesArr()[0].id;
+                let processId = modelManager.getModelNodesArr()[2].id;
+
+                agent.sendRequest("agentUpdateHighlightStatusRequest", {val:"processes", elementIds:[id]}, function(out){
+                    setTimeout(function () { //should wait here as well
+                        var vStatus = modelManager.getModelNodeAttribute("highlightStatus", processId);
+                        expect(vStatus).to.equal("highlighted") ;
+                        done();
+                    },100);
+                });
+
+            });
+        });
+
+        it('agent.removeHighlights', function(done) {
+            cy.window().should(function (window) {
+                let modelManager = window.testApp.modelManager;
+                let id = modelManager.getModelNodesArr()[2].id;
+
+
+                agent.sendRequest("agentUpdateHighlightStatusRequest", {val:"remove"}, function(out){
+                    setTimeout(function () { //should wait here as well
+                        var vStatus = modelManager.getModelNodeAttribute("highlightStatus", id);
+                        expect(vStatus).to.not.equal("highlighted") ;
+                        done();
+                    },100);
+                });
+
+            });
+        });
+
+    }
+
+
+    function searchByLabel(ind, label) {
+        it('agent.searchByLabel', function (done) {
+            cy.window().should(function (window) {
+                let modelManager = window.testApp.modelManager;
+                let id = modelManager.getModelNodesArr()[ind].id;
+
+                agent.sendRequest("agentSearchByLabelRequest", {label:label}, function() {
+                    setTimeout(function () { //should wait here as well
+                        var vStatus = modelManager.getModelNodeAttribute("highlightStatus", id);
+                        expect(vStatus).to.equal("highlighted") ;
+                        done();
+                    },100);
+                });
+
+            });
+        });
+    }
+
+
+    function expandCollapse(ind) {
+        it('agent.collapse', function (done) {
+            cy.window().should(function (window) {
+                let modelManager = window.testApp.modelManager;
+                let id = modelManager.getModelNodesArr()[ind].id;
+                agent.sendRequest("agentUpdateExpandCollapseStatusRequest", {val:"collapse", elementIds:[id]}, function(){
+                    setTimeout(function () { //should wait here as well
+                        var status = modelManager.getModelNodeAttribute("expandCollapseStatus", id);
+                        expect(status).to.equal("collapse") ;
+                        done();
+                    },100);
+                });
+            });
+        });
+
+        it('agent.expand', function (done) {
+            cy.window().should(function (window) {
+                let modelManager = window.testApp.modelManager;
+                let id = modelManager.getModelNodesArr()[ind].id;
+                agent.sendRequest("agentUpdateExpandCollapseStatusRequest", {val:"expand", elementIds:[id]}, function(out){
+                    setTimeout(function () { //should wait here as well
+                        var status = modelManager.getModelNodeAttribute("expandCollapseStatus", id);
+                        expect(status).to.not.equal("collapse") ;
+                        done();
+                    },100);
+                });
+            });
+        });
+    }
+    function merge(){
+     it('agent.merge', function(done) {
+        expect(globalTestData.sbgnData).to.be.ok;
+
+        agent.sendRequest('agentMergeGraphRequest', {type: 'sbgn', graph: globalTestData.sbgnData}, function (data) {
+            expect(data).to.be.ok;
+            done();
+        });
+     });
     }
 
     function newFile(){
@@ -439,30 +612,42 @@ describe('Agent API Test', function () {
 
     addNodeRequest({position: {x: 30, y: 40 }, data:{class: "macromolecule"}});
     addNodeRequest({position: {x: 50, y: 60 }, data:{class: "macromolecule"}});
-    // addNodeRequest({position: {x: 70, y: 80 }, data:{class: "macromolecule"}});
-    // addNodeRequest({position: {x: 100, y: 100 }, data:{class: "macromolecule"}});
     addNodeRequest({position: {x: 90, y: 100} , data:{class: "process"}});
     addEdgeRequest({data:{class: "consumption"}}, 0, 2);
 
 
     addCompound("compartment", [0,1]); //complexes cannot have edges
     addCompound("complex", [1,2]); //complexes cannot have edges
+
     undoAddCompound(2);
     undoAddCompound(1);
 
     moveNodeRequest({x:100, y:80});
     alignRequest();
+    layoutRequest();
+
+
 
     changeNodeAttributes(1);
     changeEdgeAttributes(0);
 
 
+    hideShow();
+    highlight();
+    searchByLabel(1, "abc");
+
     deleteElesRequest("simple", 0, 0, 1);
     undoDeleteRequest();
-    //
+
     deleteElesRequest("smart", 0, 1, 2);
     undoDeleteRequest();
     redoDeleteRequest();
+
+
+    addNodeRequest({position: {x: 30, y: 40 }, data:{class: "macromolecule"}});
+    addNodeRequest({position: {x: 50, y: 60 }, data:{class: "macromolecule"}});
+    addCompound("complex", [0,1]); //complexes cannot have edges
+    expandCollapse(2); //we can only expand collapse compound nodes
 
     newFile();
 
