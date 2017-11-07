@@ -88,11 +88,10 @@ module.exports =  function(app) {
                     });
 
 
-                    if (data.type === "simple"){
+                    if (data.type === "simple")
                         chise.deleteElesSimple(cy.elements(':selected'));
-                    }
                     else
-                        chise.deleteNodesSmart(cy.elements(':selected'));
+                        chise.deleteNodesSmart(cy.nodes(':selected'));
 
                     if(callback) callback("success");
                 }
@@ -262,10 +261,10 @@ module.exports =  function(app) {
                     //unselect all others
                     cy.elements().unselect();
 
-                    data.elementIds.forEach(function (nodeId) {
-
-                        console.log(nodeId);
-                        cy.getElementById(nodeId).select();
+                    data.elementIds.forEach(function (elId) {
+                        let el = cy.getElementById(elId);
+                        if(el.isNode())
+                            el.select();
                     });
 
                       chise.createCompoundForGivenNodes(cy.nodes(':selected'), data.val);

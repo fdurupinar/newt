@@ -99,7 +99,7 @@ describe('Agent API Test', function () {
                 let modelManager = window.testApp.modelManager;
                 agent.sendRequest("agentAddNodeRequest", props, function (nodeId) {
                     setTimeout(function () { //should wait here as well
-                        var val = modelManager.getModelNode(nodeId);
+                        let val = modelManager.getModelNode(nodeId);
 
                         expect(val).to.be.ok;
                         expect(val.data.class).to.equal(props.data.class);
@@ -114,19 +114,19 @@ describe('Agent API Test', function () {
     }
 
 
-    function addEdgeRequest(props) {
+    function addEdgeRequest(props, sourceInd, targetInd) {
         it('agent.addEdge', function (done) {
             cy.window().should(function (window) {
                 let modelManager = window.testApp.modelManager;
                 let nodes = modelManager.getModelNodesArr();
-                let source = nodes[0].data.id;
-                let target = nodes[1].data.id;
+                let source = nodes[sourceInd].data.id;
+                let target = nodes[targetInd].data.id;
                 props.data.source = source;
                 props.data.target = target;
                 props.id = source + "-" + target;
                 agent.sendRequest("agentAddEdgeRequest", props, function (edgeId) {
                     setTimeout(function () { //should wait here as well
-                        var val = modelManager.getModelEdge(edgeId);
+                        let val = modelManager.getModelEdge(edgeId);
                         expect(props.id).to.equal(edgeId);
                         expect(val).to.be.ok;
                         expect(val.data.class).to.equal(props.data.class);
@@ -139,25 +139,32 @@ describe('Agent API Test', function () {
         });
     }
 
-    function deleteElesRequest(type){
+    //Delete 3 elements
+    function deleteElesRequest(type, edgeInd, node1Ind, node2Ind){
         it('agent.agentDeleteElesRequest', function (done) {
             cy.window().should(function (window) {
                 let modelManager = window.testApp.modelManager;
                 let nodes = modelManager.getModelNodesArr();
+                console.log("nodes are");
+                console.log(nodes);
                 let edges = modelManager.getModelEdgesArr();
-                let eles  = [edges[0].data.id, nodes[0].data.id, nodes[1].data.id] ;
-                agent.sendRequest("agentDeleteElesRequest", {elementIds: eles, type: type}, function (deletedCnt) {
+                console.log("edges are");
+
+                console.log(edges);
+
+                let eles  = [edges[edgeInd].data.id, nodes[node1Ind].data.id, nodes[node2Ind].data.id] ;
+                agent.sendRequest("agentDeleteElesRequest", {elementIds: eles, type: type}, function () {
                     setTimeout(function () { //should wait here as well
-                        var valEdge = modelManager.getModelEdge(eles[0]);
+                        let valEdge = modelManager.getModelEdge(eles[0]);
                         expect(valEdge).to.be.not.ok;
-                        var valNode1 = modelManager.getModelNode(eles[1]);
+                        let valNode1 = modelManager.getModelNode(eles[1]);
                         expect(valNode1).to.be.not.ok;
-                        var valNode2 = modelManager.getModelNode(eles[2]);
+                        let valNode2 = modelManager.getModelNode(eles[2]);
                         expect(valNode2).to.be.not.ok;
 
                         done();
 
-                    }, 1000);
+                    }, 100);
 
                 });
             });
@@ -168,13 +175,15 @@ describe('Agent API Test', function () {
         it('agent.undoDeleteRequest', function (done) {
             cy.window().should(function (window) {
                 let modelManager = window.testApp.modelManager;
-                agent.sendRequest("agentUndoRequest", null, function (undoActionStr) {
+                agent.sendRequest("agentUndoRequest", null, function () {
                     setTimeout(function () { //should wait here as well
-                        var val = modelManager.getModelNodesArr();
-                        expect(val.length).to.equal(2);
+                        let nodes = modelManager.getModelNodesArr();
+                        console.log(nodes);
+                        expect(nodes.length).to.equal(3);
 
-                        var val = modelManager.getModelEdgesArr();
-                        expect(val.length).to.equal(1);
+                        let edges = modelManager.getModelEdgesArr();
+                        expect(edges.length).to.equal(1);
+                        console.log(edges);
 
                         done();
                     }, 100);
@@ -190,11 +199,11 @@ describe('Agent API Test', function () {
                 let modelManager = window.testApp.modelManager;
                 agent.sendRequest("agentRedoRequest", null, function (undoActionStr) {
                     setTimeout(function () { //should wait here as well
-                        var val = modelManager.getModelNodesArr();
-                        expect(val.length).to.equal(0);
+                        let nodes = modelManager.getModelNodesArr();
+                        expect(nodes.length).to.equal(0);
 
-                        var val = modelManager.getModelEdgesArr();
-                        expect(val.length).to.equal(0);
+                        let edges = modelManager.getModelEdgesArr();
+                        expect(edges.length).to.equal(0);
 
                         done();
                     }, 100);
@@ -211,7 +220,7 @@ describe('Agent API Test', function () {
                 let nodeId = modelManager.getModelNodesArr()[0].id;
                 agent.sendRequest("agentMoveNodeRequest", {id: nodeId,  pos:pos}, function(){
                     setTimeout(function () { //should wait here as well
-                        var val = modelManager.getModelNodeAttribute("position", nodeId);
+                        let val = modelManager.getModelNodeAttribute("position", nodeId);
                         expect(val).to.be.deep.equal(pos);
                         done();
                     },100);
@@ -221,7 +230,7 @@ describe('Agent API Test', function () {
     }
 
 
-    function aligRequest(){
+    function alignRequest(){
         it('agent.alignRequest', function (done) {
             cy.window().should(function (window) {
                 let modelManager = window.testApp.modelManager;
@@ -248,18 +257,133 @@ describe('Agent API Test', function () {
                     elementIds.push( modelManager.getModelNodesArr()[ind].id);
                 });
 
+
                 agent.sendRequest("agentAddCompoundRequest", {val:type, elementIds:elementIds}, function(data){
                     setTimeout(function () {
 
-                        var node = modelManager.getModelNode(elementIds[0]);
+                        let node = modelManager.getModelNode(elementIds[0]);
 
                         expect(data).to.equal("success");
                         expect(node.data.parent).to.be.ok;
-                        var parent = modelManager.getModelNode(node.data.parent);
+                        let parent = modelManager.getModelNode(node.data.parent);
                         expect(parent.data.class).to.equal(type);
                         done();
                     },100);
                 });
+            });
+        });
+    }
+
+    function undoAddCompound(ind) {
+        it('agent.undoAddCompound', function (done) {
+            cy.window().should(function (window) {
+                let modelManager = window.testApp.modelManager;
+                agent.sendRequest("agentUndoRequest", null, function (undoActionStr) {
+                    setTimeout(function () { //should wait here as well
+                        let arr = modelManager.getModelNodesArr();
+                        expect(arr[ind].data.parent).to.not.be.ok;
+
+
+                        done();
+                    }, 500);
+
+                });
+            });
+        });
+    }
+
+    function changeNodeAttributes(ind) {
+
+        it('agent.changeNodeAttributeRequest', function (done) {
+            cy.window().should(function (window) {
+                let modelManager = window.testApp.modelManager;
+                let id = modelManager.getModelNodesArr()[ind].id;
+
+                let attr = [
+                    {str: "highlightColor", val: '#991111'},
+                    {str: "data.label", val: "abc"},
+                    {str: "data.bbox.w", val: 400},
+                    {str: "data.bbox.h", val: 200},
+                    {str: "data.border-color", val: '#119911'},
+                    {str: "data.font-family", val: "Times"},
+                    {str: "data.font-weight", val: "bold"},
+                    {str: "data.font-size", val: 10},
+                    {str: "data.font-style", val: "normal"},
+                    {str: "data.border-width", val: 5},
+                    {str: "data.background-color", val:  '#111199'},
+                    {str: "data.background-opacity", val: 0.2},
+                    {str: "data.clonemarker", val: true}
+                    //TODO: check this and statesandinfos later
+                    // {str: "data.parent", val: parentId},
+                    // {str: "data.statesandinfos", val:
+                    //     [{clazz: 'state letiable', state: {value:'val', letiable:'let'}, bbox:{w:40, h:20}, parent: id
+                    //     }, {clazz: 'unit of information', label: {text:'label'}, bbox:{w:40, h:20}, parent: id}]
+                    // },
+                ];
+
+
+                for (let i = 0; i < attr.length; i++) {
+                    let sendRequests = function (id, attStr, attVal, index) {
+                        //Call like this because of asynchronicity
+                        agent.sendRequest("agentChangeNodeAttributeRequest", {
+                            id: id,
+                            attStr: attStr,
+                            attVal: attVal
+                        }, function () {
+                        setTimeout(function () { //should wait here as well
+                            let val = modelManager.getModelNodeAttribute(attStr, id);
+                            expect(val).to.deep.equal(attVal);
+                            if(index >= attr.length - 1)
+                                done();
+                        }, 100);
+                        });
+                    }(id, attr[i].str, attr[i].val, i)
+                }
+            });
+        });
+    }
+
+    function changeEdgeAttributes(ind) {
+
+        it('agent.changeEdgeAttributeRequest', function (done) {
+            cy.window().should(function (window) {
+                let modelManager = window.testApp.modelManager;
+                let id = modelManager.getModelEdgesArr()[ind].id;
+
+                let attr = [
+                    {str: "highlightColor", val: '#991111'},
+                    {str: "data.cardinality", val: 5},
+                    {str: "data.width", val: 10},
+                    {str: "data.line-color", val: '#119911'}
+
+                    //Edge's source and targets should not be updated like this
+                    //Chise does not allow this
+                    //This also causes problem when we try to delete elements
+                    // {str: "data.source", val: newSourceInd},
+                    // {str: "data.target", val: newTargetInd},
+                    // {str: "data.portsource", val: newSourceInd},
+                    // {str: "data.porttarget", val: newTargetInd}
+
+                ];
+
+
+                for (let i = 0; i < attr.length; i++) {
+                    let sendRequests = function (id, attStr, attVal, index) {
+                        //Call like this because of asynchronicity
+                        agent.sendRequest("agentChangeEdgeAttributeRequest", {
+                            id: id,
+                            attStr: attStr,
+                            attVal: attVal
+                        }, function () {
+                            setTimeout(function () { //should wait here as well
+                                let val = modelManager.getModelEdgeAttribute(attStr, id);
+                                expect(val).to.deep.equal(attVal);
+                                if(index >= attr.length - 1)
+                                    done();
+                            }, 100);
+                        });
+                    }(id, attr[i].str, attr[i].val, i)
+                }
             });
         });
     }
@@ -284,7 +408,7 @@ describe('Agent API Test', function () {
 
                 agent.sendRequest("agentNewFileRequest", null, function(){
                     setTimeout(function () { //should wait here as well
-                        var cy = modelManager.getModelCy();
+                        let cy = modelManager.getModelCy();
                         expect(jQuery.isEmptyObject(cy.nodes) && jQuery.isEmptyObject(cy.edges)).to.equal(true);
                         done();
                     },100);
@@ -315,28 +439,35 @@ describe('Agent API Test', function () {
 
     addNodeRequest({position: {x: 30, y: 40 }, data:{class: "macromolecule"}});
     addNodeRequest({position: {x: 50, y: 60 }, data:{class: "macromolecule"}});
-    addNodeRequest({position: {x: 70, y: 80 }, data:{class: "macromolecule"}});
+    // addNodeRequest({position: {x: 70, y: 80 }, data:{class: "macromolecule"}});
+    // addNodeRequest({position: {x: 100, y: 100 }, data:{class: "macromolecule"}});
     addNodeRequest({position: {x: 90, y: 100} , data:{class: "process"}});
-    addEdgeRequest({data:{class: "consumption"}});
+    addEdgeRequest({data:{class: "consumption"}}, 0, 2);
 
 
     addCompound("compartment", [0,1]); //complexes cannot have edges
-    addCompound("complex", [2,3]); //complexes cannot have edges
+    addCompound("complex", [1,2]); //complexes cannot have edges
+    undoAddCompound(2);
+    undoAddCompound(1);
 
-    // moveNodeRequest({x:100, y:80});
-    // aligRequest();
+    moveNodeRequest({x:100, y:80});
+    alignRequest();
+
+    changeNodeAttributes(1);
+    changeEdgeAttributes(0);
+
+
+    deleteElesRequest("simple", 0, 0, 1);
+    undoDeleteRequest();
     //
-    // deleteElesRequest("simple");
-    // undoDeleteRequest();
-    //
-    // deleteElesRequest("smart");
-    // undoDeleteRequest();
-    // redoDeleteRequest();
-    //
-    // newFile();
-    //
-    // merge();
-    // disconnect();
+    deleteElesRequest("smart", 0, 1, 2);
+    undoDeleteRequest();
+    redoDeleteRequest();
+
+    newFile();
+
+    merge();
+    disconnect();
 
 
 

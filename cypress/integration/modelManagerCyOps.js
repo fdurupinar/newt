@@ -243,6 +243,30 @@ describe('modelManager Cytoscape Operations Test', function () {
                 expect(window.cy.getElementById(id).data('border-width')).to.equal(borWidth);
                 expect(modelManager.getModelNode(id).data["border-width"]).to.equal(borWidth);
 
+
+                let fontFamily = "Times";
+                modelManager.changeModelNodeAttribute("data.font-family", id, fontFamily);
+                expect(window.cy.getElementById(id).data('font-family')).to.equal(fontFamily);
+                expect(modelManager.getModelNode(id).data["font-family"]).to.equal(fontFamily);
+
+
+                let fontWeight = "bold";
+                modelManager.changeModelNodeAttribute("data.font-weight", id, fontWeight);
+                expect(window.cy.getElementById(id).data('font-weight')).to.equal(fontWeight);
+                expect(modelManager.getModelNode(id).data["font-weight"]).to.equal(fontWeight);
+
+                let fontSize = 10;
+                modelManager.changeModelNodeAttribute("data.font-size", id, fontSize);
+                expect(window.cy.getElementById(id).data('font-size')).to.equal(fontSize);
+                expect(modelManager.getModelNode(id).data["font-size"]).to.equal(fontSize);
+
+
+                let fontStyle = "normal";
+                modelManager.changeModelNodeAttribute("data.font-style", id, fontStyle);
+                expect(window.cy.getElementById(id).data('font-style')).to.equal(fontStyle);
+                expect(modelManager.getModelNode(id).data["font-style"]).to.equal(fontStyle);
+
+
                 let cloneMarker = true;
                 modelManager.changeModelNodeAttribute("data.clonemarker", id, cloneMarker);
                 expect(window.cy.getElementById(id).data('clonemarker')).to.equal(cloneMarker);
@@ -303,19 +327,6 @@ describe('modelManager Cytoscape Operations Test', function () {
                 expect(window.cy.getElementById(id).data('cardinality')).to.equal(cardinality);
                 expect(modelManager.getModelEdge(id).data.cardinality).to.equal(cardinality);
 
-
-                let ps = "node1";
-                modelManager.changeModelEdgeAttribute("data.portsource", id, ps);
-                expect(window.cy.getElementById(id).data('portsource')).to.equal(ps);
-                expect(modelManager.getModelEdge(id).data["portsource"]).to.equal(ps);
-
-
-                let pt = "node1";
-                modelManager.changeModelEdgeAttribute("data.porttarget", id, pt);
-                expect(window.cy.getElementById(id).data('porttarget')).to.equal(pt);
-                expect(modelManager.getModelEdge(id).data["porttarget"]).to.equal(pt);
-
-
                 let lColor = '#411515';
                 modelManager.changeModelEdgeAttribute("data.line-color", id, lColor );
                 expect(window.cy.getElementById(id).data('line-color')).to.equal(lColor);
@@ -327,19 +338,35 @@ describe('modelManager Cytoscape Operations Test', function () {
                 expect(window.cy.getElementById(id).data('width')).to.equal(width);
                 expect(modelManager.getModelEdge(id).data["width"]).to.equal(width);
 
-                let newSource = "node3";
-                modelManager.changeModelEdgeAttribute("data.source", id, newSource);
-                setTimeout(()=>{ //wait a little while
-                    expect(window.cy.getElementById(id).data("source")).to.equal(newSource);
-                    expect(window.cy.getElementById(id).data("source")).to.equal(modelManager.getModelEdgeAttribute("data.source", id));
-                },100);
+                //This  doesn't give error but
+                //Edge's source and targets should not be updated like this
+                //Chise does not allow this
+                //This also causes problem when we try to delete elements
 
-                let newTarget = "node4";
-                modelManager.changeModelEdgeAttribute("data.target", id, newTarget);
-                setTimeout(()=>{ //wait a little while
-                    expect(window.cy.getElementById(id).data("target")).to.equal(newTarget);
-                    expect(window.cy.getElementById(id).data("target")).to.equal(modelManager.getModelEdgeAttribute("data.source", id));
-                },100);
+                // let newSource = "node3";
+                // modelManager.changeModelEdgeAttribute("data.source", id, newSource);
+                // setTimeout(()=>{ //wait a little while
+                //     expect(window.cy.getElementById(id).data("source")).to.equal(newSource);
+                //     expect(window.cy.getElementById(id).data("source")).to.equal(modelManager.getModelEdgeAttribute("data.source", id));
+                // },100);
+                //
+                // let newTarget = "node4";
+                // modelManager.changeModelEdgeAttribute("data.target", id, newTarget);
+                // setTimeout(()=>{ //wait a little while
+                //     expect(window.cy.getElementById(id).data("target")).to.equal(newTarget);
+                //     expect(window.cy.getElementById(id).data("target")).to.equal(modelManager.getModelEdgeAttribute("data.source", id));
+                // },100);
+                //
+                // let ps = "node1";
+                // modelManager.changeModelEdgeAttribute("data.portsource", id, ps);
+                // expect(window.cy.getElementById(id).data('portsource')).to.equal(ps);
+                // expect(modelManager.getModelEdge(id).data["portsource"]).to.equal(ps);
+                //
+                //
+                // let pt = "node1";
+                // modelManager.changeModelEdgeAttribute("data.porttarget", id, pt);
+                // expect(window.cy.getElementById(id).data('porttarget')).to.equal(pt);
+                // expect(modelManager.getModelEdge(id).data["porttarget"]).to.equal(pt);
 
 
                 //TODO

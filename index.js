@@ -309,6 +309,7 @@ app.proto.listenToUIOperations = function(model){
     $("#undo-last-action, #undo-icon").click(function () {
         if(self.modelManager.isUndoPossible()){
             self.modelManager.undoCommand();
+            cy.forceRender();
 
         }
     });
@@ -316,7 +317,7 @@ app.proto.listenToUIOperations = function(model){
     $("#redo-last-action, #redo-icon").click(function () {
         if(self.modelManager.isRedoPossible()){
             self.modelManager.redoCommand();
-
+            cy.forceRender();
         }
     });
 
@@ -402,7 +403,7 @@ app.proto.listenToNodeOperations = function(model){
             if(parent === undefined) parent = null;
             let newNode = chise.elementUtilities.addNode(pos.x, pos.y, sbgnclass, id, parent, visibility);
 
-            // self.modelManager.initModelNode(newNode,"me", true);
+            self.modelManager.initModelNode(newNode,"me", true);
 
             let parentEl = cy.getElementById(parent);
             newNode.move({"parent":parentEl});

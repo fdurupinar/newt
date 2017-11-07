@@ -195,6 +195,7 @@ class ModelManager{
         let undoInd = this.model.get('documents.' + this.docId + '.undoIndex');
         let cmd = this.model.get('documents.' + this.docId + '.history.' + undoInd); // cmd: opName, opTarget, opAttr, elId, param
 
+
         if (cmd.opName == "set") {
             if (cmd.opTarget == "element" && cmd.elType == "node")
                 this.changeModelNodeAttribute(cmd.opAttr, cmd.elId, cmd.prevParam, null); //user is null to enable updating in the editor
@@ -319,7 +320,7 @@ class ModelManager{
             if(nodes.hasOwnProperty(att))
                 nodeArr.push(nodes[att]);
         }
-        
+
         return nodeArr;
     }
 
@@ -800,6 +801,7 @@ class ModelManager{
     restoreModelElementGroup (elList, param, user, noHistUpdate) {
         let self = this;
         //Restore nodes first
+
 
         for (let i = 0; i < elList.nodes.length; i++) {
             self.restoreModelNode(elList.nodes[i].id, param.nodes[i], user, noHistUpdate);

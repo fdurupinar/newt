@@ -440,11 +440,11 @@ module.exports = function(modelManager, socket, userId){
             for(var i = 0; i < res.newEles.length - 1; i++){
                 var ele = res.newEles[i];
 
-
-                modelElList.push({id: ele.id(), isNode: true});
-                ele.data("annotationsView", null);
-                paramListData.push(ele.data()); //includes parent information
-
+                if(ele.isNode()) {
+                    modelElList.push({id: ele.id(), isNode: true});
+                    ele.data("annotationsView", null);
+                    paramListData.push(ele.data()); //includes parent information
+                }
             }
 
             var compoundId = res.newEles[0].data("parent");
