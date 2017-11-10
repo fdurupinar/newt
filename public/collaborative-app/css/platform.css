@@ -1,9 +1,12 @@
 
-
+:root {
+    --canvas-height: 700px;
+    --canvas-width: 1000px;
+}
 
 #sbgn-toolbar{
     margin: 10px;
-    width: 1000px;
+    width: var(--canvas-width);
     height: 30px;
     margin-bottom: 10px;
     /*overflow: auto !important;*/
@@ -14,7 +17,7 @@
     border-radius: 0.25em;
     margin: 10px;
     height: 40px;
-    width: 1000px;
+    width: var(--canvas-width);
 }
 
 #canvas-tab-area {
@@ -22,9 +25,9 @@
 
     border: 1px solid #ddd;
     border-radius: 0.25em;
-    height: 900px;
-    width: 920px;
-    /*height: 680px;*/
+    height: var(--canvas-height);
+    width: var(--canvas-width);
+    /*height: var(--canvas-height);*/
     /*width: 800px;*/
     /*overflow: hidden ;*/
     overflow: hidden;
@@ -59,14 +62,14 @@
 
 #sbgn-inspector-and-canvas {
     margin: 10px;
-    margin-top:30px;
+    /*margin-top:10px;*/
     overflow: auto !important;
 }
 
 #sbgn-inspector {
     margin: 10px;
     border: 1px solid #ddd;
-    height: 900px;
+    height: var(--canvas-height);
     width: 200px;
     overflow: auto !important;
     border-radius: 0.25em;
@@ -81,7 +84,7 @@
 /*!*margin: auto;*!*/
 /*border: 1px solid #dddddd;*/
 /*border-radius: 0.25em;*/
-/*!*height: 680px;*!*/
+/*!*height: var(--canvas-height);*!*/
 /*bottom: 10px;*/
 /*!*width: 800px;*!*/
 /*top: 95px;*/
@@ -94,7 +97,7 @@
 /*#sbgn-network-container {*/
 /*margin: auto;*/
 /*border: 1px solid #ddd;*/
-/*height: 680px;*/
+/*height: var(--canvas-height);*/
 /*width: 800px;*/
 /*!*overflow: auto !important;*!*/
 /*overflow: hidden;*/
@@ -112,7 +115,7 @@
 
     margin: auto;
     border: 1px solid #ddd;
-    height: 900px;
+    height: var(--canvas-height);
     width: 400px;
     overflow: hidden;
     border-radius: 0.25em;
@@ -123,7 +126,7 @@
     /*margin: auto;*/
     /*border: 1px solid #ddd;*/
     /*left:810px;*/
-    /*height: 680px;*/
+    /*height: var(--canvas-height);*/
     /*width: 200px;*/
     /*overflow: auto !important;*/
     /*border-radius: 0.25em;*/

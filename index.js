@@ -969,10 +969,11 @@ app.proto.dynamicResize = function (images) {
     let canvasWidth = 1200;
     let canvasHeight = 680;
 
+
     if (windowWidth > canvasWidth) {
         $("#canvas-tab-area").resizable({
                 alsoResize: '#inspector-tab-area',
-                minWidth: 860
+                minWidth: 1000
             }
         );
 
