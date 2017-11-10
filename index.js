@@ -806,13 +806,13 @@ app.proto.connectTripsAgent = function(){
     let self = this;
 
     let TripsGeneralInterfaceAgent = require("./agent-interaction/TripsGeneralInterfaceAgent.js");
-    self.TripsAgent = new TripsGeneralInterfaceAgent("Bob", BobId);
+    self.tripsAgent = new TripsGeneralInterfaceAgent("Bob", BobId);
 
     console.log("Bob connected");
-    self.TripsAgent.connectToServer("http://localhost:3000/", function(){
-        self.TripsAgent.loadModel(function () {
-            self.TripsAgent.init();
-            self.TripsAgent.loadChatHistory(function () {
+    self.tripsAgent.connectToServer("http://localhost:3000/", function(){
+        self.tripsAgent.loadModel(function () {
+            self.tripsAgent.init();
+            self.tripsAgent.loadChatHistory(function () {
             });
         });
     });
