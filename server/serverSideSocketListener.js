@@ -387,10 +387,6 @@ module.exports.start = function(io, model, cancerDataOrganizer){
                 }
             });
 
-            //clear tabs
-            askHuman(socket.userId, socket.room, "newFile", function (val) {
-            });
-
         });
 
         //Run a shell script to run CausalityAgent.py
