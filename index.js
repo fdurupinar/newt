@@ -794,6 +794,7 @@ app.proto.updateTripsMessage = function(){
 app.proto.resetConversationOnTrips = function(){
     //directly ask the server as this client may not have a tripsAgent
     this.socket.emit('resetConversationRequest');
+    this.agentSocket.newFile();
 };
 
 
@@ -969,6 +970,18 @@ app.proto.dynamicResize = function (images) {
     let canvasWidth = 1200;
     let canvasHeight = 680;
 
+    // if(!images){
+    //     try {
+    //         $("#static-image-container-0").close();
+    //         $("#static-image-container-1").close();
+    //         $("#static-image-container-2").close();
+    //         $("#static-image-container-3").close();
+    //         $("#static-image-container-4").close();
+    //     }
+    //     catch(e) {
+    //         console.log(e);
+    //     }
+    // }
 
     if (windowWidth > canvasWidth) {
         $("#canvas-tab-area").resizable({

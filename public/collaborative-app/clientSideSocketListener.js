@@ -27,21 +27,7 @@ module.exports =  function(app) {
             });
 
             app.socket.on('newFile', function (data, callback) {
-                try {
-                    cy.remove(cy.elements());
-                    app.modelManager.newModel("me"); //do not delete cytoscape, only the model
-                    //close all the other tabs
-                    app.model.set('_page.doc.images', null);
-
-                    app.dynamicResize(); //to clean the canvas
-
-                    if (callback) callback("success");
-                }
-                catch (e) {
-                    console.log(e);
-                    if(callback) callback();
-
-                }
+                self.newFile(data, callback);
             });
 
             app.socket.on('runLayout', function (data, callback) {
@@ -389,6 +375,24 @@ module.exports =  function(app) {
                 }, 1000);
 
             });
+        },
+
+        newFile: function(data, callback){
+            try {
+                cy.remove(cy.elements());
+                app.modelManager.newModel("me"); //do not delete cytoscape, only the model
+                //close all the other tabs
+                app.model.set('_page.doc.images', null);
+
+                app.dynamicResize(); //to clean the canvas
+
+                if (callback) callback("success");
+            }
+            catch (e) {
+                console.log(e);
+                if(callback) callback();
+
+            }
         }
     }
 }
