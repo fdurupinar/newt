@@ -213,8 +213,22 @@ class TripsGeneralInterfaceModule extends TripsInterfaceModule {
     cleanModel(){
         //The socket connection is between the interface and the agent, so we cannot directly emit messages
         //we must ask the client with the browser to do it for us
+        //Reset through clic
+        request({
+            url: 'http://localhost:8000/clic/initiate-reset', //URL to hit
+            headers: responseHeaders,
+            form: ''
+
+        }, function (error) {
+
+            if (error) {
+                console.log(error);
+            }
+        });
+
         this.askHuman(this.agentId, this.room, "newFile", function (val) {
         });
+
 
     }
 
