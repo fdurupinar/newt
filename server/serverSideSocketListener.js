@@ -387,6 +387,11 @@ module.exports.start = function(io, model, cancerDataOrganizer){
                 }
             });
 
+
+            tripsGeneralInterfaceInstance.sendResetCausalityRequest();
+
+
+
         });
 
         //Run a shell script to run CausalityAgent.py

@@ -210,6 +210,7 @@ class TripsGeneralInterfaceModule extends TripsInterfaceModule {
         }
     }
 
+    //Clean model request comes from another agent
     cleanModel(){
         //The socket connection is between the interface and the agent, so we cannot directly emit messages
         //we must ask the client with the browser to do it for us
@@ -226,10 +227,16 @@ class TripsGeneralInterfaceModule extends TripsInterfaceModule {
             }
         });
 
+        //this will clean the image tabs and sbgn model
         this.askHuman(this.agentId, this.room, "newFile", function (val) {
         });
 
 
+    }
+
+    sendResetCausalityRequest(){
+        let pattern = {0: 'request', content: {0: 'RESET-CAUSALITY-INDICES'}};
+        this.tm.sendMsg(pattern);
     }
 
     /***
