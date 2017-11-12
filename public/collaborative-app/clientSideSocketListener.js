@@ -386,6 +386,8 @@ module.exports =  function(app) {
 
                 app.dynamicResize(); //to clean the canvas
 
+                app.model.set('_page.doc.provenance', null);
+
                 if (callback) callback("success");
             }
             catch (e) {
