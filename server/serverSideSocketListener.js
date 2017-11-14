@@ -386,7 +386,12 @@ module.exports.start = function(io, model, cancerDataOrganizer){
                 }
             });
 
-            tripsGeneralInterfaceInstance.sendResetCausalityRequest();
+
+            let p = new Promise((resolve, reject) => {
+                if(tripsGeneralInterfaceInstance)resolve("success");
+            });
+            p.then((val) => {tripsGeneralInterfaceInstance.sendResetCausalityRequest();})
+
 
         });
 
