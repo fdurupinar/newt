@@ -105,12 +105,27 @@ class ModelManager{
             this.model.at('documents.' + this.docId + '.userIds').push(userId);
 
 
-        let users = this.model.at('documents.' + this.docId + '.users');
+        let usersPath = this.model.at('documents.' + this.docId + '.users');
 
-        if(!users.get(userId)){
+        if(!usersPath.get(userId)){
             if(!userName) {
                 let userCnt = this.getUserIds().length;
-                userName = "User" + userCnt;
+                //find maximum userId index
+                let users = usersPath.get();
+                let maxId = 0;
+                for(let att in users){
+                    if(users.hasOwnProperty(att)){
+                        console.log(users[att].name);
+                        if(users[att].name.indexOf('User') > -1) {
+                            let idNumber = Number(users[att].name.slice(4));
+                            console.log(idNumber);
+                            if (idNumber > maxId)
+                                maxId = idNumber;
+                        }
+                    }
+                }
+
+                userName = "User" + (maxId +1);
             }
             if(!colorCode)
                 colorCode = getNewColor();
