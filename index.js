@@ -151,6 +151,8 @@ app.get('/:docId', function (page, model, arg, next) {
             });
 
             users.subscribe(function () {
+
+
                 return page.render();
             });
 
@@ -233,6 +235,19 @@ app.proto.create = function (model) {
     self.editorListener = require('./public/collaborative-app/editor-listener.js')(self.modelManager,self.socket, id);
 
     this.atBottom = true;
+
+
+
+    setTimeout(()=>{
+        let userIds = self.modelManager.getUserIds();
+        let noTrips = model.get('_page.doc.noTrips');
+        if(!noTrips && !self.isQueryWindow() &&  userIds.indexOf(BobId) < 0) {
+
+            // console.log("Connection requested " + noTrips + " " + op);
+            self.connectTripsAgent();
+        }
+    }, 1000); // wait a little while to
+
 
     return model.on('all', '_page.list', (function (_this) {
         return function () {
@@ -668,13 +683,16 @@ app.proto.listenToModelOperations = function(model){
 
 
 
-    model.on('all', '_page.doc.noTrips', function(op, noTrips){
-
-        //If there is already one connection to Bob, don't open another
-        let userIds = self.modelManager.getUserIds();
-        if(!noTrips && !self.isQueryWindow() &&  userIds.indexOf(BobId) < 0)
-            self.connectTripsAgent();
-    });
+    // model.on('all', '_page.doc.noTrips', function(op, noTrips){
+    //
+    //     //If there is already one connection to Bob, don't open another
+    //     let userIds = self.modelManager.getUserIds();
+    //     if(!noTrips && !self.isQueryWindow() &&  userIds.indexOf(BobId) < 0) {
+    //
+    //         console.log("Connection requested " + noTrips + " " + op);
+    //         self.connectTripsAgent();
+    //     }
+    // });
 
     //Listen to other model operations
     model.on('all', '_page.doc.factoid.*', function(id, op, val, prev, passed){
@@ -971,18 +989,6 @@ app.proto.dynamicResize = function (images) {
     let canvasWidth = 1200;
     let canvasHeight = 680;
 
-    // if(!images){
-    //     try {
-    //         $("#static-image-container-0").close();
-    //         $("#static-image-container-1").close();
-    //         $("#static-image-container-2").close();
-    //         $("#static-image-container-3").close();
-    //         $("#static-image-container-4").close();
-    //     }
-    //     catch(e) {
-    //         console.log(e);
-    //     }
-    // }
 
     if (windowWidth > canvasWidth) {
         $("#canvas-tab-area").resizable({

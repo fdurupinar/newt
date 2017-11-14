@@ -33,10 +33,6 @@ function Agent (name, id, ioLib) {
 
 }
 
-Agent.prototype.setIO = function(ioLib, callback){
-    this.io = ioLib;
-    if(callback) callback();
-}
 /**
  *
  * @param url Server address
@@ -61,8 +57,7 @@ Agent.prototype.connectToServer = function (url,  callback) {
     // if(io)
     //     this.socket =  io(serverIp); //server connection
     // else
-        this.socket =  this.io(serverIp); //server connection
-
+        this.socket = this.io(serverIp,  { forceNew: true }); //server connection //this opens a separate connection for each agent
 
     var p1 = new Promise(function (resolve, reject) {
         if (self.room == ""  || self.room == null) {
@@ -104,7 +99,7 @@ Agent.prototype.connectToServer = function (url,  callback) {
 Agent.prototype.disconnect = function(callback){
 
 
-    this.socket.emit('agentManualDisconnect', function(){
+    this.sendRequest('agentManualDisconnectRequest', {}, function(){
         if(callback) callback("success");
     });
 
@@ -268,7 +263,7 @@ Agent.prototype.getEdgeRequest = function(id, callback){
  */
 Agent.prototype.sendRequest = function(reqName, param, callback){ //model operations
 
-    if(param == null){
+    if(!param){
         param = {};
     }
     param.room = this.room;

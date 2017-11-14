@@ -100,6 +100,7 @@ class ModelManager{
      */
     addUser(userId, userName, colorCode){
         let userIds = this.model.get('documents.' + this.docId + '.userIds');
+
         if(!userIds || userIds.indexOf(userId) < 0) //user not in the list
             this.model.at('documents.' + this.docId + '.userIds').push(userId);
 
@@ -132,13 +133,12 @@ class ModelManager{
 
         let userIds = this.model.get('documents.' + this.docId + '.userIds');
         for(let i = 0; i < userIds.length; i++){
-            if(userIds[i] == userId ){
+            if(userIds[i] === userId ){
                 self.model.remove('documents.' + self.docId + '.userIds', i) ; //remove from the index
                 break;
             }
         }
     }
-
 
     /***
      *

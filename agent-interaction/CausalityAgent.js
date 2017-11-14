@@ -913,7 +913,7 @@ CausalityAgent.prototype.mergePCQuery = function(uriStr, callback){
 
     pc2URL = pc2URL + uriStr + format;
 
-    this.socket.emit('MergePCQuery', {url: pc2URL, type: "sbgn"}, function(data){
+    this.sendRequest('AgentMergePCQueryRequest', {url: pc2URL, type: "sbgn"}, function(data){
 
 
 

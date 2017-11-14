@@ -534,7 +534,7 @@ ContextAgent.prototype.suggestNewGraph = function(geneName, importantNeighborNam
     pc2URL = pc2URL + format + kind + limit   + sources;
 
 
-    self.socket.emit('PCQuery', {url: pc2URL, type: "sbgn"});
+    self.sendRequest('AgentPCQueryRequest', {url: pc2URL, type: "sbgn"});
 
 
     self.socket.on('PCQueryResult', function (data) {
