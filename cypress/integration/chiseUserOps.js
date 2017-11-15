@@ -743,6 +743,7 @@ function resetMapTypeTest() {
   });
 }
 
+
 describe('CWC Test', function(){
 
 
@@ -879,4 +880,6 @@ describe('CWC Test', function(){
   addNodeTest('process1', 'process', 50, 50);
   addNodeTest('process2', 'omitted process', 50, 100);
   setPortsOrderingTest('#process1, #process2', 'T-to-B');
+
+
 })

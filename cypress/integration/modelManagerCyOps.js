@@ -141,19 +141,23 @@ describe('modelManager Cytoscape Operations Test', function () {
                 let userId = window.sessionUserId;
                 var node = window.cy.getElementById(id);
                 modelManager.selectModelNode(node, userId); //we need to specify userId for selection
-                expect(node.css('overlay-color')).to.equal(modelManager.getModelNodeAttribute("highlightColor", id));
+                setTimeout(()=>{ //wait a little while to update the UI
+                    expect(node.css('overlay-color')).to.equal(modelManager.getModelNodeAttribute("highlightColor", id));
+                    // done();
+                }, 100);
+
             });
 
         });
     }
 
     function unselectModelNode(id) {
-        it('modelManager.selectModelNode', function () {
+        it('modelManager.unselectModelNode', function () {
             cy.window().should(function (window) {
                 let modelManager = window.testApp.modelManager;
                 let userId = window.sessionUserId;
                 var node = window.cy.getElementById(id);
-                modelManager.unselectModelNode(node, userId); //we need to specify userId for selection
+                modelManager.unselectModelNode(node); //we need to specify userId for selection
                 expect(modelManager.getModelNodeAttribute("highlightColor", id)).to.not.ok;
                 setTimeout(()=>{ //wait a little while to update the UI
                     expect(node.css('overlay-color')).to.not.ok;
@@ -171,19 +175,22 @@ describe('modelManager Cytoscape Operations Test', function () {
                 let userId = window.sessionUserId;
                 var edge = window.cy.getElementById(id);
                 modelManager.selectModelEdge(edge, userId); //we need to specify userId for selection
-                expect(edge.css('overlay-color')).to.equal(modelManager.getModelEdgeAttribute("highlightColor", id));
+                setTimeout(()=>{ //wait a little while to update the UI
+                 expect(edge.css('overlay-color')).to.equal(modelManager.getModelEdgeAttribute("highlightColor", id));
+                }, 100);
+
             });
 
         });
     }
 
     function unselectModelEdge(id) {
-        it('modelManager.selectModelEdge', function () {
+        it('modelManager.unselectModelEdge', function () {
             cy.window().should(function (window) {
                 let modelManager = window.testApp.modelManager;
                 let userId = window.sessionUserId;
                 var edge = window.cy.getElementById(id);
-                modelManager.unselectModelEdge(edge, userId); //we need to specify userId for selection
+                modelManager.unselectModelEdge(edge); //we need to specify userId for selection
                 expect(modelManager.getModelEdgeAttribute("highlightColor", id)).to.not.ok;
                 setTimeout(()=>{ //wait a little while to update the UI
                     expect(edge.css('overlay-color')).to.not.ok;
@@ -418,7 +425,7 @@ describe('modelManager Cytoscape Operations Test', function () {
             cy.window().should(function (window) {
                 let modelManager = window.testApp.modelManager;
                 modelManager.redoCommand();
-                expect(modelManager.getModelNode(id)).to.be.not.ok;
+                expect(modelManager.getModelNode(id)).to.not.ok;
             });
         });
     }
@@ -438,7 +445,7 @@ describe('modelManager Cytoscape Operations Test', function () {
             cy.window().should(function (window) {
                 let modelManager = window.testApp.modelManager;
                 modelManager.redoCommand();
-                expect(modelManager.getModelEdge(id)).to.be.not.ok;
+                expect(modelManager.getModelEdge(id)).to.not.ok;
             });
         });
     }

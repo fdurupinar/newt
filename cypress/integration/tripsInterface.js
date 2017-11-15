@@ -130,17 +130,18 @@
 //     testGetTripsAgent();
 //     resetConversation(1000);
 //     speak("hello", "hello",1, 1000);
-//     speak("How does MAPK1 affect JUND?", "MAPK1 phosphorylated on Y187 phosphorylates JUND on S100.", 3, 6000);
-//     speak("What genes does MAPK1 phosphorylate?", "MAPK1 phosphorylated on Y187", 3, 6000);
-//     speak("What genes phosphorylate JUND?", "MAPK3 phosphorylated on T202", 3, 6000);
+//     speak("How does MAPK1 affect JUND?", "MAPK1 phosphorylated on Y187 phosphorylates JUND on S100.", 3, 5000);
+//     speak("What genes does MAPK1 phosphorylate?", "MAPK1 phosphorylated on Y187", 3, 5000);
+//     speak("What genes phosphorylate JUND?", "MAPK3 phosphorylated on T202", 3, 5000);
+//     speak("What genes phosphorylate MAPK1?", "I don't have specific information on that", 2, 5000);
 //     speak("Let's build a model.", "OK", 1, 5000);
-//     speak("AKT1 phosphorylates MAPK1.", "I created a model", 1, 6000);
+//     speak("AKT1 phosphorylates MAPK1.", "I created a model", 1, 5000);
 //     testDisplayImage(0);
 //     testDisplaySbgn(0);
 //     resetConversation(1000);
-//     speak("Let's learn about AKT1.", "The largest explainable correlation of AKT-1 is the correlation with BRAF", 2, 7000);
-//     speak("What is the next correlation of AKT1?", "PTPN", 2, 7000);
-//     speak("What is the next correlation of AKT1?", "unexplainable", 2, 7000);
+//     speak("Let's learn about AKT1.", "The largest explainable correlation of AKT-1 is the correlation with BRAF", 2, 5000);
+//     speak("What is the next correlation of AKT1?", "PTPN", 2, 5000);
+//     speak("What is the next correlation of AKT1?", "unexplainable", 2, 5000);
 //
 //
 // });

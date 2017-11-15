@@ -116,7 +116,7 @@ class ModelManager{
                 for(let att in users){
                     if(users.hasOwnProperty(att)){
                         console.log(users[att].name);
-                        if(users[att].name.indexOf('User') > -1) {
+                        if(users[att].name && users[att].name.indexOf('User') > -1) {
                             let idNumber = Number(users[att].name.slice(4));
                             console.log(idNumber);
                             if (idNumber > maxId)

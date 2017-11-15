@@ -246,7 +246,7 @@ app.proto.create = function (model) {
             // console.log("Connection requested " + noTrips + " " + op);
             self.connectTripsAgent();
         }
-    }, 1000); // wait a little while to
+    }, 500); // wait a little while for the server to update user list and handle disconnections
 
 
     return model.on('all', '_page.list', (function (_this) {
@@ -447,6 +447,9 @@ app.proto.listenToNodeOperations = function(model){
                     "overlay-padding": 10,
                     "overlay-opacity": 0
                 });
+
+                console.log("Updated overlay color tp " + cy.getElementById().css("overlay-color"));
+                console.log("Updated overlay color tp " + id);
             }
             else {
                 cy.getElementById(id).css({
@@ -455,6 +458,7 @@ app.proto.listenToNodeOperations = function(model){
                     "overlay-opacity": 0.25
                 });
             }
+            cy.getElementById(id).updateStyle();
         }
     });
 
