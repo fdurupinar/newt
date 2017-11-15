@@ -212,6 +212,14 @@ class TripsGeneralInterfaceModule extends TripsInterfaceModule {
 
     //Clean model request comes from another agent
     cleanModel(){
+        let responseHeaders = {
+            "access-control-allow-origin": "*",
+            "access-control-allow-methods": "GET, POST, PUT, DELETE, OPTIONS",
+            "access-control-allow-headers": "content-type, accept",
+            "access-control-max-age": 10,
+            "Content-Type": "application/json"
+        };
+
         //The socket connection is between the interface and the agent, so we cannot directly emit messages
         //we must ask the client with the browser to do it for us
         //Reset through clic
