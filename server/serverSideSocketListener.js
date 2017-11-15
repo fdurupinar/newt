@@ -371,28 +371,13 @@ module.exports.start = function(io, model, cancerDataOrganizer){
          * Reset Clic conversation and the BA
          */
         socket.on('resetConversationRequest', function(){
-            tripsGeneralInterfaceInstance.cleanModel();
-            //     modelManagerList[socket.room].newModel();
-            //
-            // //Reset through clic
-            // request({
-            //     url: 'http://localhost:8000/clic/initiate-reset', //URL to hit
-            //     headers: responseHeaders,
-            //     form: ''
-            //
-            // }, function (error) {
-            //
-            //     if (error) {
-            //         console.log(error);
-            //     }
-            // });
-            //
-            //
-            // let p = new Promise((resolve, reject) => {
-            //     if(tripsGeneralInterfaceInstance)resolve("success");
-            // });
-            // p.then((val) => {tripsGeneralInterfaceInstance.sendResetCausalityRequest();})
-            //
+            let p = new Promise((resolve, reject) => {
+                if(tripsGeneralInterfaceInstance)resolve("success");
+            });
+            p.then((val) => {
+                tripsGeneralInterfaceInstance.cleanModel();
+            });
+
 
         });
 
