@@ -150,7 +150,6 @@ class ModelManager{
         for(let i = 0; i < userIds.length; i++){
             if(userIds[i] === userId ){
                 self.model.remove('documents.' + self.docId + '.userIds', i) ; //remove from the index
-                break;
             }
         }
     }

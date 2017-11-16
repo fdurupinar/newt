@@ -141,7 +141,8 @@
 //     resetConversation(1000);
 //     speak("Let's learn about AKT1.", "The largest explainable correlation of AKT-1 is the correlation with BRAF", 2, 5000);
 //     speak("What is the next correlation of AKT1?", "PTPN", 2, 5000);
-//     speak("What is the next correlation of AKT1?", "unexplainable", 2, 5000);
+//     speak("What is the next correlation of AKT1?", "unexplainable", 2, 7000);
+//
 //
 //
 // });

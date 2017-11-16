@@ -235,7 +235,9 @@ module.exports.start = function(io, model, cancerDataOrganizer){
             data.socketId = socket.id;
 
             roomList.push(data.room);
+
             humanList.push({room:data.room, userId: data.userId, socketId: data.socketId});
+
 
             console.log("human " + data.userId +  " subscribed  to room " + data.room + " with socket " + socket.id);
 
@@ -287,8 +289,6 @@ module.exports.start = function(io, model, cancerDataOrganizer){
                     pcQuery.subscribe(function(){
                     });
 
-                    userIds.subscribe(function () {
-                    });
 
                     noTrips.subscribe(function(){
                     });
@@ -304,6 +304,14 @@ module.exports.start = function(io, model, cancerDataOrganizer){
                         //modelManagerList[data.room].setName(data.userId, data.userName); done up
 
                         model.set((docPath + '.noTrips'), (process.argv.length > 2) && (process.argv[2].toUpperCase().indexOf("TRIPS") > -1));
+
+
+                        userIds.subscribe(function () {
+                            //if human is the first to connect to the room clean all the previously connected userids
+                            if(humanList.length <=1)
+                                userIds.set([data.userId]);
+                        });
+
                     });
                 });
 
@@ -385,7 +393,6 @@ module.exports.start = function(io, model, cancerDataOrganizer){
         socket.on('connectToCausalityAgentRequest', function(){
             executeCommandLineProcess(("python ../CausalityAgent/causality_sbgnviz_interface.py '../CausalityAgent/resources'"));
         });
-
 
     };
 

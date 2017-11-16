@@ -369,13 +369,17 @@ app.proto.loadCyFromModel = function(callback){
 
                 node.position({x:position.x, y: position.y});
 
-
-                //reset to the center
-                cy.panzoom().reset();
-
-
-                if(callback) callback(false);
             });
+
+            let container = $('#canvas-tab-area');
+            cy.zoom(2);
+            cy.pan({x:container.width()/2, y:container.height()/2});
+            //reset to the center
+            // cy.panzoom().reset();
+            // cy.panzoom().fit();
+
+
+            if(callback) callback(false);
 
         });
 
@@ -422,6 +426,8 @@ app.proto.listenToNodeOperations = function(model){
 
             let parentEl = cy.getElementById(parent);
             newNode.move({"parent":parentEl});
+
+
         }
     });
 
@@ -431,7 +437,7 @@ app.proto.listenToNodeOperations = function(model){
             let posDiff = {x: (pos.x - cy.getElementById(id).position("x")), y:(pos.y - cy.getElementById(id).position("y"))} ;
             moveNodeAndChildren(posDiff, cy.getElementById(id)); //children need to be updated manually here
             //parent as well
-            cy.panzoom().fit();
+            // cy.panzoom().fit();
 
         }
     });
@@ -686,18 +692,6 @@ app.proto.listenToModelOperations = function(model){
     let self = this;
 
 
-
-    // model.on('all', '_page.doc.noTrips', function(op, noTrips){
-    //
-    //     //If there is already one connection to Bob, don't open another
-    //     let userIds = self.modelManager.getUserIds();
-    //     if(!noTrips && !self.isQueryWindow() &&  userIds.indexOf(BobId) < 0) {
-    //
-    //         console.log("Connection requested " + noTrips + " " + op);
-    //         self.connectTripsAgent();
-    //     }
-    // });
-
     //Listen to other model operations
     model.on('all', '_page.doc.factoid.*', function(id, op, val, prev, passed){
         if(docReady &&  !passed.user) {
@@ -711,6 +705,7 @@ app.proto.listenToModelOperations = function(model){
         if(docReady) {
             if(docReady && !passed.user) {
                 self.loadCyFromModel(function () {
+
                 });
             }
             self.notyView.close();
@@ -911,6 +906,11 @@ app.proto.add = function (event, model) {
 app.proto.clearHistory = function () {
     this.model.set('_page.clickTime', new Date);
 
+    //TODO: silllll
+    // cy.panzoom().fit();
+    // var $reset = $('<div class="cy-panzoom-reset cy-panzoom-zoom-button"></div>');
+    // $('#cy-panzoom-zoom-button').trigger('mousedown');
+    // cy.panzoom.reset();
     return this.model.filter('_page.doc.messages', 'biggerThanCurrentTime').ref('_page.list');
 };
 
