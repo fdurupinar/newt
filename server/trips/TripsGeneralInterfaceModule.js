@@ -240,6 +240,7 @@ class TripsGeneralInterfaceModule extends TripsInterfaceModule {
         });
 
 
+        this.sendResetCausalityRequest();
     }
 
     sendResetCausalityRequest(){
