@@ -2134,7 +2134,7 @@
 
                     <!--</div>-->
                     <div id="inputs">
-                        User name: <input id="inputs-name" value="{{_page.doc.users[_session.userId].name}}">
+                       User name: <input id="inputs-name" value="{{_page.doc.users[_session.userId].name}}">
                         <button id = "change-user-color" class = "btn btn-mini" on-click ="changeColorCode()">New user color</button>
                         <form id="inputs-form" on-submit="add($event)">
                         <!--<form id="inputs-form">-->
@@ -2149,8 +2149,8 @@
                         <select id = "test-messages" on-change="updateTripsMessage()">
 
 
-                            <option >Let's build a model.</option>
-                            <option selected = "selected">AKT1 phosphorylates MAPK1.</option>
+                            <option selected = "selected" >Let's build a model.</option>
+                            <option>AKT1 phosphorylates MAPK1.</option>
                             <option>How does MAPK1 affect JUND?</option>
                             <option>AKT1 activates BRAF.</option>
                             <option>Let's learn about AKT1.</option>
@@ -2169,12 +2169,40 @@
                             <option>What are the common upstreams of AKT1, BRAF?</option>
                             <option>Are there common upstreams of AKT1, BRAF?</option>
                             <option>What are the common upstreams of AKT1, BRAF and MAPK1?</option>
-                            <option>What genes are mutually exclusive with CDH1?</option>
-                            <option>What are the mutually exclusive genes with TP53?</option>
+                            <option>What genes are mutually exclusive with CDH1 for breast cancer?</option>
+                            <option>What are the mutually exclusive genes with TP53 for breast cancer?</option>
                             <option>What is the mutation significance of TP53 for lung cancer?</option>
                             <option>What is the mutation significance of TP53 in ovarian serous cystadenocarcinoma?</option>
                             <option>What is the mutation significance of PTEN in pancreatic adenocarcinoma?</option>
                             <option>What is the mutation significance of BRAF in prostatic adenocarcinoma</option>
+
+                            <option value = "3">MEK phosphorylates ERK.</option>
+                            <option value = "4">EGF binds EGFR.</option>
+                            <option value = "5">EGFR bound to EGF binds GRB2.</option>
+                            <option value = "6">Phosphorylated ERK is active.</option>
+                            <option value = "7">MAP2K1 phosphorylated at S220 phosphoryates MAPK1.</option>
+                            <option value = "8">Active TP53 transcribes MDM2.</option>
+                            <option value = "8b">Undo</option>
+                            <option value = "26">Is phosphorylated MAPK1 always high?</option>
+                            <option value = "27">Is the amount of phosphorylated MAPK1 eventually high?</option>
+                            <option value = "28">Is the MAP2K1-MAPK1 complex formed?</option>
+                            <option value = "29">Is the amount of FOS ever high if we increase the amount of ELK1 by 10 fold?</option>
+                            <option value = "30">Does Vemurafenib decrease phosphorylated ERK in the model?</option>
+                            <option value = "31">Does Selumetinib decrease JUN in the model?</option>
+                            <option value = "10">How does KRAS regulate MAP2K1?</option>
+                            <option value = "13">How does HRAS activate MAPK3?</option>
+                            <option value = "15">Does phosphorylation at S222 activate MAP2K1?</option>
+                            <option value = "15">What drugs inhibit MAP2K1?</option>
+                            <option value = "16">Are there any drugs for BRAF?</option>
+                            <option value = "17">Does Vemurafenib inhibit BRAF?</option>
+                            <option value = "18">What are the targets of PLX-4720?</option>
+                            <option value = "19">Which transcription factors regulate frizzled8?</option>
+                            <option value = "20">Does TP53 target MDM2?</option>
+                            <option value = "21">What are the regulators of SRF?</option>
+                            <option value = "22">What transcription factors are shared by SRF, HRAS, and ELK1?</option>
+                            <option value = "23">Which pathways involve TAP1 and JAK1?</option>
+                            <option value = "25">What genes are in the prolactin signaling pathway?</option>
+
 
 
                         </select>

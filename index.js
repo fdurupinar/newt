@@ -343,6 +343,8 @@ app.proto.listenToUIOperations = function(model){
             self.modelManager.newModel("me"); //do not delete cytoscape, only the model
             chise.updateGraph(JSON.parse(event.data), function(){
                 self.modelManager.initModel(cy.nodes(), cy.edges(), appUtilities, "me");
+                $("#perform-layout").trigger('click');
+
             });
         }
 
@@ -728,6 +730,8 @@ app.proto.listenToModelOperations = function(model){
         setTimeout(function () {
             var json = chise.convertSbgnmlTextToJson(data);
             w.postMessage(JSON.stringify(json), "*");
+
+
         }, 3000);
     });
 
