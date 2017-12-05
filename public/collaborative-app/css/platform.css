@@ -59,6 +59,11 @@
 
 }
 
+#network-panels-container {
+    margin: auto;
+    border:none;
+
+}
 
 #sbgn-inspector-and-canvas {
     margin: 10px;

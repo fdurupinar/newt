@@ -16,17 +16,17 @@ describe('modelManager Cytoscape Operations Test', function () {
 
                 modelManager.addModelNode(id, {position: {x: 100, y: 200} , data: {id: id, class: "macromolecule"}});
 
-                expect(window.cy.getElementById(id)).to.be.ok;
+                expect(window.appUtilities.getActiveCy().getElementById(id)).to.be.ok;
 
-                expect(modelManager.getModelNodeAttribute("data.id", id)).to.equal(window.cy.getElementById(id).data("id"));
-                expect(window.cy.getElementById(id).data("class")).to.equal("macromolecule");
-                expect(window.cy.getElementById(id).data("class")).to.equal(modelManager.getModelNodeAttribute("data.class", id));
+                expect(modelManager.getModelNodeAttribute("data.id", id)).to.equal(window.appUtilities.getActiveCy().getElementById(id).data("id"));
+                expect(window.appUtilities.getActiveCy().getElementById(id).data("class")).to.equal("macromolecule");
+                expect(window.appUtilities.getActiveCy().getElementById(id).data("class")).to.equal(modelManager.getModelNodeAttribute("data.class", id));
 
-                expect(window.cy.getElementById(id).position("x")).to.equal(100);
-                expect(window.cy.getElementById(id).position("x")).to.equal(modelManager.getModelNodeAttribute("position.x", id));
+                expect(window.appUtilities.getActiveCy().getElementById(id).position("x")).to.equal(100);
+                expect(window.appUtilities.getActiveCy().getElementById(id).position("x")).to.equal(modelManager.getModelNodeAttribute("position.x", id));
 
-                expect(window.cy.getElementById(id).position("y")).to.equal(200);
-                expect(window.cy.getElementById(id).position("y")).to.equal(modelManager.getModelNodeAttribute("position.y", id));
+                expect(window.appUtilities.getActiveCy().getElementById(id).position("y")).to.equal(200);
+                expect(window.appUtilities.getActiveCy().getElementById(id).position("y")).to.equal(modelManager.getModelNodeAttribute("position.y", id));
 
                 done();
             });
@@ -50,9 +50,9 @@ describe('modelManager Cytoscape Operations Test', function () {
             cy.window().should(function (window) {
                 let modelManager = window.testApp.modelManager;
 
-                modelManager.initModelNode(window.cy.getElementById(id), null, true);
+                modelManager.initModelNode(window.appUtilities.getActiveCy().getElementById(id), null, true);
 
-                var node = window.cy.getElementById(id);
+                var node = window.appUtilities.getActiveCy().getElementById(id);
                 var modelNode = modelManager.getModelNode(id);
 
 
@@ -79,19 +79,19 @@ describe('modelManager Cytoscape Operations Test', function () {
                 modelManager.addModelEdge(id, {data: {id: id, source: id1, target: id2, class: "consumption"}});
 
                 var modelEdge = modelManager.getModelEdge(id);
-                var edge = window.cy.getElementById(id);
+                var edge = window.appUtilities.getActiveCy().getElementById(id);
 
-                expect(window.cy.getElementById(id)).to.be.ok;
+                expect(window.appUtilities.getActiveCy().getElementById(id)).to.be.ok;
 
-                expect(modelManager.getModelEdgeAttribute("data.id", id)).to.equal(window.cy.getElementById(id).data("id"));
-                expect(window.cy.getElementById(id).data("class")).to.equal("consumption");
-                expect(window.cy.getElementById(id).data("class")).to.equal(modelManager.getModelEdgeAttribute("data.class", id));
+                expect(modelManager.getModelEdgeAttribute("data.id", id)).to.equal(window.appUtilities.getActiveCy().getElementById(id).data("id"));
+                expect(window.appUtilities.getActiveCy().getElementById(id).data("class")).to.equal("consumption");
+                expect(window.appUtilities.getActiveCy().getElementById(id).data("class")).to.equal(modelManager.getModelEdgeAttribute("data.class", id));
 
-                expect(window.cy.getElementById(id).data("source")).to.equal(id1);
-                expect(window.cy.getElementById(id).data("source")).to.equal(modelManager.getModelEdgeAttribute("data.source", id));
+                expect(window.appUtilities.getActiveCy().getElementById(id).data("source")).to.equal(id1);
+                expect(window.appUtilities.getActiveCy().getElementById(id).data("source")).to.equal(modelManager.getModelEdgeAttribute("data.source", id));
 
-                expect(window.cy.getElementById(id).data("target")).to.equal(id2);
-                expect(window.cy.getElementById(id).data("target")).to.equal(modelManager.getModelEdgeAttribute("data.target", id));
+                expect(window.appUtilities.getActiveCy().getElementById(id).data("target")).to.equal(id2);
+                expect(window.appUtilities.getActiveCy().getElementById(id).data("target")).to.equal(modelManager.getModelEdgeAttribute("data.target", id));
 
                 done();
             });
@@ -116,9 +116,9 @@ describe('modelManager Cytoscape Operations Test', function () {
             cy.window().should(function (window) {
                 let modelManager = window.testApp.modelManager;
 
-                modelManager.initModelEdge(window.cy.getElementById(id), null, true); //no history
+                modelManager.initModelEdge(window.appUtilities.getActiveCy().getElementById(id), null, true); //no history
 
-                var edge = window.cy.getElementById(id);
+                var edge = window.appUtilities.getActiveCy().getElementById(id);
                 var modelEdge = modelManager.getModelEdge(id);
 
 
@@ -139,7 +139,7 @@ describe('modelManager Cytoscape Operations Test', function () {
             cy.window().should(function (window) {
                 let modelManager = window.testApp.modelManager;
                 let userId = window.sessionUserId;
-                var node = window.cy.getElementById(id);
+                var node = window.appUtilities.getActiveCy().getElementById(id);
                 modelManager.selectModelNode(node, userId); //we need to specify userId for selection
                 setTimeout(()=>{ //wait a little while to update the UI
                     expect(node.css('overlay-color')).to.equal(modelManager.getModelNodeAttribute("highlightColor", id));
@@ -156,7 +156,7 @@ describe('modelManager Cytoscape Operations Test', function () {
             cy.window().should(function (window) {
                 let modelManager = window.testApp.modelManager;
                 let userId = window.sessionUserId;
-                var node = window.cy.getElementById(id);
+                var node = window.appUtilities.getActiveCy().getElementById(id);
                 modelManager.unselectModelNode(node); //we need to specify userId for selection
                 expect(modelManager.getModelNodeAttribute("highlightColor", id)).to.not.ok;
                 setTimeout(()=>{ //wait a little while to update the UI
@@ -173,7 +173,7 @@ describe('modelManager Cytoscape Operations Test', function () {
             cy.window().should(function (window) {
                 let modelManager = window.testApp.modelManager;
                 let userId = window.sessionUserId;
-                var edge = window.cy.getElementById(id);
+                var edge = window.appUtilities.getActiveCy().getElementById(id);
                 modelManager.selectModelEdge(edge, userId); //we need to specify userId for selection
                 setTimeout(()=>{ //wait a little while to update the UI
                  expect(edge.css('overlay-color')).to.equal(modelManager.getModelEdgeAttribute("highlightColor", id));
@@ -189,7 +189,7 @@ describe('modelManager Cytoscape Operations Test', function () {
             cy.window().should(function (window) {
                 let modelManager = window.testApp.modelManager;
                 let userId = window.sessionUserId;
-                var edge = window.cy.getElementById(id);
+                var edge = window.appUtilities.getActiveCy().getElementById(id);
                 modelManager.unselectModelEdge(edge); //we need to specify userId for selection
                 expect(modelManager.getModelEdgeAttribute("highlightColor", id)).to.not.ok;
                 setTimeout(()=>{ //wait a little while to update the UI
@@ -210,73 +210,73 @@ describe('modelManager Cytoscape Operations Test', function () {
 
                 let pos = {x:300, y:400};
                 modelManager.changeModelNodeAttribute("position", id, pos);
-                expect(window.cy.getElementById(id).position().x).to.equal(pos.x);
+                expect(window.appUtilities.getActiveCy().getElementById(id).position().x).to.equal(pos.x);
                 expect(modelManager.getModelNode(id).position.x).equal(pos.x);
-                expect(window.cy.getElementById(id).position().y).to.equal(pos.y);
+                expect(window.appUtilities.getActiveCy().getElementById(id).position().y).to.equal(pos.y);
                 expect(modelManager.getModelNode(id).position.y).to.equal(pos.y);
 
 
                 let nodeClass = "phenotype";
                 modelManager.changeModelNodeAttribute("data.class", id, nodeClass);
-                expect(window.cy.getElementById(id).data('class')).to.equal(nodeClass);
+                expect(window.appUtilities.getActiveCy().getElementById(id).data('class')).to.equal(nodeClass);
                 expect(modelManager.getModelNode(id).data.class).to.equal(nodeClass);
 
 
                 let label = "label2";
                 modelManager.changeModelNodeAttribute("data.label", id, label);
-                expect(window.cy.getElementById(id).data('label')).to.equal(label);
+                expect(window.appUtilities.getActiveCy().getElementById(id).data('label')).to.equal(label);
                 expect(modelManager.getModelNode(id).data.label).to.equal(label);
 
 
                 let opacity = 0.7;
                 modelManager.changeModelNodeAttribute("data.background-opacity", id, opacity);
-                expect(window.cy.getElementById(id).data('background-opacity')).to.equal( opacity);
+                expect(window.appUtilities.getActiveCy().getElementById(id).data('background-opacity')).to.equal( opacity);
                 expect(modelManager.getModelNode(id).data["background-opacity"]).to.equal( opacity);
 
 
                 let bgColor = '#333343';
                 modelManager.changeModelNodeAttribute("data.background-color", id, bgColor );
-                expect(window.cy.getElementById(id).data('background-color')).to.equal(bgColor);
+                expect(window.appUtilities.getActiveCy().getElementById(id).data('background-color')).to.equal(bgColor);
                 expect(modelManager.getModelNode(id).data["background-color"]).to.equal(bgColor);
 
 
                 let borColor = '#222222';
                 modelManager.changeModelNodeAttribute("data.border-color", id, borColor);
-                expect(window.cy.getElementById(id).data('border-color')).to.equal(borColor);
+                expect(window.appUtilities.getActiveCy().getElementById(id).data('border-color')).to.equal(borColor);
                 expect(modelManager.getModelNode(id).data["border-color"]).to.equal(borColor);
 
                 let borWidth = "3px";
                 modelManager.changeModelNodeAttribute("data.border-width", id, borWidth);
-                expect(window.cy.getElementById(id).data('border-width')).to.equal(borWidth);
+                expect(window.appUtilities.getActiveCy().getElementById(id).data('border-width')).to.equal(borWidth);
                 expect(modelManager.getModelNode(id).data["border-width"]).to.equal(borWidth);
 
 
                 let fontFamily = "Times";
                 modelManager.changeModelNodeAttribute("data.font-family", id, fontFamily);
-                expect(window.cy.getElementById(id).data('font-family')).to.equal(fontFamily);
+                expect(window.appUtilities.getActiveCy().getElementById(id).data('font-family')).to.equal(fontFamily);
                 expect(modelManager.getModelNode(id).data["font-family"]).to.equal(fontFamily);
 
 
                 let fontWeight = "bold";
                 modelManager.changeModelNodeAttribute("data.font-weight", id, fontWeight);
-                expect(window.cy.getElementById(id).data('font-weight')).to.equal(fontWeight);
+                expect(window.appUtilities.getActiveCy().getElementById(id).data('font-weight')).to.equal(fontWeight);
                 expect(modelManager.getModelNode(id).data["font-weight"]).to.equal(fontWeight);
 
                 let fontSize = 10;
                 modelManager.changeModelNodeAttribute("data.font-size", id, fontSize);
-                expect(window.cy.getElementById(id).data('font-size')).to.equal(fontSize);
+                expect(window.appUtilities.getActiveCy().getElementById(id).data('font-size')).to.equal(fontSize);
                 expect(modelManager.getModelNode(id).data["font-size"]).to.equal(fontSize);
 
 
                 let fontStyle = "normal";
                 modelManager.changeModelNodeAttribute("data.font-style", id, fontStyle);
-                expect(window.cy.getElementById(id).data('font-style')).to.equal(fontStyle);
+                expect(window.appUtilities.getActiveCy().getElementById(id).data('font-style')).to.equal(fontStyle);
                 expect(modelManager.getModelNode(id).data["font-style"]).to.equal(fontStyle);
 
 
                 let cloneMarker = true;
                 modelManager.changeModelNodeAttribute("data.clonemarker", id, cloneMarker);
-                expect(window.cy.getElementById(id).data('clonemarker')).to.equal(cloneMarker);
+                expect(window.appUtilities.getActiveCy().getElementById(id).data('clonemarker')).to.equal(cloneMarker);
                 expect(modelManager.getModelNode(id).data.clonemarker).to.equal(cloneMarker);
 
 
@@ -287,29 +287,29 @@ describe('modelManager Cytoscape Operations Test', function () {
                 modelManager.changeModelNodeAttribute("data.statesandinfos", id, [stateVarObj, unitOfInfoObj]);
 
 
-                expect(window.cy.getElementById(id).data('statesandinfos')[0].clazz).to.deep.equal(stateVarObj.clazz);
-                expect(window.cy.getElementById(id).data('statesandinfos')[1].clazz).to.deep.equal(unitOfInfoObj.clazz);
-                expect(window.cy.getElementById(id).data('statesandinfos')).to.deep.equal(modelManager.getModelNode(id).data.statesandinfos);
+                expect(window.appUtilities.getActiveCy().getElementById(id).data('statesandinfos')[0].clazz).to.deep.equal(stateVarObj.clazz);
+                expect(window.appUtilities.getActiveCy().getElementById(id).data('statesandinfos')[1].clazz).to.deep.equal(unitOfInfoObj.clazz);
+                expect(window.appUtilities.getActiveCy().getElementById(id).data('statesandinfos')).to.deep.equal(modelManager.getModelNode(id).data.statesandinfos);
 
                 let parent = "node2";
                 modelManager.changeModelNodeAttribute("data.parent", id, parent);
-                expect(window.cy.getElementById(id).data('parent')).to.equal(parent);
+                expect(window.appUtilities.getActiveCy().getElementById(id).data('parent')).to.equal(parent);
                 expect(modelManager.getModelNode(id).data.parent).to.equal(parent);
 
                 let bh= 4;
                 modelManager.changeModelNodeAttribute("data.bbox.h", id, bh);
-                expect(window.cy.getElementById(id)._private.data.bbox.h).to.equal(bh);
+                expect(window.appUtilities.getActiveCy().getElementById(id)._private.data.bbox.h).to.equal(bh);
                 expect(modelManager.getModelNode(id).data.bbox.h).to.equal(bh);
 
                 let bw = 5;
                 modelManager.changeModelNodeAttribute("data.bbox.w", id, bw);
-                expect(window.cy.getElementById(id)._private.data.bbox.w).to.equal(bw);
+                expect(window.appUtilities.getActiveCy().getElementById(id)._private.data.bbox.w).to.equal(bw);
                 expect(modelManager.getModelNode(id).data.bbox.w).to.equal(bw);
 
                 //TODO:
                 // modelManager.changeModelNodeAttribute("data.ports", id, ["glyph4"]);
-                // assert.equal(modelManager.getModelNode(id).data.ports[0], window.cy.getElementById(id).data('ports')[0], "Node ports are correct in window.cytoscape.");
-                // assert.equal(modelManager.getModelNode(id).data.ports[0], window.cy.getElementById(id).data('ports')[0], "Node ports are equal in model and window.cytoscape..");
+                // assert.equal(modelManager.getModelNode(id).data.ports[0], window.appUtilities.getActiveCy().getElementById(id).data('ports')[0], "Node ports are correct in window.cytoscape.");
+                // assert.equal(modelManager.getModelNode(id).data.ports[0], window.appUtilities.getActiveCy().getElementById(id).data('ports')[0], "Node ports are equal in model and window.cytoscape..");
 
             });
 
@@ -325,24 +325,24 @@ describe('modelManager Cytoscape Operations Test', function () {
 
                 let edgeClass = "catalysis";
                 modelManager.changeModelEdgeAttribute("data.class", id, edgeClass);
-                expect(window.cy.getElementById(id).data('class')).to.equal(edgeClass);
+                expect(window.appUtilities.getActiveCy().getElementById(id).data('class')).to.equal(edgeClass);
                 expect(modelManager.getModelEdge(id).data.class).to.equal(edgeClass);
 
 
                 let cardinality = 5;
                 modelManager.changeModelEdgeAttribute("data.cardinality", id, cardinality);
-                expect(window.cy.getElementById(id).data('cardinality')).to.equal(cardinality);
+                expect(window.appUtilities.getActiveCy().getElementById(id).data('cardinality')).to.equal(cardinality);
                 expect(modelManager.getModelEdge(id).data.cardinality).to.equal(cardinality);
 
                 let lColor = '#411515';
                 modelManager.changeModelEdgeAttribute("data.line-color", id, lColor );
-                expect(window.cy.getElementById(id).data('line-color')).to.equal(lColor);
+                expect(window.appUtilities.getActiveCy().getElementById(id).data('line-color')).to.equal(lColor);
                 expect(modelManager.getModelEdge(id).data["line-color"]).to.equal(lColor);
 
 
                 let width = "8px";
                 modelManager.changeModelEdgeAttribute("data.width", id, width);
-                expect(window.cy.getElementById(id).data('width')).to.equal(width);
+                expect(window.appUtilities.getActiveCy().getElementById(id).data('width')).to.equal(width);
                 expect(modelManager.getModelEdge(id).data["width"]).to.equal(width);
 
                 //This  doesn't give error but
@@ -353,26 +353,26 @@ describe('modelManager Cytoscape Operations Test', function () {
                 // let newSource = "node3";
                 // modelManager.changeModelEdgeAttribute("data.source", id, newSource);
                 // setTimeout(()=>{ //wait a little while
-                //     expect(window.cy.getElementById(id).data("source")).to.equal(newSource);
-                //     expect(window.cy.getElementById(id).data("source")).to.equal(modelManager.getModelEdgeAttribute("data.source", id));
+                //     expect(window.appUtilities.getActiveCy().getElementById(id).data("source")).to.equal(newSource);
+                //     expect(window.appUtilities.getActiveCy().getElementById(id).data("source")).to.equal(modelManager.getModelEdgeAttribute("data.source", id));
                 // },100);
                 //
                 // let newTarget = "node4";
                 // modelManager.changeModelEdgeAttribute("data.target", id, newTarget);
                 // setTimeout(()=>{ //wait a little while
-                //     expect(window.cy.getElementById(id).data("target")).to.equal(newTarget);
-                //     expect(window.cy.getElementById(id).data("target")).to.equal(modelManager.getModelEdgeAttribute("data.source", id));
+                //     expect(window.appUtilities.getActiveCy().getElementById(id).data("target")).to.equal(newTarget);
+                //     expect(window.appUtilities.getActiveCy().getElementById(id).data("target")).to.equal(modelManager.getModelEdgeAttribute("data.source", id));
                 // },100);
                 //
                 // let ps = "node1";
                 // modelManager.changeModelEdgeAttribute("data.portsource", id, ps);
-                // expect(window.cy.getElementById(id).data('portsource')).to.equal(ps);
+                // expect(window.appUtilities.getActiveCy().getElementById(id).data('portsource')).to.equal(ps);
                 // expect(modelManager.getModelEdge(id).data["portsource"]).to.equal(ps);
                 //
                 //
                 // let pt = "node1";
                 // modelManager.changeModelEdgeAttribute("data.porttarget", id, pt);
-                // expect(window.cy.getElementById(id).data('porttarget')).to.equal(pt);
+                // expect(window.appUtilities.getActiveCy().getElementById(id).data('porttarget')).to.equal(pt);
                 // expect(modelManager.getModelEdge(id).data["porttarget"]).to.equal(pt);
 
 
@@ -392,7 +392,7 @@ describe('modelManager Cytoscape Operations Test', function () {
                 let modelManager = window.testApp.modelManager;
                 modelManager.deleteModelNode(id);
                 expect(modelManager.getModelNode(id)).to.not.ok;
-                expect(window.cy.getElementById(id).length).to.equal(0);
+                expect(window.appUtilities.getActiveCy().getElementById(id).length).to.equal(0);
             });
 
         });
@@ -404,7 +404,7 @@ describe('modelManager Cytoscape Operations Test', function () {
                 let modelManager = window.testApp.modelManager;
                 modelManager.deleteModelEdge(id);
                 expect(modelManager.getModelEdge(id)).to.not.ok;
-                expect(window.cy.getElementById(id).length).to.equal(0);
+                expect(window.appUtilities.getActiveCy().getElementById(id).length).to.equal(0);
             });
 
         });

@@ -119,6 +119,9 @@ module.exports.start = function(io, model, cancerDataOrganizer){
             clientSocket.emit(requestStr, data, function(val){
 
                 console.log(requestStr);
+                console.log(userId);
+                console.log(room);
+
                 if(callback) callback(val);
             });
         }

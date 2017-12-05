@@ -61,7 +61,7 @@ var PathsBetweenQueryView = Backbone.View.extend({
 
             }
 
-            chise.startSpinner('paths-between-spinner');
+            appUtilities.getActiveChiseInstance().startSpinner('paths-between-spinner');
 
 
 
@@ -85,15 +85,15 @@ var PathsBetweenQueryView = Backbone.View.extend({
 
                     // //because window opening takes a while
                     setTimeout(function () {
-                        var json = chise.convertSbgnmlTextToJson(data);
+                        var json = appUtilities.getActiveChiseInstance().convertSbgnmlTextToJson(data);
                         w.postMessage(JSON.stringify(json), "*");
                     }, 2000);
 
-                    chise.endSpinner('paths-between-spinner');
+                    appUtilities.getActiveChiseInstance().endSpinner('paths-between-spinner');
                 },
                 error: function (request, status, error) {
                     console.log(request.responseText);
-                    chise.endSpinner('paths-between-spinner');
+                    appUtilities.getActiveChiseInstance().endSpinner('paths-between-spinner');
                 }
 
 
@@ -163,7 +163,7 @@ var PathsByURIQueryView = Backbone.View.extend({
             //filename = filename + '_URI.sbgnml';
             //setFileContent(filename);
 
-           chise.startSpinner('paths-between-spinner');
+            appUtilities.getActiveChiseInstance().startSpinner('paths-between-spinner');
 
             $.ajax({
                 url: queryURL,
@@ -181,10 +181,10 @@ var PathsByURIQueryView = Backbone.View.extend({
 
                     // //because window opening takes a while
                     setTimeout(function () {
-                        var json = chise.convertSbgnmlTextToJson(data);
+                        var json = appUtilities.getActiveChiseInstance().convertSbgnmlTextToJson(data);
                         w.postMessage(JSON.stringify(json), "*");
                     }, 2000);
-                    chise.endSpinner('paths-between-spinner');
+                    appUtilities.getActiveChiseInstance().endSpinner('paths-between-spinner');
 
 
                 }

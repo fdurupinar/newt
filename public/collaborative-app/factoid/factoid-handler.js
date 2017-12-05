@@ -81,7 +81,7 @@ module.exports =  function(app) {
 
             app.modelManager.newModel("me", true);
 
-            chise.updateGraph(jsonObj, function(){
+            appUtilities.getActiveChiseInstance().updateGraph(jsonObj, function(){
 
                 app.modelManager.initModel(cy.nodes(), cy.edges(), appUtilities, "me");
 

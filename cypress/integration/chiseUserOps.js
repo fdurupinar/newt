@@ -2,9 +2,9 @@ function addNodeTest(id, className, posX, posY) {
 
   it('chise.addNode()', function () {
     cy.window().should(function(window){
-      var chise = window.chise;
+      var chise = window.appUtilities.getActiveChiseInstance();
       chise.addNode(posX, posY, className, id);
-      var node = window.cy.getElementById(id);
+      var node = window.appUtilities.getActiveCy().getElementById(id);
       // expect(node, "A node with id: " + id + " is added.").to.be.ok;
       expect(node.length, "A node with id: " + id + " is added.").to.equal(1);
       expect(node.position('x'), 'x position of the node is as expected').to.equal(posX);
@@ -15,7 +15,7 @@ function addNodeTest(id, className, posX, posY) {
       expect(modelManager, 'model manager is available here').to.be.ok;
       var nodeModel = modelManager.getModelNode(id);
       expect(nodeModel, 'node model is available here').to.be.ok;
-      expect(modelManager.getModelNodeAttribute("data.id", id), "Node is equal in model and cytoscape").to.be.equal(window.cy.getElementById(id).data("id"));
+      expect(modelManager.getModelNodeAttribute("data.id", id), "Node is equal in model and cytoscape").to.be.equal(window.appUtilities.getActiveCy().getElementById(id).data("id"));
       expect(modelManager.getModelNodeAttribute("data.class", id), "Node class is equal in model and cytoscape.").to.be.equal(node.data("class"));
       expect(modelManager.getModelNodeAttribute("position.x", id), "Node position x is equal in model and cytoscape.").to.be.equal(node.position('x'));
       expect(modelManager.getModelNodeAttribute("position.y", id), "Node position y is equal in model and cytoscape.").to.be.equal(node.position('y'));
@@ -27,9 +27,9 @@ function addEdgeTest(id, src, tgt, className) {
 
   it('chise.addEdge()', function () {
     cy.window().should(function(window){
-      var chise = window.chise;
+      var chise = window.appUtilities.getActiveChiseInstance();
       chise.addEdge(src, tgt, className, id);
-      var edge = window.cy.getElementById(id);
+      var edge = window.appUtilities.getActiveCy().getElementById(id);
       expect(edge, "An edge with id: " + id + " is added.").to.be.ok;
       expect(edge.data('source'), "the edge has the expected source").to.be.equal(src);
       expect(edge.data('target'), "the edge has the expected target").to.be.equal(tgt);
@@ -38,7 +38,7 @@ function addEdgeTest(id, src, tgt, className) {
       var edgeModel = modelManager.getModelEdge(id);
 
       expect(edgeModel, "Edge is added to the model.").to.be.ok;
-      expect(modelManager.getModelEdgeAttribute("data.id", id) , "Edge is equal in model and cytoscape").to.be.equal(window.cy.getElementById(id).data("id"));
+      expect(modelManager.getModelEdgeAttribute("data.id", id) , "Edge is equal in model and cytoscape").to.be.equal(window.appUtilities.getActiveCy().getElementById(id).data("id"));
       expect(modelManager.getModelEdgeAttribute("data.class", id), "Edge class is equal in model and cytoscape.").to.be.equal(edge.data("class"));
       expect(modelManager.getModelEdgeAttribute("data.source", id), "Edge target x is equal in model and cytoscape.").to.be.equal(edge.data('source'));
       expect(modelManager.getModelEdgeAttribute("data.target", id), "Edge source y is equal in model and cytoscape.").to.be.equal(edge.data('target'));
@@ -50,20 +50,20 @@ function createCompoundTest(compoundType) {
 
   it('chise.createCompoundForGivenNodes()', function () {
     cy.window().should(function(window){
-      var chise = window.chise;
+      var chise = window.appUtilities.getActiveChiseInstance();
       chise.addNode(100, 100, 'macromolecule', 'macromoleculeToCreateCompound');
 
       var existingIdMap = {};
 
       // Map the existing nodes before creating the compound
-      window.cy.nodes().forEach(function (ele) {
+      window.appUtilities.getActiveCy().nodes().forEach(function (ele) {
         existingIdMap[ele.id()] = true;
       });
 
-      chise.createCompoundForGivenNodes(window.cy.getElementById('macromoleculeToCreateCompound'), compoundType);
+      chise.createCompoundForGivenNodes(window.appUtilities.getActiveCy().getElementById('macromoleculeToCreateCompound'), compoundType);
 
       // The element who is not mapped before the operation is supposed to be the new compound
-      var newEle = window.cy.nodes().filter(function (ele) {
+      var newEle = window.appUtilities.getActiveCy().nodes().filter(function (ele) {
         return existingIdMap[ele.id()] !== true;
       });
 
@@ -74,7 +74,7 @@ function createCompoundTest(compoundType) {
       var compoundModel = modelManager.getModelNode(newEle.id());
 
       expect(compoundModel, "Compound is added to the model.").to.be.ok;
-      expect(modelManager.getModelNodeAttribute("data.id", newEle.id()), "Compound is the parent of the node.").to.be.equal(window.cy.getElementById('macromoleculeToCreateCompound').data("parent"));
+      expect(modelManager.getModelNodeAttribute("data.id", newEle.id()), "Compound is the parent of the node.").to.be.equal(window.appUtilities.getActiveCy().getElementById('macromoleculeToCreateCompound').data("parent"));
 
       expect(modelManager.getModelNodeAttribute("data.class", newEle.id()), "Model compound has the correct sbgn class.").to.be.equal(compoundType);
     });
@@ -85,9 +85,9 @@ function cloneElementsTest() {
 
   it('chise.cloneElements()', function () {
     cy.window().should(function(window){
-      var initialSize = window.cy.elements().length;
-      window.chise.cloneElements(window.cy.elements());
-      expect(window.cy.elements().length, "Clone operation is successful").to.be.equal(initialSize * 2);
+      var initialSize = window.appUtilities.getActiveCy().elements().length;
+      window.appUtilities.getActiveChiseInstance().cloneElements(window.appUtilities.getActiveCy().elements());
+      expect(window.appUtilities.getActiveCy().elements().length, "Clone operation is successful").to.be.equal(initialSize * 2);
     });
   });
 }
@@ -96,9 +96,9 @@ function cloneNodeTest(id) {
 
   it('chise.cloneElements()', function () {
     cy.window().should(function(window){
-      var node = window.cy.getElementById(id);
+      var node = window.appUtilities.getActiveCy().getElementById(id);
 
-      window.chise.cloneElements(node);
+        window.appUtilities.getActiveChiseInstance().cloneElements(node);
 
       var modelManager = window.testModelManager;
       var nodeModel = modelManager.getModelNode(id);
@@ -117,19 +117,19 @@ function expandCollapseTest(selector) {
 
   it('chise.collapseNodes() and chise.expandNodes()', function () {
     cy.window().should(function(window){
-      var filteredNodes = window.cy.nodes(selector);
+      var filteredNodes = window.appUtilities.getActiveCy().nodes(selector);
       var initilChildrenSize = filteredNodes.children().length;
-      var initialNodesSize = window.cy.nodes().length;
-      var initialEdgesSize = window.cy.edges().length;
+      var initialNodesSize = window.appUtilities.getActiveCy().nodes().length;
+      var initialEdgesSize = window.appUtilities.getActiveCy().edges().length;
 
-      var chise = window.chise;
+      var chise = window.appUtilities.getActiveChiseInstance();
 
       chise.collapseNodes(filteredNodes);
       expect(filteredNodes.children().length, "Collapse operation is successful").to.be.equal(0);
       chise.expandNodes(filteredNodes);
       expect(filteredNodes.children().length, "Initial children size is protected after expand operation").to.be.equal(initilChildrenSize);
-      expect(window.cy.nodes().length, "Initial nodes size is protected after expand operation").to.be.equal(initialNodesSize);
-      expect(window.cy.edges().length, "Initial edges size is protected after expand operation").to.be.equal(initialEdgesSize);
+      expect(window.appUtilities.getActiveCy().nodes().length, "Initial nodes size is protected after expand operation").to.be.equal(initialNodesSize);
+      expect(window.appUtilities.getActiveCy().edges().length, "Initial edges size is protected after expand operation").to.be.equal(initialEdgesSize);
 
       var modelManager = window.testModelManager;
 
@@ -148,15 +148,15 @@ function deleteElesTest(selector) {
       var nodeIds = [];
       var edgeIds = [];
 
-      window.cy.elements(selector).forEach(function(ele){
+      window.appUtilities.getActiveCy().elements(selector).forEach(function(ele){
         if(ele.isNode())
         nodeIds.push(ele.id());
         else
         edgeIds.push(ele.id());
       });
 
-      window.chise.deleteElesSimple(window.cy.elements(selector));
-      expect(window.cy.elements(selector).length, "Delete simple operation is successful").to.be.equal(0);
+      window.appUtilities.getActiveChiseInstance().deleteElesSimple(window.appUtilities.getActiveCy().elements(selector));
+      expect(window.appUtilities.getActiveCy().elements(selector).length, "Delete simple operation is successful").to.be.equal(0);
 
       nodeIds.forEach(function(nodeId){
         expect(modelManager.getModelNode(nodeId), "In model node " + nodeId + " removed successfully.").not.to.be.ok;
@@ -173,9 +173,9 @@ function deleteNodesSmartTest(selector) {
 
   it('chise.deleteElesSmart()', function () {
     cy.window().should(function(window){
-      var chise = window.chise;
-      var allNodes = window.cy.nodes();
-      var nodes = window.cy.nodes(selector);
+      var chise = window.appUtilities.getActiveChiseInstance();
+      var allNodes = window.appUtilities.getActiveCy().nodes();
+      var nodes = window.appUtilities.getActiveCy().nodes(selector);
       var nodesToKeep = chise.elementUtilities.extendRemainingNodes(nodes, allNodes);
       var nodesNotToKeep = allNodes.not(nodesToKeep);
 
@@ -191,7 +191,7 @@ function deleteNodesSmartTest(selector) {
       });
 
       chise.deleteNodesSmart(nodes);
-      expect(window.cy.nodes(removedIdsSelector).length, "Delete smart operation is successful").to.be.equal(0);
+      expect(window.appUtilities.getActiveCy().nodes(removedIdsSelector).length, "Delete smart operation is successful").to.be.equal(0);
 
       var modelManager = window.testModelManager;
       removedIds.forEach(function(nodeId){
@@ -205,13 +205,13 @@ function hideElesTest(selector) {
 
   it('chise.hideNodesSmart()', function () {
     cy.window().should(function(window){
-      var chise = window.chise;
-      var nodes = window.cy.nodes(selector);
-      var allNodes = window.cy.nodes().filter(':visible');
-      var nodesToShow = chise.elementUtilities.extendRemainingNodes(nodes, allNodes).nodes();
+      let chise = window.appUtilities.getActiveChiseInstance();
+      var nodes = window.appUtilities.getActiveCy().nodes(selector);
+      var allNodes = window.appUtilities.getActiveCy().nodes().filter(':visible');
+      var nodesToShow = window.appUtilities.getActiveChiseInstance().elementUtilities.extendRemainingNodes(nodes, allNodes).nodes();
 
-      chise.hideNodesSmart(nodes);
-      expect(window.cy.nodes().filter(':visible').length, "Hide operation is successful").to.be.equal(nodesToShow.length);
+        window.appUtilities.getActiveChiseInstance().hideNodesSmart(nodes);
+      expect(window.appUtilities.getActiveCy().nodes().filter(':visible').length, "Hide operation is successful").to.be.equal(nodesToShow.length);
 
       var modelManager = window.testModelManager;
 
@@ -227,12 +227,12 @@ function showAllElesTest() {
 
   it('chise.showAll()', function () {
     cy.window().should(function(window){
-      window.chise.showAll();
-      expect(window.cy.nodes().length, "Show all operation is successful").to.be.equal(window.cy.nodes(':visible').length);
+      window.appUtilities.getActiveChiseInstance().showAll();
+      expect(window.appUtilities.getActiveCy().nodes().length, "Show all operation is successful").to.be.equal(window.appUtilities.getActiveCy().nodes(':visible').length);
 
       var modelManager = window.testModelManager;
 
-      window.cy.nodes().forEach(function(node){
+      window.appUtilities.getActiveCy().nodes().forEach(function(node){
         var visibilityStatus = modelManager.getModelNodeAttribute('visibilityStatus', node.id());
         expect(visibilityStatus, "In model show on node " + node.id()  + " is successful").not.to.be.equal("hide");
       });
@@ -244,10 +244,10 @@ function alignTest (selector, horizontal, vertical, alignToId) {
 
   it('chise.align()', function () {
     cy.window().should(function(window){
-      var nodes = window.cy.nodes(selector);
+      var nodes = window.appUtilities.getActiveCy().nodes(selector);
 
       // If node to align to is not set use the first node in the list
-      var alignToNode = alignToId ? window.cy.getElementById(alignToId) : nodes[0];
+      var alignToNode = alignToId ? window.appUtilities.getActiveCy().getElementById(alignToId) : nodes[0];
 
       // Return the alignment coordinate of the given node. This alignment coordinate is depandent on
       // the horizontal and vertical parameters and after the align operation all nodes should have the same
@@ -275,7 +275,7 @@ function alignTest (selector, horizontal, vertical, alignToId) {
 
       var expectedCoord = getAlignmentCoord(alignToNode);
 
-      window.chise.align(nodes, horizontal, vertical, alignToNode);
+      window.appUtilities.getActiveChiseInstance().align(nodes, horizontal, vertical, alignToNode);
       var filteredNodes = nodes.filter(function(node) {
         var coord = getAlignmentCoord(node);
         return coord === expectedCoord;
@@ -299,8 +299,8 @@ function highlightElesTest(selector) {
 
   it('chise.highlightEles()', function () {
     cy.window().should(function(window){
-      var eles = window.cy.$(selector);
-      window.chise.highlightSelected(eles); // This method highlights the given eles not the selected ones. It has an unfortune name.
+      var eles = window.appUtilities.getActiveCy().$(selector);
+      window.appUtilities.getActiveChiseInstance().highlightSelected(eles); // This method highlights the given eles not the selected ones. It has an unfortune name.
       expect(eles.filter('.highlighted').length, "Highlight operation is successful").to.be.equal(eles.length);
 
       var modelManager = window.testModelManager;
@@ -323,12 +323,12 @@ function removeHighlightsTest() {
 
   it('chise.removeHighlights()', function () {
     cy.window().should(function(window){
-      window.chise.removeHighlights();
-      expect(window.cy.elements('.highlighted').length, "Remove highlights operation is successful").to.be.equal(0);
+      window.appUtilities.getActiveChiseInstance().removeHighlights();
+      expect(window.appUtilities.getActiveCy().elements('.highlighted').length, "Remove highlights operation is successful").to.be.equal(0);
 
       var modelManager = window.testModelManager;
 
-      window.cy.elements().forEach(function(ele){
+      window.appUtilities.getActiveCy().elements().forEach(function(ele){
         if(ele.isNode()){
           var highlightStatus = modelManager.getModelNodeAttribute('highlightStatus', ele.id());
           expect(highlightStatus, "In model unhighlight on node " + ele.id()  + " is successful").to.be.equal("unhighlighted");
@@ -346,8 +346,8 @@ function highlightProcessesTest(selector) {
 
   it('chise.highlightProcesses()', function () {
     cy.window().should(function(window){
-      var chise = window.chise;
-      var nodes = window.cy.nodes(selector);
+      var chise = window.appUtilities.getActiveChiseInstance();
+      var nodes = window.appUtilities.getActiveCy().nodes(selector);
       var elesToHighlight = chise.elementUtilities.extendNodeList(nodes);
       chise.highlightProcesses(nodes);
       assert.equal(elesToHighlight.filter('.highlighted').length, elesToHighlight.length, "Highlight processes operation is successful");
@@ -372,8 +372,8 @@ function highlightNeighboursTest (selector) {
 
   it('chise.highlightNeighbours()', function () {
     cy.window().should(function(window){
-      var chise = window.chise;
-      var nodes = window.cy.nodes(selector);
+      var chise = window.appUtilities.getActiveChiseInstance();
+      var nodes = window.appUtilities.getActiveCy().nodes(selector);
       var elesToHighlight = chise.elementUtilities.getNeighboursOfNodes(nodes);
       chise.highlightNeighbours(nodes);
       expect(elesToHighlight.filter('.highlighted').length, "Highlight neighbours operation is successful").to.be.equal(elesToHighlight.length);
@@ -398,8 +398,8 @@ function changeNodeLabelTest(selector) {
 
   it('chise.changeNodeLabel()', function () {
     cy.window().should(function(window){
-      var nodes = window.cy.nodes(selector);
-      window.chise.changeNodeLabel(nodes, 'test label');
+      var nodes = window.appUtilities.getActiveCy().nodes(selector);
+      window.appUtilities.getActiveChiseInstance().changeNodeLabel(nodes, 'test label');
       expect(nodes.filter('[label="test label"]').length, "Change node label operation is successful").to.be.equal(nodes.length);
 
       var modelManager = window.testModelManager;
@@ -416,8 +416,8 @@ function resizeNodesTest(dimension) {
 
   it('chise.resizeNodes()', function () {
     cy.window().should(function(window){
-      var chise = window.chise;
-      var nodes = window.cy.nodes('[class="macromolecule"]');
+      var chise = window.appUtilities.getActiveChiseInstance();
+      var nodes = window.appUtilities.getActiveCy().nodes('[class="macromolecule"]');
 
       if (dimension === 'w') {
         chise.resizeNodes(nodes, 100);
@@ -449,8 +449,8 @@ function changeDataTest(selector, name, testVal, parseFloatOnCompare, omitStyle)
 
   it('chise.changeData()', function () {
     cy.window().should(function(window){
-      var chise = window.chise;
-      var elements = window.cy.$(selector);
+      var chise = window.appUtilities.getActiveChiseInstance();
+      var elements = window.appUtilities.getActiveCy().$(selector);
       elements.unselect(); // Unselect the nodes because node selection affects some style properties like border color
       chise.changeData(elements, name, testVal);
 
@@ -492,8 +492,8 @@ function addStateOrInfoboxTest (id, obj) {
 
   it('chise.addStateOrInfoBox()', function () {
     cy.window().should(function(window){
-      var chise = window.chise;
-      var node = window.cy.getElementById(id);
+      var chise = window.appUtilities.getActiveChiseInstance();
+      var node = window.appUtilities.getActiveCy().getElementById(id);
       var initialUnitsSize = node.data('statesandinfos').length;
       chise.addStateOrInfoBox(node, obj);
 
@@ -528,8 +528,8 @@ function changeStateOrInfoBoxTest (id, index, value, type) {
 
   it('chise.changeStateOrInfoBox()', function () {
     cy.window().should(function(window){
-      var chise = window.chise;
-      var node = window.cy.getElementById(id);
+      var chise = window.appUtilities.getActiveChiseInstance();
+      var node = window.appUtilities.getActiveCy().getElementById(id);
       chise.changeStateOrInfoBox(node, index, value, type);
 
       function performAssertions(unit, inModel) {
@@ -558,13 +558,13 @@ function removeStateOrInfoBoxTest (id, index) {
 
   it('chise.removeStateOrInfoBox()', function () {
     cy.window().should(function(window){
-      var node = window.cy.getElementById(id);
+      var node = window.appUtilities.getActiveCy().getElementById(id);
       var modelManager = window.testModelManager;
 
       var modelUnitToRemove = modelManager.getModelNodeAttribute("data.statesandinfos", node.id())[index];
       var unitToRemove = node.data('statesandinfos')[index];
 
-      window.chise.removeStateOrInfoBox(node, index);
+      window.appUtilities.getActiveChiseInstance().removeStateOrInfoBox(node, index);
 
       var checkIndex = node.data('statesandinfos').indexOf(unitToRemove);
       expect(checkIndex, "Auxiliary unit is removed successfully").to.be.equal(-1);
@@ -579,8 +579,8 @@ function setMultimerStatusTest (selector, status) {
 
   it('chise.setMultimerStatus()', function () {
     cy.window().should(function(window){
-      var chise = window.chise;
-      var nodes = window.cy.nodes(selector);
+      var chise = window.appUtilities.getActiveChiseInstance();
+      var nodes = window.appUtilities.getActiveCy().nodes(selector);
 
       chise.setMultimerStatus(nodes, status);
 
@@ -605,8 +605,8 @@ function setCloneMarkerStatusTest (selector, status) {
 
   it('chise.setCloneMarkerStatus()', function () {
     cy.window().should(function(window){
-      var nodes = window.cy.nodes(selector);
-      window.chise.setCloneMarkerStatus(nodes, status);
+      var nodes = window.appUtilities.getActiveCy().nodes(selector);
+      window.appUtilities.getActiveChiseInstance().setCloneMarkerStatus(nodes, status);
 
       var filteredNodes = nodes.filter(function(node) {
         var isCloneMarker = ( node.data('clonemarker') === true );
@@ -629,8 +629,8 @@ function changeFontPropertiesTest (selector, data) {
 
   it('chise.changeFontProperties()', function () {
     cy.window().should(function(window){
-      var nodes = window.cy.nodes(selector);
-      window.chise.changeFontProperties(nodes, data);
+      var nodes = window.appUtilities.getActiveCy().nodes(selector);
+      window.appUtilities.getActiveChiseInstance().changeFontProperties(nodes, data);
 
       var filteredNodes = nodes.filter(function(node) {
         for (var prop in data) {
@@ -663,7 +663,7 @@ function changeParentTest(selector, newParentId, posDiffX, posDiffY) {
     cy.window().should(function(window){
       // Keep initial positions of the nodes to be able to check if they are repositioned as expected
       var oldPositions = {};
-      var nodes = window.cy.nodes(selector);
+      var nodes = window.appUtilities.getActiveCy().nodes(selector);
       var modelManager = window.testModelManager;
 
       nodes.forEach(function(node) {
@@ -673,9 +673,9 @@ function changeParentTest(selector, newParentId, posDiffX, posDiffY) {
         };
       });
 
-      window.chise.changeParent(nodes, newParentId, posDiffX, posDiffY);
+      window.appUtilities.getActiveChiseInstance().changeParent(nodes, newParentId, posDiffX, posDiffY);
 
-      var updatedNodes = window.cy.nodes(selector); // Node list should be updated after change parent operation
+      var updatedNodes = window.appUtilities.getActiveCy().nodes(selector); // Node list should be updated after change parent operation
 
       // Filter the nodes that are moved to the new parent
       var filteredNodes = updatedNodes.filter(function (node) {
@@ -715,8 +715,8 @@ function setPortsOrderingTest(selector, ordering) {
 
   it('chise.setPortsOrdering()', function () {
     cy.window().should(function(window){
-      var nodes = window.cy.nodes(selector);
-      var chise = window.chise;
+      var nodes = window.appUtilities.getActiveCy().nodes(selector);
+      var chise = window.appUtilities.getActiveChiseInstance();
 
       chise.setPortsOrdering(nodes, ordering);
       var commonOrdering = chise.elementUtilities.getPortsOrdering(nodes);
@@ -737,8 +737,8 @@ function resetMapTypeTest() {
 
   it('chise.resetMapType()', function () {
     cy.window().should(function(window){
-      window.chise.resetMapType();
-      expect(window.chise.elementUtilities.mapType).not.to.be.ok;
+      window.appUtilities.getActiveChiseInstance().resetMapType();
+      expect(window.appUtilities.getActiveChiseInstance().elementUtilities.mapType).not.to.be.ok;
     });
   });
 }

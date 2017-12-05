@@ -14,10 +14,10 @@ module.exports = function(modelManager, socket, userId){
         //remove annotations view
 
         modelManager.newModel("me"); //do not delete cytoscape, only the model
-        modelManager.initModel(cy.nodes(), cy.edges(), appUtilities);
+        modelManager.initModel(appUtilities.getActiveCy().nodes(), appUtilities.getActiveCy().edges(), appUtilities);
 
     setTimeout(function(){
-        cy.elements().forEach(function(ele){
+        appUtilities.getActiveCy().elements().forEach(function(ele){
             ele.data("annotationsView", null);
             ele._private.data.annotationsView = null;
         });
@@ -41,7 +41,7 @@ module.exports = function(modelManager, socket, userId){
 
                     socket.emit('BioPAXRequest', this.result, "sbgn", function(sbgnData){ //convert to sbgn
 
-                        sbgnviz.loadSBGNMLText(sbgnData.graph);
+                        appUtilites.getActiveSbgnvizInstance().loadSBGNMLText(sbgnData.graph);
                     });
                 };
                 reader.readAsText(file);
@@ -52,11 +52,11 @@ module.exports = function(modelManager, socket, userId){
 
         setTimeout(function () {
             //remove annotations view first
-            cy.elements().forEach(function(ele){
+            appUtilities.getActiveCy().elements().forEach(function(ele){
                 ele.data("annotationsView", null);
                 ele._private.data.annotationsView = null;
             });
-            modelManager.initModel(cy.nodes(), cy.edges(), appUtilities, "me");
+            modelManager.initModel(appUtilities.getActiveCy().nodes(), appUtilities.getActiveCy().edges(), appUtilities, "me");
 
 
 
@@ -80,19 +80,19 @@ module.exports = function(modelManager, socket, userId){
     // });
 
     $(document).on("newFile", function (evt) {
-        cy.remove(cy.elements());
+        appUtilities.getActiveCy().remove(appUtilities.getActiveCy().elements());
         modelManager.newModel("me"); //do not delete cytoscape, only the model
     });
 
     // $(document).on('updateGraphEnd', function(event) {
     //     console.log("Graph updated");
-    //     modelManager.initModel(cy.nodes(), cy.edges(), appUtilities, "me");
+    //     modelManager.initModel(appUtilities.getActiveCy().nodes(), appUtilities.getActiveCy().edges(), appUtilities, "me");
     //
     //    $("#perform-layout").trigger('click');
     //
     // });
 
-    cy.on("afterDo afterRedo", function (event, actionName, args, res) {
+    appUtilities.getActiveCy().on("afterDo afterRedo", function (event, actionName, args, res) {
 
 
             console.log(actionName);
@@ -276,7 +276,7 @@ module.exports = function(modelManager, socket, userId){
             var paramList = [];
 
 
-            cy.elements().forEach(function (ele) {
+            appUtilities.getActiveCy().elements().forEach(function (ele) {
                 modelElList.push({id: ele.id(), isNode: ele.isNode()});
                 paramList.push("unhighlighted");
 
@@ -312,7 +312,7 @@ module.exports = function(modelManager, socket, userId){
         }
 
         else if (actionName === "layout") {
-            // cy.on('layoutstop', function() {
+            // appUtilities.getActiveCy().on('layoutstop', function() {
                 //TODO
 
                 console.log('Layout stopped');
@@ -448,7 +448,7 @@ module.exports = function(modelManager, socket, userId){
             }
 
             var compoundId = res.newEles[0].data("parent");
-            var compound = cy.getElementById(compoundId);
+            var compound = appUtilities.getActiveCy().getElementById(compoundId);
 
 
             var compoundAtts = {position:{x: compound.position("x"), y: compound.position("y")}, data:{class:compound.data("class")}};
@@ -465,31 +465,31 @@ module.exports = function(modelManager, socket, userId){
     });
 
 
-    cy.on("mouseup", "node", function () {
+    appUtilities.getActiveCy().on("mouseup", "node", function () {
         modelManager.unselectModelNode(this, "me");
     });
 
 
-    cy.on('select', 'node', function (event) { //Necessary for multiple selections
+    appUtilities.getActiveCy().on('select', 'node', function (event) { //Necessary for multiple selections
         //console.log(this.id()); //TODO delete later
         modelManager.selectModelNode(this,  userId, "me");
 
     });
 
-    cy.on('unselect', 'node', function () { //causes sync problems in delete op
+    appUtilities.getActiveCy().on('unselect', 'node', function () { //causes sync problems in delete op
         modelManager.unselectModelNode(this, "me");
     });
-    cy.on('grab', 'node', function (event) { //Also works as 'select'
+    appUtilities.getActiveCy().on('grab', 'node', function (event) { //Also works as 'select'
         modelManager.selectModelNode(this, userId, "me");
     });
 
-    cy.on('select', 'edge', function (event) {
+    appUtilities.getActiveCy().on('select', 'edge', function (event) {
         //console.log(this.id()); //TODO delete later
         modelManager.selectModelEdge(this, userId, "me");
 
     });
 
-    cy.on('unselect', 'edge', function (event) {
+    appUtilities.getActiveCy().on('unselect', 'edge', function (event) {
         modelManager.unselectModelEdge(this, "me");
     });
 

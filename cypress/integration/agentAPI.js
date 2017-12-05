@@ -250,7 +250,6 @@ describe('Agent API Test', function () {
         it('agent.layoutRequest', function (done) {
             cy.window().should(function (window) {
                 let modelManager = window.testApp.modelManager;
-                let nodeId = modelManager.getModelNodesArr()[0].id;
                 agent.sendRequest("agentRunLayoutRequest", null, function (val) {
                     setTimeout(function () { //should wait here as well
                         expect(val).to.equal("success");
@@ -582,7 +581,7 @@ describe('Agent API Test', function () {
                 agent.sendRequest("agentNewFileRequest", null, function(){
                     setTimeout(function () { //should wait here as well
                         let cy = modelManager.getModelCy();
-                        expect(jQuery.isEmptyObject(cy.nodes) && jQuery.isEmptyObject(cy.edges)).to.equal(true);
+                        expect(jQuery.isEmptyObject(window.appUtilities.getActiveCy().nodes) && jQuery.isEmptyObject(window.appUtilities.getActiveCy().edges)).to.equal(true);
                         done();
                     },100);
                 });

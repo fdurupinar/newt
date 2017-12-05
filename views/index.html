@@ -81,6 +81,7 @@
                             <input id="file-input" type="file" style="display:none" />
                             <li><a href="#" type="file" id="new-file">New</a></li>
                             <li><a href="#" type="file" id="load-file">Load...</a></li>
+                            <li><a href="#" type="file" id="close-file">Close</a></li>
                             <li class="dropdown-submenu">
                                 <a href="#" class="dropdown-toggle" data-toggle="dropdown">
                                     Samples
@@ -401,7 +402,8 @@
 
                     <div class="tab-content">
                 <!--focus should be here add tabindex -->
-                        <div id="sbgn-network-container" tabindex="0" class = "tab-pane fade in active"></div>
+                        <!--<div id="sbgn-network-container" tabindex="0" class = "tab-pane fade in active"></div>-->
+                        <div id="network-panels-container" class="tab-content" tabindex="0" class = "tab-pane fade in active"> </div>
                         {{ each _page.doc.images as #imageFile}}
                         <div id={{"static-image-container-"+#imageFile.tabIndex}}  class = "tab-pane" >
 
@@ -474,6 +476,9 @@
         </tr>
         </tbody>
     </table>
+
+    <ul id="network-tabs-list" class="nav nav-tabs">
+    </ul>
 
     <div id="layout-properties-table" tabindex="-1" class="modal fade" role="dialog">
         <!-- sbgn layout table will be shown here -->
@@ -1897,7 +1902,8 @@
                 <div id="sbgn-inspector" class="tab-pane">
                     <ul class="nav nav-tabs">
                         <li id='inspector-style-tab' class="chise-tab"><a data-toggle="tab" href="#sbgn-inspector-style"><img width="18px" height="18px" src="app/img/tabs/properties.svg"/>Object</a></li>
-                        <li id='inspector-map-tab' class="chise-tab"><a data-toggle="tab" href="#sbgn-inspector-map"><img width="18px" height="18px" src="app/img/toolbar/settings.svg"/>Map</a></li>
+                        <!--<li id='inspector-map-tab' class="chise-tab"><a data-toggle="tab" href="#sbgn-inspector-map"><img width="18px" height="18px" src="app/img/toolbar/settings.svg"/>Map</a></li>-->
+                        <li id='inspector-map-tab' class="chise-tab"><a data-toggle="tab" href="#sbgn-inspector-map"><img width="18px" height="18px" src="app/img/toolbar/settings.svg"/>&nbsp;Map</a></li>
                         <li id='inspector-palette-tab' class="chise-tab active"><a data-toggle="tab" href="#sbgn-inspector-palette"><img width="18px" height="18px" src="app/img/tabs/palette.svg"/>Palette</a></li>
                     </ul>
                     <div class="tab-content">
@@ -2154,10 +2160,13 @@
                             <option>How does MAPK1 affect JUND?</option>
                             <option>AKT1 activates BRAF.</option>
                             <option>Let's learn about AKT1.</option>
+
                             <option>What is its relationship with BRAF?</option>
                             <option>What is its relationship with PTPN1?</option>
                             <option>AKT1 phosphorylates IFT140. </option>
                             <option>What is the next correlation of AKT1?</option>
+                            <option>Let's stop learning about AKT1.</option>
+
                             <option>How does SETDB1 affect ADAM17?</option>
                             <option>How does KRAS activate MAPK3?</option>
 
