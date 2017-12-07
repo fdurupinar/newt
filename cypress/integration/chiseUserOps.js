@@ -205,16 +205,41 @@ function hideElesTest(selector) {
 
   it('chise.hideNodesSmart()', function () {
     cy.window().should(function(window){
-      let chise = window.appUtilities.getActiveChiseInstance();
-      var nodes = window.appUtilities.getActiveCy().nodes(selector);
-      var allNodes = window.appUtilities.getActiveCy().nodes().filter(':visible');
-      var nodesToShow = window.appUtilities.getActiveChiseInstance().elementUtilities.extendRemainingNodes(nodes, allNodes).nodes();
 
-        window.appUtilities.getActiveChiseInstance().hideNodesSmart(nodes);
-      expect(window.appUtilities.getActiveCy().nodes().filter(':visible').length, "Hide operation is successful").to.be.equal(nodesToShow.length);
+      // get the active chise instance
+      var chiseInstance = window.appUtilities.getActiveChiseInstance();
+      // since both cypress and cytoscape.js instances are created as cy by convention
+      // use cytoscape.js instance as _cy
+      var _cy = chiseInstance.getCy();
+
+      // get nodes to perform operation on
+      var nodes = _cy.nodes(selector);
+
+      // get the nodes that are already visible before the operation
+      var alreadyVisibleNodes = _cy.nodes(':visible');
+
+      // get the nodes that are already hidden before the operation
+      var alreadyHiddenNodes = _cy.nodes(':hidden');
+
+      // get the nodes that are not to be hidden during the operation
+      var nodesNotToHide = chiseInstance.elementUtilities.extendRemainingNodes(nodes, alreadyVisibleNodes).nodes();
+
+      // get the nodes that are to be hidden during the operation
+      var nodesToHide = alreadyVisibleNodes.not(nodesNotToHide);
+
+      // the whole nodes that are expected to be hidden after the operation is performed
+      var nodesExpectedToBeHidden = nodesToHide.union(alreadyHiddenNodes);
+
+      // perform the operation
+      chiseInstance.hideNodesSmart(nodes);
+
+      // expect that nodes expected to be hidden after the operation has the same length with the nodes
+      // that actully has the hidden status after the operation is performed
+      expect(_cy.nodes().filter(':hidden').length, "Hide operation is successful").to.be.equal(nodesExpectedToBeHidden.length);
 
       var modelManager = window.testModelManager;
 
+      // check if the nodes are hidden on model manager as well
       nodes.forEach(function(node){
         var visibilityStatus = modelManager.getModelNodeAttribute('visibilityStatus', node.id());
         expect(visibilityStatus, "In model hide on node " + node.id()  + " is successful").to.be.equal("hide");
@@ -743,12 +768,23 @@ function resetMapTypeTest() {
   });
 }
 
+function checkVisibility(selector) {
+
+  it('checkVisibility', function () {
+    cy.window().should(function(window){
+      var _cy = window.appUtilities.getActiveCy();
+      expect(_cy.nodes(selector).length, "It is visible").to.be.equal(_cy.nodes(selector).filter(":visible").length);
+    });
+  });
+}
+
 
 describe('CWC Test', function(){
 
 
   addNodeTest('pdNode0', 'macromolecule', 100, 100);
   addNodeTest('pdNode1', 'process', 100, 200);
+  checkVisibility('#pdNode1');
   addNodeTest('pdNode2', 'macromolecule', 200, 200);
 
   addEdgeTest('pdEdge', 'pdNode1', 'pdNode2', 'necessary stimulation');
@@ -802,6 +838,8 @@ describe('CWC Test', function(){
   deleteElesTest('#pdNodeO');
   deleteNodesSmartTest('#pdNode7');
 
+  checkVisibility('#pdNode1');
+  // checkVisibility('#pdNode1');
   hideElesTest('#pdNode1');
   showAllElesTest();
 

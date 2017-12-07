@@ -339,7 +339,7 @@ app.proto.listenToUIOperations = function(model){
 
 
     // //If we get a message on a separate window
-    window.addEventListener('message', function(event) {biopax
+    window.addEventListener('message', function(event) {
         if(event.data) { //initialization for a query window
             self.modelManager.newModel("me"); //do not delete cytoscape, only the model
             appUtilities.getActiveChiseInstance().updateGraph(JSON.parse(event.data), function(){
