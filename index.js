@@ -1067,6 +1067,18 @@ app.proto.dynamicResize = function (images) {
 };
 
 
+app.proto.testImageTab = function(){
+
+    let imgData = {
+        img: ("data:image/png;base64,"),
+        tabIndex: 1,
+        tabLabel: "test",
+        fileName: "modelRXN"
+    };
+    var status = this.modelManager.addImage(imgData);
+    var images = this.modelManager.getImages();
+    this.dynamicResize(images);
+}
 ////////////////////////////////////////////////////////////////////////////
 //Local functions
 ////////////////////////////////////////////////////////////////////////////

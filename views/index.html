@@ -444,7 +444,6 @@
                     </div>
                 </div>
 
-
             </td>
 
             <td>
@@ -453,10 +452,16 @@
         </tr>
         <tr>
             <td>
-            <div id = "canvas-tabs">
+            <div id = "canvas-tabs" class = "tabbable boxed parentTabs">
                 <ul class="nav nav-tabs">
+                <li class = "active tab-link" ><a data-toggle="tab" id = "defaultOpen" href="#network-panels-container">Networks</a></li>
+                    <div class tabbable>
+                    <ul id="network-tabs-list" class="nav nav-tabs">
+                    </ul>
 
-                    <li class = "active tab-link" ><a data-toggle="tab" id = "defaultOpen" href="#network-panels-container">Sbgn</a></li>
+                    </div>
+
+                    <!--<li class = "active tab-link" ><a data-toggle="tab" id = "defaultOpen" href="#network-panels-container">Sbgn</a></li>-->
 
                     {{ each _page.doc.images as #imageFile}}
 
@@ -465,8 +470,6 @@
                             <!--<span onclick= closeTab(this) class="close-icon"></span>-->
 
                         <a data-toggle="tab" href={{"#static-image-container-"+#imageFile.tabIndex}}>
-
-
 
                              {{#imageFile.tabLabel}}</a></li>
                     {{/each}}
@@ -477,8 +480,6 @@
         </tbody>
     </table>
 
-    <ul id="network-tabs-list" class="nav nav-tabs">
-    </ul>
 
     <div id="layout-properties-table" tabindex="-1" class="modal fade" role="dialog">
         <!-- sbgn layout table will be shown here -->
@@ -2276,6 +2277,7 @@
 
         <!--TODO: Close this-->
         <!--<button id = "connect-causality-agent" class = "btn  btn-mini" on-click = "connectCausalityAgent()">CA</button>-->
+        <button id = "test-image-tab" class = "btn  btn-mini" on-click = "testImageTab()">Test image tab</button>
 
         <chat-user:>
             <div class="user" style = background:{{_page.doc.users[#pUserId].colorCode}}>
