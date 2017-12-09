@@ -2,14 +2,14 @@
  * Created by durupina on 11/14/16.
  * Human listens to agent socket and performs menu operations requested by the agent
 */
-var jsonMerger = require('./merger/json-merger.js');
+let jsonMerger = require('./merger/json-merger.js');
 
 module.exports =  function(app) {
 
     return {
 
         listen: function () {
-            var self = this;
+            let self = this;
 
 
             app.socket.on('loadFile', function (txtFile, callback) {
@@ -27,7 +27,8 @@ module.exports =  function(app) {
             });
 
             app.socket.on('newFile', function (data, callback) {
-                self.newFile(data, callback);
+                let cyId = appUtilities.getActiveNetworkId();
+                self.newFile(data, cyId,  callback);
             });
 
             app.socket.on('runLayout', function (data, callback) {
@@ -46,12 +47,13 @@ module.exports =  function(app) {
             app.socket.on('addNode', function (param, callback) {
                 try {
                     //does not trigger cy events
-                    var newNode = appUtilities.getActiveChiseInstance().elementUtilities.addNode(param.position.x, param.position.y, param.data.class);
+                    let newNode = appUtilities.getActiveChiseInstance().elementUtilities.addNode(param.position.x, param.position.y, param.data.class);
+                    let cyId = appUtilities.getActiveNetworkId();
 
                     //notifies other clients
 
-                    app.modelManager.addModelNode(newNode.id(), param, "me");
-                    app.modelManager.initModelNode(newNode, "me");
+                    app.modelManager.addModelNode(newNode.id(), cyId, param, "me");
+                    app.modelManager.initModelNode(newNode, cyId, "me");
 
                     if (callback) callback(newNode.id());
                 }
@@ -92,8 +94,8 @@ module.exports =  function(app) {
             app.socket.on('addImage', function (data, callback) {
                 try {
 
-                    var status = app.modelManager.addImage(data);
-                    var images = app.modelManager.getImages();
+                    let status = app.modelManager.addImage(data);
+                    let images = app.modelManager.getImages();
                     app.dynamicResize(images);
 
                     if (callback) callback(status);
@@ -110,11 +112,12 @@ module.exports =  function(app) {
             app.socket.on('addEdge', function (data, callback) {
                 try {
                     //does not trigger cy events
-                    var newEdge = appUtilities.getActiveChiseInstance().elementUtilities.addEdge(source, target, sbgnclass, id, visibility);
+                    let newEdge = appUtilities.getActiveChiseInstance().elementUtilities.addEdge(source, target, sbgnclass, id, visibility);
+                    let cyId = appUtilities.getActiveNetworkId();
 
                     //notifies other clients
-                    app.modelManager.addModelEdge(newNode.id(), data, "me");
-                    // app.modelManager.initModelEdge(newEdge, "me");
+                    app.modelManager.addModelEdge(newNode.id(), cyId, data, "me");
+                    // app.modelManager.initModelEdge(newEdge, cyId, "me");
 
                     if (callback) callback(newEdge.id());
                 }
@@ -128,7 +131,7 @@ module.exports =  function(app) {
 
             app.socket.on('align', function (data, callback) {
                 try {
-                    var nodes = appUtilities.getActiveCy().collection();
+                    let nodes = appUtilities.getActiveCy().collection();
                     if (data.nodeIds === '*' || data.nodeIds === 'all')
                         nodes = appUtilities.getActiveCy().nodes();
                     else
@@ -296,18 +299,18 @@ module.exports =  function(app) {
 
             //Open in another window
             app.socket.on('openPCQueryWindow', function(data, callback){
-                var loc = window.location.href;
+                let loc = window.location.href;
                 if (loc[loc.length - 1] === "#") {
                     loc = loc.slice(0, -1);
                 }
-                var w = window.open((loc + "_query"), function () {
+                let w = window.open((loc + "_query"), function () {
 
                 });
 
                 // //because window opening takes a while
                 setTimeout(function () {
 
-                    var json = appUtilities.getActiveChiseInstance().convertSbgnmlTextToJson(data.graph);
+                    let json = appUtilities.getActiveChiseInstance().convertSbgnmlTextToJson(data.graph);
                     w.postMessage(JSON.stringify(json), "*");
                 }, 2000);
 
@@ -315,7 +318,7 @@ module.exports =  function(app) {
 
             app.socket.on("displaySbgn", function(sbgn, callback){
 
-                var jsonObj = appUtilities.getActiveChiseInstance().convertSbgnmlTextToJson(sbgn);
+                let jsonObj = appUtilities.getActiveChiseInstance().convertSbgnmlTextToJson(sbgn);
 
                 //get another sbgncontainer and display the new SBGN model.
                 app.modelManager.newModel("me", true);
@@ -330,35 +333,39 @@ module.exports =  function(app) {
 
             });
 
-            app.socket.on("mergeSbgn", function (sbgn, callback) {
+            app.socket.on("mergeSbgn", function (data, callback) {
 
-                var newJson = appUtilities.getActiveChiseInstance().convertSbgnmlTextToJson(sbgn);
-                
-                self.mergeJsonWithCurrent(newJson, callback);
+                let newJson = appUtilities.getActiveChiseInstance().convertSbgnmlTextToJson(data.graph);
+                if(!data.cyId)
+                    data.cyId = appUtilities.getActiveNetworkId();
+                self.mergeJsonWithCurrent(newJson, data.cyId,  callback);
 
             });
 
             app.socket.on("mergeJsonWithCurrent", function (data, callback) {
-                self.mergeJsonWithCurrent(data, callback);
+
+                if(!data.cyId)
+                    data.cyId = appUtilities.getActiveNetworkId();
+                self.mergeJsonWithCurrent(data.graph, data.cyId, callback);
             });
         },
 
 
         //Merge an array of json objects with the json of the current sbgn network
         //on display to output a single json object.
-        mergeJsonWithCurrent: function (jsonGraph, callback) {
-            var currJson = appUtilities.getActiveChiseInstance().createJson();
-            app.modelManager.setRollbackPoint(); //before merging.. for undo
+        mergeJsonWithCurrent: function (jsonGraph, cyId, callback) {
+            let currJson = appUtilities.getActiveChiseInstance().createJson();
+            app.modelManager.setRollbackPoint(cyId); //before merging.. for undo
 
-            var jsonObj = jsonMerger.mergeJsonWithCurrent(jsonGraph, currJson);
+            let jsonObj = jsonMerger.mergeJsonWithCurrent(jsonGraph, currJson);
 
             //get another sbgncontainer and display the new SBGN model.
-            app.modelManager.newModel("me", true);
+            app.modelManager.newModel(cyId, "me", true);
 
             //this takes a while so wait before initiating the model
             appUtilities.getActiveChiseInstance().updateGraph(jsonObj, function () {
 
-                app.modelManager.initModel(appUtilities.getActiveCy().nodes(), appUtilities.getActiveCy().edges(), appUtilities, "me");
+                app.modelManager.initModel(appUtilities.getActiveCy().nodes(), appUtilities.getActiveCy().edges(), cyId, appUtilities, "me");
 
                 //select the new graph
                 jsonGraph.nodes.forEach(function (node) {
@@ -371,17 +378,17 @@ module.exports =  function(app) {
 
                 // Call merge notification after the layout
                 setTimeout(function () {
-                    app.modelManager.mergeJsons("me", true);
+                    app.modelManager.mergeJsons(cyId, "me", true);
                     if (callback) callback("success");
                 }, 1000);
 
             });
         },
 
-        newFile: function(data, callback){
+        newFile: function(data, cyId,  callback){
             try {
                 appUtilities.getActiveCy().remove(appUtilities.getActiveCy().elements());
-                app.modelManager.newModel("me"); //do not delete cytoscape, only the model
+                app.modelManager.newModel(cyId, "me"); //do not delete cytoscape, only the model
                 //close all the other tabs
                 app.model.set('_page.doc.images', null);
 

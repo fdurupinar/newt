@@ -562,7 +562,7 @@ module.exports.start = function(io, model, cancerDataOrganizer){
                 requestStr = "mergeJsonWithCurrent";
 
 
-            askHuman(data.userId, data.room,  requestStr, data.graph, function(val){
+            askHuman(data.userId, data.room,  requestStr, data, function(val){
 
                 if (callback) callback(val);
             });
@@ -599,7 +599,7 @@ module.exports.start = function(io, model, cancerDataOrganizer){
         });
 
         socket.on('agentNewFileRequest',  function(data, callback){
-            askHuman(data.userId, data.room,  "newFile", null, function(val){
+            askHuman(data.userId, data.room,  "newFile", data, function(val){
                 if (callback) callback(val);
             });
         });
@@ -642,7 +642,7 @@ module.exports.start = function(io, model, cancerDataOrganizer){
 
         socket.on('agentGetNodeRequest',function(data, callback){
             try {
-                let node = modelManagerList[data.room].getModelNode(data.id);
+                let node = modelManagerList[data.room].getModelNode(data.id, data.cyId);
                 if (callback) callback(node);
             }
             catch(e){
@@ -653,7 +653,7 @@ module.exports.start = function(io, model, cancerDataOrganizer){
 
         socket.on('agentGetEdgeRequest',function(data, callback){
             try {
-                let edge = modelManagerList[data.room].getModelEdge(data.id);
+                let edge = modelManagerList[data.room].getModelEdge(data.id, data.cyId);
                 if (callback) callback(edge);
             }
             catch(e){
@@ -673,7 +673,7 @@ module.exports.start = function(io, model, cancerDataOrganizer){
             try {
                 //we know the edge id so add directly to the model
                 //second parameter needs to have a data field
-                let status = modelManagerList[data.room].addModelEdge(data.id, data, "me");
+                let status = modelManagerList[data.room].addModelEdge(data.id,  data.cyId, data, "me");
                 if (callback) callback(data.id);
             }
             catch(e){
@@ -690,7 +690,7 @@ module.exports.start = function(io, model, cancerDataOrganizer){
 
         socket.on('agentMoveNodeRequest',function(data, callback){
             try {
-                let status = modelManagerList[data.room].changeModelNodeAttribute("position", data.id, data.pos);
+                let status = modelManagerList[data.room].changeModelNodeAttribute("position", data.id, data.cyId,  data.pos);
                 if (callback) callback(status);
             }
             catch(e){
@@ -701,7 +701,7 @@ module.exports.start = function(io, model, cancerDataOrganizer){
 
         socket.on('agentChangeNodeAttributeRequest', function(data, callback){
             try {
-                let status = modelManagerList[data.room].changeModelNodeAttribute(data.attStr, data.id, data.attVal);
+                let status = modelManagerList[data.room].changeModelNodeAttribute(data.attStr, data.id,data.cyId, data.attVal);
                 if (callback) callback(status);
             }
             catch(e){
@@ -713,7 +713,7 @@ module.exports.start = function(io, model, cancerDataOrganizer){
         });
         socket.on('agentChangeEdgeAttributeRequest', function(data, callback){
             try {
-                let status = modelManagerList[data.room].changeModelEdgeAttribute(data.attStr, data.id, data.attVal);
+                let status = modelManagerList[data.room].changeModelEdgeAttribute(data.attStr, data.id,data.cyId, data.attVal);
                 if (callback) callback(status);
             }
             catch(e){

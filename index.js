@@ -224,9 +224,11 @@ app.proto.create = function (model) {
 
     //Loading cytoscape and clients
     if(!self.isQueryWindow()) { //initialization for a regular window
-        self.loadCyFromModel(function(isModelEmpty){
+        let cyId = appUtilities.getActiveNetworkId();
+        self.loadCyFromModel(cyId, function(isModelEmpty){
             if (isModelEmpty)
-                self.modelManager.initModel(appUtilities.getActiveCy().nodes(), appUtilities.getActiveCy().edges(), appUtilities, "me");
+                self.modelManager.initModel(appUtilities.getActiveCy().nodes(), appUtilities.getActiveCy().edges(),
+                    cyId, appUtilities, "me");
             else
                 self.notyView.close();
         });
@@ -343,7 +345,8 @@ app.proto.listenToUIOperations = function(model){
         if(event.data) { //initialization for a query window
             self.modelManager.newModel("me"); //do not delete cytoscape, only the model
             appUtilities.getActiveChiseInstance().updateGraph(JSON.parse(event.data), function(){
-                self.modelManager.initModel(appUtilities.getActiveCy().nodes(), appUtilities.getActiveCy().edges(), appUtilities, "me");
+                self.modelManager.initModel(appUtilities.getActiveCy().nodes(), appUtilities.getActiveCy().edges(),
+                    appUtilities.getActiveNetworkId(), appUtilities, "me");
                 $("#perform-layout").trigger('click');
 
             });
@@ -354,9 +357,9 @@ app.proto.listenToUIOperations = function(model){
 
 };
 
-app.proto.loadCyFromModel = function(callback){
+app.proto.loadCyFromModel = function(cyId, callback){
     let self = this;
-    let jsonArr = self.modelManager.getJsonFromModel();
+    let jsonArr = self.modelManager.getJsonFromModel(cyId);
 
     if (jsonArr) {
 
@@ -368,7 +371,7 @@ app.proto.loadCyFromModel = function(callback){
             //Update position fields separately
             appUtilities.getActiveCy().nodes().forEach(function(node){
 
-                let position = self.modelManager.getModelNodeAttribute('position',node.id());
+                let position = self.modelManager.getModelNodeAttribute('position',node.id(), cyId, appUtilities.getActiveNetworkId());
 
                 node.position({x:position.x, y: position.y});
 
@@ -403,9 +406,10 @@ app.proto.listenToNodeOperations = function(model){
     //     inspectorUtilities.handleSBGNInspector();
     // });
 
-    model.on('all', '_page.doc.cy.nodes.*', function(id, op, val, prev, passed){
+    model.on('all', '_page.doc.cy.*.nodes.*', function(cyId, id, op, val, prev, passed){
+
         if(docReady &&  !passed.user) {
-            let node  = model.get('_page.doc.cy.nodes.' + id);
+            let node  = model.get('_page.doc.cy.' + cyId + '.nodes.' + id);
             if(!node || !node.id){ //node is deleted
                 appUtilities.getActiveCy().getElementById(id).remove();
             }
@@ -413,19 +417,21 @@ app.proto.listenToNodeOperations = function(model){
     });
 
 
-    model.on('all', '_page.doc.cy.nodes.*.addedLater', function(id, op, idName, prev, passed){ //this property must be something that is only changed during insertion
-
+    model.on('all', '_page.doc.cy.*.nodes.*.addedLater', function(cyId, id, op, idName, prev, passed){ //this property must be something that is only changed during insertion
+        console.log(cyId);
+        console.log(id);
+        console.log(op);
 
         if(docReady && !passed.user) {
-            let pos = model.get('_page.doc.cy.nodes.'+ id + '.position');
-            let sbgnclass = model.get('_page.doc.cy.nodes.'+ id + '.data.class');
-            let visibility = model.get('_page.doc.cy.nodes.'+ id + '.visibility');
-            let parent = model.get('_page.doc.cy.nodes.'+ id + '.data.parent');
+            let pos = model.get('_page.doc.cy.' + cyId +'.nodes.'+ id + '.position');
+            let sbgnclass = model.get('_page.doc.cy.' + + cyId +'.nodes.'+ id + '.data.class');
+            let visibility = model.get('_page.doc.cy.' + cyId + '.nodes.'+ id + '.visibility');
+            let parent = model.get('_page.doc.cy.'+ cyId +'.nodes.'+ id + '.data.parent');
 
             if(parent === undefined) parent = null;
             let newNode = appUtilities.getActiveChiseInstance().elementUtilities.addNode(pos.x, pos.y, sbgnclass, id, parent, visibility);
 
-            self.modelManager.initModelNode(newNode,"me", true);
+            self.modelManager.initModelNode(newNode,cyId, "me", true);
 
             let parentEl = appUtilities.getActiveCy().getElementById(parent);
             newNode.move({"parent":parentEl});
@@ -434,7 +440,10 @@ app.proto.listenToNodeOperations = function(model){
         }
     });
 
-    model.on('all', '_page.doc.cy.nodes.*.position', function(id, op, pos,prev, passed){
+    model.on('all', '_page.doc.cy.*.nodes.*.position', function(cyId, id, op, pos,prev, passed){
+
+
+
         if(docReady && !passed.user && appUtilities.getActiveCy().getElementById(id).length>0) {
 
             let posDiff = {x: (pos.x - appUtilities.getActiveCy().getElementById(id).position("x")), y:(pos.y - appUtilities.getActiveCy().getElementById(id).position("y"))} ;
@@ -445,7 +454,7 @@ app.proto.listenToNodeOperations = function(model){
         }
     });
 
-    model.on('all', '_page.doc.cy.nodes.*.highlightColor', function(id, op, val,prev, passed){
+    model.on('all', '_page.doc.cy.*.nodes.*.highlightColor', function(cyId, id, op, val,prev, passed){
         //call it here so that everyone can highlight their own textbox
         self.factoidHandler.highlightSentenceInText(id, val);
 
@@ -472,7 +481,7 @@ app.proto.listenToNodeOperations = function(model){
     });
 
     //Called by agents to change bbox
-    model.on('all', '_page.doc.cy.nodes.*.data.bbox.*', function(id, att, op, val,prev, passed){
+    model.on('all', '_page.doc.cy.*.nodes.*.data.bbox.*', function(cyId, id, att, op, val,prev, passed){
         if(docReady && !passed.user && appUtilities.getActiveCy().getElementById(id).length>0) {
             let newAtt = appUtilities.getActiveCy().getElementById(id).data("bbox");
             newAtt[att] = val;
@@ -484,7 +493,7 @@ app.proto.listenToNodeOperations = function(model){
 
 
     //Called by agents to change specific properties of data
-    model.on('all', '_page.doc.cy.nodes.*.data.*', function(id, att, op, val,prev, passed){
+    model.on('all', '_page.doc.cy.*.nodes.*.data.*', function(cyId, id, att, op, val,prev, passed){
         if(docReady && !passed.user && appUtilities.getActiveCy().getElementById(id).length>0) {
             appUtilities.getActiveCy().getElementById(id).data(att, val);
             if(att === "parent")
@@ -493,7 +502,7 @@ app.proto.listenToNodeOperations = function(model){
     });
 
 
-    model.on('all', '_page.doc.cy.nodes.*.data', function(id,  op, data,prev, passed){
+    model.on('all', '_page.doc.cy.*.nodes.*.data', function(cyId, id,  op, data,prev, passed){
         if(docReady && !passed.user && appUtilities.getActiveCy().getElementById(id).length>0) {
             appUtilities.getActiveCy().getElementById(id)._private.data = data;
 
@@ -509,7 +518,7 @@ app.proto.listenToNodeOperations = function(model){
 
 
 
-    model.on('all', '_page.doc.cy.nodes.*.expandCollapseStatus', function(id, op, val,prev, passed){
+    model.on('all', '_page.doc.cy.*.nodes.*.expandCollapseStatus', function(cyId, id, op, val,prev, passed){
         if(docReady && !passed.user && appUtilities.getActiveCy().getElementById(id).length>0) {
             let expandCollapse = appUtilities.getActiveCy().expandCollapse('get'); //we can't call chise.expand or collapse directly as it causes infinite calls
             if(val === "collapse")
@@ -520,7 +529,7 @@ app.proto.listenToNodeOperations = function(model){
     });
 
 
-    model.on('all', '_page.doc.cy.nodes.*.highlightStatus', function(id, op, highlightStatus, prev, passed){ //this property must be something that is only changed during insertion
+    model.on('all', '_page.doc.cy.*.nodes.*.highlightStatus', function(cyId, id, op, highlightStatus, prev, passed){ //this property must be something that is only changed during insertion
         if(docReady && !passed.user && appUtilities.getActiveCy().getElementById(id).length>0) {
             try{
                 let viewUtilities = appUtilities.getActiveCy().viewUtilities('get');
@@ -539,7 +548,7 @@ app.proto.listenToNodeOperations = function(model){
         }
     });
 
-    model.on('all', '_page.doc.cy.nodes.*.visibilityStatus', function(id, op, visibilityStatus, prev, passed){ //this property must be something that is only changed during insertion
+    model.on('all', '_page.doc.cy.*.nodes.*.visibilityStatus', function(cyId, id, op, visibilityStatus, prev, passed){ //this property must be something that is only changed during insertion
         if(docReady && !passed.user && appUtilities.getActiveCy().getElementById(id).length>0) {
             try{
                 let viewUtilities = appUtilities.getActiveCy().viewUtilities('get');
@@ -575,7 +584,7 @@ app.proto.listenToEdgeOperations = function(model){
     // });
 
 
-    model.on('all', '_page.doc.cy.edges.*.highlightColor', function(id, op, val,prev, passed){
+    model.on('all', '_page.doc.cy.*.edges.*.highlightColor', function(cyId, id, op, val,prev, passed){
         if(docReady && !passed.user && appUtilities.getActiveCy().getElementById(id).length>0) {
             if(val == null){
                 appUtilities.getActiveCy().getElementById(id).css({
@@ -594,9 +603,9 @@ app.proto.listenToEdgeOperations = function(model){
         }
     });
 
-    model.on('all', '_page.doc.cy.edges.*', function(id, op, val, prev, passed){
+    model.on('all', '_page.doc.cy.*.edges.*', function(cyId, id, op, val, prev, passed){
         if(docReady &&  !passed.user && appUtilities.getActiveCy().getElementById(id).length>0) {
-            let edge  = model.get('_page.doc.appUtilities.getActiveCy().edges.' + id); //check
+            let edge  = model.get('_page.doc.cy.' + cyId +'.edges.' + id); //check
 
             if(!edge|| !edge.id){ //edge is deleted
                 appUtilities.getActiveCy().getElementById(id).remove();
@@ -605,19 +614,19 @@ app.proto.listenToEdgeOperations = function(model){
         }
     });
 
-    model.on('all', '_page.doc.cy.edges.*.addedLater', function(id,op, idName, prev, passed){//this property must be something that is only changed during insertion
+    model.on('all', '_page.doc.cy.*.edges.*.addedLater', function(cyId, id,op, idName, prev, passed){//this property must be something that is only changed during insertion
         if(docReady && !passed.user ){
-            let source = model.get('_page.doc.cy.edges.'+ id + '.data.source');
-            let target = model.get('_page.doc.cy.edges.'+ id + '.data.target');
-            let sbgnclass = model.get('_page.doc.cy.edges.'+ id + '.data.class');
-            let visibility = model.get('_page.doc.cy.nodes.'+ id + '.visibility');
+            let source = model.get('_page.doc.cy.'+ cyId +'.edges.'+ id + '.data.source');
+            let target = model.get('_page.doc.cy.'+ cyId +'.edges.'+ id + '.data.target');
+            let sbgnclass = model.get('_page.doc.cy.'+ cyId +'.edges.'+ id + '.data.class');
+            let visibility = model.get('_page.doc.cy.' + cyId +'.nodes.'+ id + '.visibility');
             let newEdge = appUtilities.getActiveChiseInstance().elementUtilities.addEdge(source, target, sbgnclass, id, visibility);
 
-            self.modelManager.initModelEdge(newEdge,"me", true);
+            self.modelManager.initModelEdge(newEdge, cyId, "me", true);
         }
     });
 
-    model.on('all', '_page.doc.cy.edges.*.data', function(id, op, data,prev, passed){
+    model.on('all', '_page.doc.cy.*.edges.*.data', function(cyId, id, op, data,prev, passed){
         if(docReady && !passed.user && appUtilities.getActiveCy().getElementById(id).length>0) {
             //appUtilities.getActiveCy().getElementById(id).data(data); //can't call this if cy element does not have a field called "data"
             appUtilities.getActiveCy().getElementById(id)._private.data = data;
@@ -625,12 +634,12 @@ app.proto.listenToEdgeOperations = function(model){
         }
     });
 
-    model.on('all', '_page.doc.cy.edges.*.data.*', function(id, att, op, val,prev, passed){
+    model.on('all', '_page.doc.cy.*.edges.*.data.*', function(cyId, id, att, op, val,prev, passed){
         if(docReady && !passed.user && appUtilities.getActiveCy().getElementById(id).length>0)
             appUtilities.getActiveCy().getElementById(id).data(att, val);
     });
 
-    model.on('all', '_page.doc.cy.edges.*.bendPoints', function(id, op, bendPoints, prev, passed){ //this property must be something that is only changed during insertion
+    model.on('all', '_page.doc.cy.*.edges.*.bendPoints', function(cyId, id, op, bendPoints, prev, passed){ //this property must be something that is only changed during insertion
         if(docReady && !passed.user && appUtilities.getActiveCy().getElementById(id).length>0) {
             try{
                 let edge = appUtilities.getActiveCy().getElementById(id);
@@ -656,7 +665,7 @@ app.proto.listenToEdgeOperations = function(model){
         }
     });
 
-    model.on('all', '_page.doc.cy.edges.*.highlightStatus', function(id, op, highlightStatus, prev, passed){ //this property must be something that is only changed during insertion
+    model.on('all', '_page.doc.cy.*.edges.*.highlightStatus', function(cyId, id, op, highlightStatus, prev, passed){ //this property must be something that is only changed during insertion
         if(docReady && !passed.user && appUtilities.getActiveCy().getElementById(id).length>0) {
             let viewUtilities = appUtilities.getActiveCy().viewUtilities('get');
             try{
@@ -671,7 +680,7 @@ app.proto.listenToEdgeOperations = function(model){
         }
     });
 
-    model.on('all', '_page.doc.cy.edges.*.visibilityStatus', function(id, op, visibilityStatus, prev, passed){ //this property must be something that is only changed during insertion
+    model.on('all', '_page.doc.cy.*.edges.*.visibilityStatus', function(cyId, id, op, visibilityStatus, prev, passed){ //this property must be something that is only changed during insertion
         if(docReady && !passed.user && appUtilities.getActiveCy().getElementById(id).length>0) {
             let viewUtilities = appUtilities.getActiveCy().viewUtilities('get');
             try{
@@ -703,11 +712,11 @@ app.proto.listenToModelOperations = function(model){
     });
 
     //Cy updated by other clients
-    model.on('all', '_page.doc.cy.initTime', function( op, val, prev, passed){
+    model.on('all', '_page.doc.cy.*.initTime', function( cyId, op, val, prev, passed){
 
         if(docReady) {
             if(docReady && !passed.user) {
-                self.loadCyFromModel(function () {
+                self.loadCyFromModel(function (cyId) {
 
                 });
             }

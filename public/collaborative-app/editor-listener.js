@@ -13,8 +13,8 @@ module.exports = function(modelManager, socket, userId){
         console.log("Loading new sample");
         //remove annotations view
 
-        modelManager.newModel("me"); //do not delete cytoscape, only the model
-        modelManager.initModel(appUtilities.getActiveCy().nodes(), appUtilities.getActiveCy().edges(), appUtilities);
+        modelManager.newModel( appUtilities.getActiveNetworkId(), "me"); //do not delete cytoscape, only the model
+        modelManager.initModel(appUtilities.getActiveCy().nodes(), appUtilities.getActiveCy().edges(), appUtilities.getActiveNetworkId(),  appUtilities);
 
     setTimeout(function(){
         appUtilities.getActiveCy().elements().forEach(function(ele){
@@ -56,7 +56,8 @@ module.exports = function(modelManager, socket, userId){
                 ele.data("annotationsView", null);
                 ele._private.data.annotationsView = null;
             });
-            modelManager.initModel(appUtilities.getActiveCy().nodes(), appUtilities.getActiveCy().edges(), appUtilities, "me");
+            modelManager.initModel(appUtilities.getActiveCy().nodes(), appUtilities.getActiveCy().edges(),
+                appUtilities.getActiveNetworkId(), appUtilities, "me");
 
 
 
@@ -81,7 +82,7 @@ module.exports = function(modelManager, socket, userId){
 
     $(document).on("newFile", function (evt) {
         appUtilities.getActiveCy().remove(appUtilities.getActiveCy().elements());
-        modelManager.newModel("me"); //do not delete cytoscape, only the model
+        modelManager.newModel( appUtilities.getActiveNetworkId(), "me"); //do not delete cytoscape, only the model
     });
 
     // $(document).on('updateGraphEnd', function(event) {
@@ -114,7 +115,7 @@ module.exports = function(modelManager, socket, userId){
                 paramList.push(ele.data());
 
             });
-            modelManager.changeModelElementGroupAttribute("data", modelElList, paramList, "me");
+            modelManager.changeModelElementGroupAttribute("data", modelElList, paramList, appUtilities.getActiveNetworkId(), "me");
 
         }
 
@@ -135,7 +136,7 @@ module.exports = function(modelManager, socket, userId){
                 paramList.push(ele.data());
 
             });
-            modelManager.changeModelElementGroupAttribute("data", modelElList, paramList, "me");
+            modelManager.changeModelElementGroupAttribute("data", modelElList, paramList,  appUtilities.getActiveNetworkId(), "me");
 
         }
         else if(actionName === "resize"){
@@ -145,7 +146,7 @@ module.exports = function(modelManager, socket, userId){
             var paramList = [res.node.data()];
 
 
-            modelManager.changeModelElementGroupAttribute("data", modelElList, paramList, "me");
+            modelManager.changeModelElementGroupAttribute("data", modelElList, paramList, appUtilities.getActiveNetworkId(), "me");
         }
 
         else if (actionName === "changeBendPoints") {
@@ -164,7 +165,7 @@ module.exports = function(modelManager, socket, userId){
             console.log(res.edge.data());
             paramList.push({weights: args.edge.data('cyedgebendeditingWeights'), distances:res.edge.data('cyedgebendeditingDistances')});
 
-            modelManager.changeModelElementGroupAttribute("bendPoints", modelElList, paramList, "me");
+            modelManager.changeModelElementGroupAttribute("bendPoints", modelElList, paramList,  appUtilities.getActiveNetworkId(),"me");
 
         }
 
@@ -184,7 +185,7 @@ module.exports = function(modelManager, socket, userId){
                         paramList.push(ele.data());
 
                     });
-                    modelManager.changeModelElementGroupAttribute("data", modelElList, paramList, "me");
+                    modelManager.changeModelElementGroupAttribute("data", modelElList, paramList,  appUtilities.getActiveNetworkId(),"me");
                 }
                 else if(arg.name === 'hideAndPerformLayout' || arg.name === 'hide'){
                     var modelElList = [];
@@ -206,11 +207,11 @@ module.exports = function(modelManager, socket, userId){
                         });
                     }
 
-                    modelManager.changeModelElementGroupAttribute("data", modelElList, paramListData, "me");
+                    modelManager.changeModelElementGroupAttribute("data", modelElList, paramListData, appUtilities.getActiveNetworkId(), "me");
 
 
-                    modelManager.changeModelElementGroupAttribute("visibilityStatus", modelElList, paramList, "me");
-                    modelManager.changeModelElementGroupAttribute("position", modelElList, paramListPos, "me");
+                    modelManager.changeModelElementGroupAttribute("visibilityStatus", modelElList, paramList,  appUtilities.getActiveNetworkId(),"me");
+                    modelManager.changeModelElementGroupAttribute("position", modelElList, paramListPos,  appUtilities.getActiveNetworkId(), "me");
 
                 }
                 else if(arg.name === 'showAndPerformLayout' || arg.name === 'show' ){
@@ -235,9 +236,9 @@ module.exports = function(modelManager, socket, userId){
                         });
                     }
 
-                    modelManager.changeModelElementGroupAttribute("data", modelElList, paramListData, "me");
-                    modelManager.changeModelElementGroupAttribute("visibilityStatus", modelElList, paramList, "me");
-                    modelManager.changeModelElementGroupAttribute("position", modelElList, paramListPos, "me");
+                    modelManager.changeModelElementGroupAttribute("data", modelElList, paramListData,  appUtilities.getActiveNetworkId(),"me");
+                    modelManager.changeModelElementGroupAttribute("visibilityStatus", modelElList, paramList,  appUtilities.getActiveNetworkId(),"me");
+                    modelManager.changeModelElementGroupAttribute("position", modelElList, paramListPos,  appUtilities.getActiveNetworkId(),"me");
 
 
                 }
@@ -255,7 +256,7 @@ module.exports = function(modelManager, socket, userId){
         //
         //     });
         //
-        //     modelManager.changeModelElementGroupAttribute("visibilityStatus", modelElList, paramList, "me");
+        //     modelManager.changeModelElementGroupAttribute("visibilityStatus", modelElList, paramList, appUtilities.getActiveNetworkId(), "me");
         // }
 
         else if (actionName === "highlight") {
@@ -268,7 +269,7 @@ module.exports = function(modelManager, socket, userId){
                 paramList.push("highlighted");
             });
 
-            modelManager.changeModelElementGroupAttribute("highlightStatus", modelElList, paramList, "me");
+            modelManager.changeModelElementGroupAttribute("highlightStatus", modelElList, paramList,  appUtilities.getActiveNetworkId(), "me");
         }
 
         else if(actionName === "removeHighlights"){
@@ -282,7 +283,7 @@ module.exports = function(modelManager, socket, userId){
 
             });
 
-            modelManager.changeModelElementGroupAttribute("highlightStatus", modelElList, paramList, "me");
+            modelManager.changeModelElementGroupAttribute("highlightStatus", modelElList, paramList, appUtilities.getActiveNetworkId(), "me");
 
         }
         else if (actionName === "expand" || actionName === "collapse") {
@@ -294,7 +295,7 @@ module.exports = function(modelManager, socket, userId){
                 paramList.push(actionName);
 
             });
-            modelManager.changeModelElementGroupAttribute("expandCollapseStatus", modelElList, paramList, "me");
+            modelManager.changeModelElementGroupAttribute("expandCollapseStatus", modelElList, paramList,  appUtilities.getActiveNetworkId(),"me");
         }
 
 
@@ -308,7 +309,7 @@ module.exports = function(modelManager, socket, userId){
                 paramList.push(ele.position());
             });
 
-            modelManager.changeModelElementGroupAttribute("position", modelElList, paramList, "me");
+            modelManager.changeModelElementGroupAttribute("position", modelElList, paramList, appUtilities.getActiveNetworkId(), "me");
         }
 
         else if (actionName === "layout") {
@@ -329,8 +330,8 @@ module.exports = function(modelManager, socket, userId){
                     }
                 });
 
-                modelManager.changeModelElementGroupAttribute("position", modelElList, paramList, "me");
-                // modelManager.changeModelElementGroupAttribute("data", modelElList, paramListData, "me"); //bounding boxes may change
+                modelManager.changeModelElementGroupAttribute("position", modelElList, paramList,  appUtilities.getActiveNetworkId(),"me");
+                // modelManager.changeModelElementGroupAttribute("data", modelElList, paramListData, appUtilities.getActiveNetworkId(), "me"); //bounding boxes may change
             // });
         }
 
@@ -348,7 +349,7 @@ module.exports = function(modelManager, socket, userId){
                     edgeList.push({id:el.id()});
             });
 
-            modelManager.deleteModelElementGroup({nodes:nodeList,edges: edgeList}, "me");
+            modelManager.deleteModelElementGroup({nodes:nodeList,edges: edgeList}, appUtilities.getActiveNetworkId(), "me");
         }
 
         else if (actionName === "addNode") {
@@ -357,9 +358,9 @@ module.exports = function(modelManager, socket, userId){
             var id = res.eles.id();
             var param = {position: {x: newNode.x, y: newNode.y}, data:{class: newNode.class, parent: newNode.parent}};
             //Add to the graph first
-            modelManager.addModelNode(id, param, "me");
+            modelManager.addModelNode(id,  appUtilities.getActiveNetworkId(), param, "me");
             //assign other node properties-- css and data
-            modelManager.initModelNode(res.eles[0], "me", true);
+            modelManager.initModelNode(res.eles[0],  appUtilities.getActiveNetworkId(), "me", true);
 
         }
 
@@ -370,9 +371,9 @@ module.exports = function(modelManager, socket, userId){
             //var param = { source: newEdge.source, target:newEdge.target, class: newEdge.class};
             var param = {data:{ source: newEdge.source, target:newEdge.target, class: newEdge.class}};
             //Add to the graph first
-            modelManager.addModelEdge(id, param, "me");
+            modelManager.addModelEdge(id,  appUtilities.getActiveNetworkId(),param, "me");
             //assign other edge properties-- css and data
-            modelManager.initModelEdge(res.eles[0], "me", true);
+            modelManager.initModelEdge(res.eles[0],  appUtilities.getActiveNetworkId(),"me", true);
 
         }
 
@@ -384,17 +385,17 @@ module.exports = function(modelManager, socket, userId){
                     el.data("annotationsView", null);
                     var param = {position: {x: el.position("x"), y: el.position("y")}, data:el.data()};
 
-                    modelManager.addModelNode(el.id(), param, "me");
+                    modelManager.addModelNode(el.id(),  appUtilities.getActiveNetworkId(),param, "me");
 
-                    modelManager.initModelNode(el, "me", true);
+                    modelManager.initModelNode(el,  appUtilities.getActiveNetworkId(), "me", true);
                 }
             });
 
             res.forEach(function(el){ //first add nodes
                 if(el.isEdge()){
                     var param = { source: el.data("source"), target:el.data("target"), class: el.data("class")};
-                    modelManager.addModelEdge(el.id(), param, "me");
-                    modelManager.initModelEdge(el, "me", true);
+                    modelManager.addModelEdge(el.id(),  appUtilities.getActiveNetworkId(),param, "me");
+                    modelManager.initModelEdge(el,  appUtilities.getActiveNetworkId(),"me", true);
                 }
             });
 
@@ -424,8 +425,8 @@ module.exports = function(modelManager, socket, userId){
 
             });
 
-            modelManager.changeModelElementGroupAttribute("data", modelElList, paramListData, "me");
-            modelManager.changeModelElementGroupAttribute("position", modelNodeList, paramListPosition, "me");
+            modelManager.changeModelElementGroupAttribute("data", modelElList, paramListData, appUtilities.getActiveNetworkId(), "me");
+            modelManager.changeModelElementGroupAttribute("position", modelNodeList, paramListPosition,  appUtilities.getActiveNetworkId(),"me");
 
 
         }
@@ -453,10 +454,10 @@ module.exports = function(modelManager, socket, userId){
 
             var compoundAtts = {position:{x: compound.position("x"), y: compound.position("y")}, data:{class:compound.data("class")}};
 
-            modelManager.addModelCompound(compound.id(), compoundAtts, modelElList,paramListData, "me" ); //handles data field update
+            modelManager.addModelCompound(compound.id(), appUtilities.getActiveNetworkId(), compoundAtts, modelElList,paramListData, "me" ); //handles data field update
 
             //assign other node properties-- css and data
-            modelManager.initModelNode(compound,"me", true); //init with default values  -- no history update
+            modelManager.initModelNode(compound,  appUtilities.getActiveNetworkId(),"me", true); //init with default values  -- no history update
 
 
 
@@ -466,31 +467,31 @@ module.exports = function(modelManager, socket, userId){
 
 
     appUtilities.getActiveCy().on("mouseup", "node", function () {
-        modelManager.unselectModelNode(this, "me");
+        modelManager.unselectModelNode(this, appUtilities.getActiveNetworkId(), "me");
     });
 
 
     appUtilities.getActiveCy().on('select', 'node', function (event) { //Necessary for multiple selections
         //console.log(this.id()); //TODO delete later
-        modelManager.selectModelNode(this,  userId, "me");
+        modelManager.selectModelNode(this,   appUtilities.getActiveNetworkId(),userId, "me");
 
     });
 
     appUtilities.getActiveCy().on('unselect', 'node', function () { //causes sync problems in delete op
-        modelManager.unselectModelNode(this, "me");
+        modelManager.unselectModelNode(this,  appUtilities.getActiveNetworkId(),"me");
     });
     appUtilities.getActiveCy().on('grab', 'node', function (event) { //Also works as 'select'
-        modelManager.selectModelNode(this, userId, "me");
+        modelManager.selectModelNode(this,  appUtilities.getActiveNetworkId(),userId, "me");
     });
 
     appUtilities.getActiveCy().on('select', 'edge', function (event) {
         //console.log(this.id()); //TODO delete later
-        modelManager.selectModelEdge(this, userId, "me");
+        modelManager.selectModelEdge(this,  appUtilities.getActiveNetworkId(),userId, "me");
 
     });
 
     appUtilities.getActiveCy().on('unselect', 'edge', function (event) {
-        modelManager.unselectModelEdge(this, "me");
+        modelManager.unselectModelEdge(this,  appUtilities.getActiveNetworkId(),"me");
     });
 
 

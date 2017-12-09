@@ -217,7 +217,8 @@ appUtilities.getNetworkTabSelector = function (networkId) {
 
 // get the string to represent the tab for given network id
 appUtilities.getNetworkTabDesc = function (networkId) {
-  return 'Network #' + networkId;
+  // return 'Network #' + networkId; //FUNDA
+  return '#' +(networkId + 1);
 };
 
 // map given chise instance to the given network id
@@ -477,6 +478,13 @@ appUtilities.createPhysicalNetworkComponents = function (panelId, tabId, tabDesc
 
   // create new tab inside the list of network tabs
   tabsList.append(newTabStr);
+};
+
+//FUNDA
+appUtilities.getActiveNetworkId = function(){
+    if(this.networkIdsStack.length  <= 0 )
+        return 0;
+    return this.networkIdsStack[this.networkIdsStack.length - 1];
 };
 
 // basically get the active chise instance
