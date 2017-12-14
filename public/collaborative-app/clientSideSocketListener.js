@@ -338,7 +338,7 @@ module.exports =  function(app) {
                 let newJson = appUtilities.getActiveChiseInstance().convertSbgnmlTextToJson(data.graph);
                 if(!data.cyId)
                     data.cyId = appUtilities.getActiveNetworkId();
-                self.mergeJsonWithCurrent(newJson, data.cyId,  callback);
+                self.mergeJsonWithCurrent(newJson, data.cyId,  app.modelManager, callback);
 
             });
 
@@ -346,26 +346,26 @@ module.exports =  function(app) {
 
                 if(!data.cyId)
                     data.cyId = appUtilities.getActiveNetworkId();
-                self.mergeJsonWithCurrent(data.graph, data.cyId, callback);
+                self.mergeJsonWithCurrent(data.graph, data.cyId, app.modelManager, callback);
             });
         },
 
 
         //Merge an array of json objects with the json of the current sbgn network
         //on display to output a single json object.
-        mergeJsonWithCurrent: function (jsonGraph, cyId, callback) {
+        mergeJsonWithCurrent: function (jsonGraph, cyId, modelManager, callback) {
             let currJson = appUtilities.getActiveChiseInstance().createJson();
-            app.modelManager.setRollbackPoint(cyId); //before merging.. for undo
+            modelManager.setRollbackPoint(cyId); //before merging.. for undo
 
             let jsonObj = jsonMerger.mergeJsonWithCurrent(jsonGraph, currJson);
 
             //get another sbgncontainer and display the new SBGN model.
-            app.modelManager.newModel(cyId, "me", true);
+            modelManager.newModel(cyId, "me", true);
 
             //this takes a while so wait before initiating the model
             appUtilities.getActiveChiseInstance().updateGraph(jsonObj, function () {
 
-                app.modelManager.initModel(appUtilities.getActiveCy().nodes(), appUtilities.getActiveCy().edges(), cyId, appUtilities, "me");
+                modelManager.initModel(appUtilities.getActiveCy().nodes(), appUtilities.getActiveCy().edges(), cyId, appUtilities, "me");
 
                 //select the new graph
                 jsonGraph.nodes.forEach(function (node) {
@@ -378,7 +378,7 @@ module.exports =  function(app) {
 
                 // Call merge notification after the layout
                 setTimeout(function () {
-                    app.modelManager.mergeJsons(cyId, "me", true);
+                    modelManager.mergeJsons(cyId, "me", true);
                     if (callback) callback("success");
                 }, 1000);
 
