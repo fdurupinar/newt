@@ -2,7 +2,8 @@
  * Created by durupina on 11/14/16.
  * Human listens to agent socket and performs menu operations requested by the agent
 */
-let jsonMerger = require('./merger/json-merger.js');
+
+let modelMerger = require('./model-merge-functions.js');
 
 module.exports =  function(app) {
 
@@ -338,7 +339,8 @@ module.exports =  function(app) {
                 let newJson = appUtilities.getActiveChiseInstance().convertSbgnmlTextToJson(data.graph);
                 if(!data.cyId)
                     data.cyId = appUtilities.getActiveNetworkId();
-                self.mergeJsonWithCurrent(newJson, data.cyId,  app.modelManager, callback);
+                // self.mergeJsonWithCurrent(newJson, data.cyId,  app.modelManager, callback);
+                modelMerger.mergeJsonWithCurrent(data.graph, data.cyId, app.modelManager, callback);
 
             });
 
@@ -346,44 +348,13 @@ module.exports =  function(app) {
 
                 if(!data.cyId)
                     data.cyId = appUtilities.getActiveNetworkId();
-                self.mergeJsonWithCurrent(data.graph, data.cyId, app.modelManager, callback);
+                modelMerger.mergeJsonWithCurrent(data.graph, data.cyId, app.modelManager, callback);
+                // self.mergeJsonWithCurrent(data.graph, data.cyId, app.modelManager, callback);
             });
         },
 
 
-        //Merge an array of json objects with the json of the current sbgn network
-        //on display to output a single json object.
-        mergeJsonWithCurrent: function (jsonGraph, cyId, modelManager, callback) {
-            let currJson = appUtilities.getActiveChiseInstance().createJson();
-            modelManager.setRollbackPoint(cyId); //before merging.. for undo
 
-            let jsonObj = jsonMerger.mergeJsonWithCurrent(jsonGraph, currJson);
-
-            //get another sbgncontainer and display the new SBGN model.
-            modelManager.newModel(cyId, "me", true);
-
-            //this takes a while so wait before initiating the model
-            appUtilities.getActiveChiseInstance().updateGraph(jsonObj, function () {
-
-                modelManager.initModel(appUtilities.getActiveCy().nodes(), appUtilities.getActiveCy().edges(), cyId, appUtilities, "me");
-
-                //select the new graph
-                jsonGraph.nodes.forEach(function (node) {
-                    appUtilities.getActiveCy().getElementById(node.data.id).select();
-                });
-
-                $("#perform-layout").trigger('click');
-
-                appUtilities.getActiveCy().elements().unselect();
-
-                // Call merge notification after the layout
-                setTimeout(function () {
-                    modelManager.mergeJsons(cyId, "me", true);
-                    if (callback) callback("success");
-                }, 1000);
-
-            });
-        },
 
         newFile: function(data, cyId,  callback){
             try {
