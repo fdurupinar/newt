@@ -276,36 +276,49 @@ appUtilities.getChiseInstance = function (key) {
 // If there is just one network then network tabs should not be rendered.
 // This function is to adjust that.
 appUtilities.adjustVisibilityOfNetworkTabs = function () {
-
-  var tabsContainer = $('#network-tabs-list');
-
-  // if there is just one tab hide tabs container else show it
-  if ( this.networkIdsStack.length === 1 ) {
-    tabsContainer.hide();
-  }
-  else {
-    tabsContainer.show();
-  }
+//FUNDA: don't use in cwc
+  // var tabsContainer = $('#network-tabs-list');
+  //
+  // // if there is just one tab hide tabs container else show it
+  // if ( this.networkIdsStack.length === 1 ) {
+  //   tabsContainer.hide();
+  // }
+  // else {
+  //   tabsContainer.show();
+  // }
 
 };
 
+appUtilities.getCyInstance = function(key){
+    let chiseInst = this.getChiseInstance(key);
+
+    return chiseInst.getCy();
+
+}
+
+//FUNDA changed all of it
 // creates a new network and returns the new chise.js instance that is created for this network
-appUtilities.createNewNetwork = function () {
+appUtilities.createNewNetwork = function (networkIdParam) {
+
+    let networkId = appUtilities.nextNetworkId;
+    if(networkIdParam)
+        networkId = networkIdParam;
+
 
   // id of the div panel associated with the new network
-  var networkPanelId = appUtilities.getNetworkPanelId(appUtilities.nextNetworkId);
+  var networkPanelId = appUtilities.getNetworkPanelId(networkId);
 
   // id of the tab for the new network
-  var networkTabId = appUtilities.getNetworkTabId(appUtilities.nextNetworkId);
+  var networkTabId = appUtilities.getNetworkTabId(networkId);
 
   // string to represent the new tab
-  var networkTabDesc = appUtilities.getNetworkTabDesc(appUtilities.nextNetworkId);
+  var networkTabDesc = appUtilities.getNetworkTabDesc(networkId);
 
   // create physical html components for the new network
   appUtilities.createPhysicalNetworkComponents(networkPanelId, networkTabId, networkTabDesc);
 
   // generate network panel selector from the network panel id
-  var networkPanelSelector = appUtilities.getNetworkPanelSelector(appUtilities.nextNetworkId);
+  var networkPanelSelector = appUtilities.getNetworkPanelSelector(networkId);
 
   // initialize current properties for the new instance by copying the default properties
   var currentLayoutProperties = jquery.extend(true, {}, appUtilities.defaultLayoutProperties);
@@ -359,6 +372,9 @@ appUtilities.createNewNetwork = function () {
     undoableDrag: function() {
       return appUtilities.ctrlKeyDown !== true;
     }
+
+
+
   });
 
   // set scracth pad of the related cy instance with these properties
@@ -377,19 +393,19 @@ appUtilities.createNewNetwork = function () {
   modeHandler.initModeProperties(newInst.getCy());
 
   // maintain networkIdToChiseInstance map
-  appUtilities.putToChiseInstances(appUtilities.nextNetworkId, newInst);
+  appUtilities.putToChiseInstances(networkId, newInst);
 
   // push network id to the top of network ids stack
-  this.networkIdsStack.push(appUtilities.nextNetworkId);
+  this.networkIdsStack.push(networkId);
 
   // if this is the first network to be created set it as active network here
   // otherwise it will be activated (by listening html events) when the new tab is choosen
-  if (appUtilities.nextNetworkId === 0) {
-    appUtilities.setActiveNetwork(appUtilities.nextNetworkId);
+  if (networkId === 0) {
+    appUtilities.setActiveNetwork(networkId);
   }
 
   // physically open the new tab
-  appUtilities.chooseNetworkTab(appUtilities.nextNetworkId);
+  appUtilities.chooseNetworkTab(networkId);
 
   // resize html components according to the window size
   appUtilities.dynamicResize();
@@ -401,10 +417,18 @@ appUtilities.createNewNetwork = function () {
   }
 
   // increment new network id
-  appUtilities.nextNetworkId++;
+    
+    // appUtilities.nextNetworkId++;
+    appUtilities.nextNetworkId = networkId + 1;
+
 
   // adjust the visibility of network tabs
   appUtilities.adjustVisibilityOfNetworkTabs();
+
+
+
+    //FUNDA
+    $(document).trigger('createNewNetwork', [newInst.getCy(), networkId]);
 
   // return the new instance
   return newInst;
@@ -440,7 +464,11 @@ appUtilities.closeActiveNetwork = function () {
   }
 
   // adjust the visibility of network tabs
-  this.adjustVisibilityOfNetworkTabs();
+   this.adjustVisibilityOfNetworkTabs();
+
+
+    //FUNDA
+    $(document).trigger('closeActiveNetwork', activeNetworkId);
 
 };
 

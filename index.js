@@ -223,18 +223,29 @@ app.proto.create = function (model) {
 
 
     //Loading cytoscape and clients
+    //TODO: remove isquyerywindow and do queries in a new tab
     if(!self.isQueryWindow()) { //initialization for a regular window
-        let cyId = appUtilities.getActiveNetworkId();
-        self.loadCyFromModel(cyId, function(isModelEmpty){
-            if (isModelEmpty)
-                self.modelManager.initModel(appUtilities.getActiveCy().nodes(), appUtilities.getActiveCy().edges(),
-                    cyId, appUtilities, "me");
-            else
-                self.notyView.close();
+
+        let cyIds = self.modelManager.getCyIds();
+
+        cyIds.forEach(function(cyId) {
+            if(parseInt(cyId) !== parseInt(appUtilities.getActiveNetworkId())) //tab 0: initial tab
+                appUtilities.createNewNetwork(parseInt(cyId)); //opens a new tab
+            self.loadCyFromModel(cyId, function (isModelEmpty) {
+            });
         });
+
+        if(cyIds.length === 0) //no previous model -- first time loading the document
+            self.modelManager.openCy(appUtilities.getActiveNetworkId(), "me");
+
+        self.notyView.close();
     }
 
+
     self.editorListener = require('./public/collaborative-app/editor-listener.js')(self.modelManager,self.socket, id);
+    //HACK: This is normally called when a new network is created, but the initial network is created before editor-listener
+    //Lets editor-listener to subscribe to UI operations
+    $(document).trigger('createNewNetwork', [appUtilities.getActiveCy(), appUtilities.getActiveNetworkId()]);
 
     this.atBottom = true;
 
@@ -269,11 +280,9 @@ app.proto.create = function (model) {
  * @param model
  */
 app.proto.init = function (model) {
-
     this.listenToNodeOperations(model);
     this.listenToEdgeOperations(model);
     this.listenToModelOperations(model);
-
 };
 
 /***
@@ -341,18 +350,19 @@ app.proto.listenToUIOperations = function(model){
 
 
     // //If we get a message on a separate window
-    window.addEventListener('message', function(event) {
-        if(event.data) { //initialization for a query window
-            self.modelManager.newModel("me"); //do not delete cytoscape, only the model
-            appUtilities.getActiveChiseInstance().updateGraph(JSON.parse(event.data), function(){
-                self.modelManager.initModel(appUtilities.getActiveCy().nodes(), appUtilities.getActiveCy().edges(),
-                    appUtilities.getActiveNetworkId(), appUtilities, "me");
-                $("#perform-layout").trigger('click');
-
-            });
-        }
-
-    }, false);
+    //TODO: this will be done in a new tab
+    // window.addEventListener('message', function(event) {
+    //     if(event.data) { //initialization for a query window
+    //         self.modelManager.newModel("me"); //do not delete cytoscape, only the model
+    //         appUtilities.getActiveChiseInstance().updateGraph(JSON.parse(event.data), function(){
+    //             self.modelManager.initModel(appUtilities.getActiveCy().nodes(), appUtilities.getActiveCy().edges(),
+    //                 appUtilities.getActiveNetworkId(), appUtilities, "me");
+    //             $("#perform-layout").trigger('click');
+    //
+    //         });
+    //     }
+    //
+    // }, false);
 
 
 };
@@ -364,25 +374,22 @@ app.proto.loadCyFromModel = function(cyId, callback){
     if (jsonArr) {
 
         //Updates data fields and sets style fields to default
-        appUtilities.getActiveChiseInstance().updateGraph({
+        appUtilities.getChiseInstance(parseInt(cyId)).updateGraph({
             nodes: jsonArr.nodes,
             edges: jsonArr.edges
         }, function(){
             //Update position fields separately
-            appUtilities.getActiveCy().nodes().forEach(function(node){
+            appUtilities.getCyInstance(parseInt(cyId)).nodes().forEach(function(node){
 
-                let position = self.modelManager.getModelNodeAttribute('position',node.id(), cyId, appUtilities.getActiveNetworkId());
+                let position = self.modelManager.getModelNodeAttribute('position',node.id(), cyId);
 
                 node.position({x:position.x, y: position.y});
 
             });
 
             let container = $('#canvas-tab-area');
-            appUtilities.getActiveCy().zoom(2);
-            appUtilities.getActiveCy().pan({x:container.width()/2, y:container.height()/2});
-            //reset to the center
-            // appUtilities.getActiveCy().panzoom().reset();
-            // appUtilities.getActiveCy().panzoom().fit();
+            appUtilities.getCyInstance(parseInt(cyId)).zoom(2);
+            appUtilities.getCyInstance(parseInt(cyId)).pan({x:container.width()/2, y:container.height()/2});
 
 
             if(callback) callback(false);
@@ -411,7 +418,7 @@ app.proto.listenToNodeOperations = function(model){
         if(docReady &&  !passed.user) {
             let node  = model.get('_page.doc.cy.' + cyId + '.nodes.' + id);
             if(!node || !node.id){ //node is deleted
-                appUtilities.getActiveCy().getElementById(id).remove();
+                appUtilities.getCyInstance(parseInt(cyId)).getElementById(id).remove();
             }
         }
     });
@@ -429,11 +436,11 @@ app.proto.listenToNodeOperations = function(model){
             let parent = model.get('_page.doc.cy.'+ cyId +'.nodes.'+ id + '.data.parent');
 
             if(parent === undefined) parent = null;
-            let newNode = appUtilities.getActiveChiseInstance().elementUtilities.addNode(pos.x, pos.y, sbgnclass, id, parent, visibility);
+            let newNode = appUtilities.getChiseInstance(parseInt(cyId)).elementUtilities.addNode(pos.x, pos.y, sbgnclass, id, parent, visibility);
 
             self.modelManager.initModelNode(newNode,cyId, "me", true);
 
-            let parentEl = appUtilities.getActiveCy().getElementById(parent);
+            let parentEl = appUtilities.getCyInstance(parseInt(cyId)).getElementById(parent);
             newNode.move({"parent":parentEl});
 
 
@@ -444,12 +451,15 @@ app.proto.listenToNodeOperations = function(model){
 
 
 
-        if(docReady && !passed.user && appUtilities.getActiveCy().getElementById(id).length>0) {
+        if(docReady && !passed.user && appUtilities.getCyInstance(parseInt(cyId)).getElementById(id).length>0) {
 
-            let posDiff = {x: (pos.x - appUtilities.getActiveCy().getElementById(id).position("x")), y:(pos.y - appUtilities.getActiveCy().getElementById(id).position("y"))} ;
-            moveNodeAndChildren(posDiff, appUtilities.getActiveCy().getElementById(id)); //children need to be updated manually here
+            let posDiff = {x: (pos.x - appUtilities.getCyInstance(parseInt(cyId)).getElementById(id).position("x")), y:(pos.y - appUtilities.getCyInstance(parseInt(cyId)).getElementById(id).position("y"))} ;
+            moveNodeAndChildren(posDiff, appUtilities.getCyInstance(parseInt(cyId)).getElementById(id)); //children need to be updated manually here
+
+
+            console.log("cy: " + cyId + " " + id);
             //parent as well
-            // appUtilities.getActiveCy().panzoom().fit();
+            // appUtilities.getCyInstance(parseInt(cyId)).panzoom().fit();
 
         }
     });
@@ -458,34 +468,34 @@ app.proto.listenToNodeOperations = function(model){
         //call it here so that everyone can highlight their own textbox
         self.factoidHandler.highlightSentenceInText(id, val);
 
-        if(docReady && !passed.user && appUtilities.getActiveCy().getElementById(id).length>0) {
+        if(docReady && !passed.user && appUtilities.getCyInstance(parseInt(cyId)).getElementById(id).length>0) {
             if(!val){
-                appUtilities.getActiveCy().getElementById(id).css({
+                appUtilities.getCyInstance(parseInt(cyId)).getElementById(id).css({
                     "overlay-color": null,
                     "overlay-padding": 10,
                     "overlay-opacity": 0
                 });
 
-                console.log("Updated overlay color tp " + appUtilities.getActiveCy().getElementById().css("overlay-color"));
+                console.log("Updated overlay color tp " + appUtilities.getCyInstance(parseInt(cyId)).getElementById().css("overlay-color"));
                 console.log("Updated overlay color tp " + id);
             }
             else {
-                appUtilities.getActiveCy().getElementById(id).css({
+                appUtilities.getCyInstance(parseInt(cyId)).getElementById(id).css({
                     "overlay-color": val,
                     "overlay-padding": 10,
                     "overlay-opacity": 0.25
                 });
             }
-            appUtilities.getActiveCy().getElementById(id).updateStyle();
+            appUtilities.getCyInstance(parseInt(cyId)).getElementById(id).updateStyle();
         }
     });
 
     //Called by agents to change bbox
     model.on('all', '_page.doc.cy.*.nodes.*.data.bbox.*', function(cyId, id, att, op, val,prev, passed){
-        if(docReady && !passed.user && appUtilities.getActiveCy().getElementById(id).length>0) {
-            let newAtt = appUtilities.getActiveCy().getElementById(id).data("bbox");
+        if(docReady && !passed.user && appUtilities.getCyInstance(parseInt(cyId)).getElementById(id).length>0) {
+            let newAtt = appUtilities.getCyInstance(parseInt(cyId)).getElementById(id).data("bbox");
             newAtt[att] = val;
-            appUtilities.getActiveCy().getElementById(id).data("bbox", newAtt);
+            appUtilities.getCyInstance(parseInt(cyId)).getElementById(id).data("bbox", newAtt);
         }
     });
 
@@ -494,52 +504,52 @@ app.proto.listenToNodeOperations = function(model){
 
     //Called by agents to change specific properties of data
     model.on('all', '_page.doc.cy.*.nodes.*.data.*', function(cyId, id, att, op, val,prev, passed){
-        if(docReady && !passed.user && appUtilities.getActiveCy().getElementById(id).length>0) {
-            appUtilities.getActiveCy().getElementById(id).data(att, val);
+        if(docReady && !passed.user && appUtilities.getCyInstance(parseInt(cyId)).getElementById(id).length>0) {
+            appUtilities.getCyInstance(parseInt(cyId)).getElementById(id).data(att, val);
             if(att === "parent")
-                appUtilities.getActiveCy().getElementById(id).move({"parent":val});
+                appUtilities.getCyInstance(parseInt(cyId)).getElementById(id).move({"parent":val});
         }
     });
 
 
     model.on('all', '_page.doc.cy.*.nodes.*.data', function(cyId, id,  op, data,prev, passed){
-        if(docReady && !passed.user && appUtilities.getActiveCy().getElementById(id).length>0) {
-            appUtilities.getActiveCy().getElementById(id)._private.data = data;
+        if(docReady && !passed.user && appUtilities.getCyInstance(parseInt(cyId)).getElementById(id).length>0) {
+            appUtilities.getCyInstance(parseInt(cyId)).getElementById(id)._private.data = data;
 
             //to update parent
             let newParent = data.parent;
             if(newParent === undefined)
                 newParent = null;  //must be null explicitly
 
-            appUtilities.getActiveCy().getElementById(id).move({"parent":newParent});
-            appUtilities.getActiveCy().getElementById(id).updateStyle();
+            appUtilities.getCyInstance(parseInt(cyId)).getElementById(id).move({"parent":newParent});
+            appUtilities.getCyInstance(parseInt(cyId)).getElementById(id).updateStyle();
         }
     });
 
 
 
     model.on('all', '_page.doc.cy.*.nodes.*.expandCollapseStatus', function(cyId, id, op, val,prev, passed){
-        if(docReady && !passed.user && appUtilities.getActiveCy().getElementById(id).length>0) {
-            let expandCollapse = appUtilities.getActiveCy().expandCollapse('get'); //we can't call chise.expand or collapse directly as it causes infinite calls
+        if(docReady && !passed.user && appUtilities.getCyInstance(parseInt(cyId)).getElementById(id).length>0) {
+            let expandCollapse = appUtilities.getCyInstance(parseInt(cyId)).expandCollapse('get'); //we can't call chise.expand or collapse directly as it causes infinite calls
             if(val === "collapse")
-                expandCollapse.collapse(appUtilities.getActiveCy().getElementById(id));
+                expandCollapse.collapse(appUtilities.getCyInstance(parseInt(cyId)).getElementById(id));
             else
-                expandCollapse.expand(appUtilities.getActiveCy().getElementById(id));
+                expandCollapse.expand(appUtilities.getCyInstance(parseInt(cyId)).getElementById(id));
         }
     });
 
 
     model.on('all', '_page.doc.cy.*.nodes.*.highlightStatus', function(cyId, id, op, highlightStatus, prev, passed){ //this property must be something that is only changed during insertion
-        if(docReady && !passed.user && appUtilities.getActiveCy().getElementById(id).length>0) {
+        if(docReady && !passed.user && appUtilities.getCyInstance(parseInt(cyId)).getElementById(id).length>0) {
             try{
-                let viewUtilities = appUtilities.getActiveCy().viewUtilities('get');
+                let viewUtilities = appUtilities.getCyInstance(parseInt(cyId)).viewUtilities('get');
 
                 if(highlightStatus === "highlighted")
-                    viewUtilities.highlight(appUtilities.getActiveCy().getElementById(id));
+                    viewUtilities.highlight(appUtilities.getCyInstance(parseInt(cyId)).getElementById(id));
                 else
-                    viewUtilities.unhighlight(appUtilities.getActiveCy().getElementById(id));
+                    viewUtilities.unhighlight(appUtilities.getCyInstance(parseInt(cyId)).getElementById(id));
 
-                //    appUtilities.getActiveCy().getElementById(id).updateStyle();
+                //    appUtilities.getCyInstance(parseInt(cyId)).getElementById(id).updateStyle();
             }
             catch(e){
                 console.log(e);
@@ -549,14 +559,14 @@ app.proto.listenToNodeOperations = function(model){
     });
 
     model.on('all', '_page.doc.cy.*.nodes.*.visibilityStatus', function(cyId, id, op, visibilityStatus, prev, passed){ //this property must be something that is only changed during insertion
-        if(docReady && !passed.user && appUtilities.getActiveCy().getElementById(id).length>0) {
+        if(docReady && !passed.user && appUtilities.getCyInstance(parseInt(cyId)).getElementById(id).length>0) {
             try{
-                let viewUtilities = appUtilities.getActiveCy().viewUtilities('get');
+                let viewUtilities = appUtilities.getCyInstance(parseInt(cyId)).viewUtilities('get');
                 if(visibilityStatus === "hide") {
-                    viewUtilities.hide(appUtilities.getActiveCy().getElementById(id));
+                    viewUtilities.hide(appUtilities.getCyInstance(parseInt(cyId)).getElementById(id));
                 }
                 else { //default is show
-                    viewUtilities.show(appUtilities.getActiveCy().getElementById(id));
+                    viewUtilities.show(appUtilities.getCyInstance(parseInt(cyId)).getElementById(id));
                 }
             }
             catch(e){
@@ -585,16 +595,16 @@ app.proto.listenToEdgeOperations = function(model){
 
 
     model.on('all', '_page.doc.cy.*.edges.*.highlightColor', function(cyId, id, op, val,prev, passed){
-        if(docReady && !passed.user && appUtilities.getActiveCy().getElementById(id).length>0) {
+        if(docReady && !passed.user && appUtilities.getCyInstance(parseInt(cyId)).getElementById(id).length>0) {
             if(val == null){
-                appUtilities.getActiveCy().getElementById(id).css({
+                appUtilities.getCyInstance(parseInt(cyId)).getElementById(id).css({
                     "overlay-color": null,
                     "overlay-padding": 10,
                     "overlay-opacity": 0
                 });
             }
             else {
-                appUtilities.getActiveCy().getElementById(id).css({
+                appUtilities.getCyInstance(parseInt(cyId)).getElementById(id).css({
                     "overlay-color": val,
                     "overlay-padding": 10,
                     "overlay-opacity": 0.25
@@ -604,11 +614,11 @@ app.proto.listenToEdgeOperations = function(model){
     });
 
     model.on('all', '_page.doc.cy.*.edges.*', function(cyId, id, op, val, prev, passed){
-        if(docReady &&  !passed.user && appUtilities.getActiveCy().getElementById(id).length>0) {
+        if(docReady &&  !passed.user && appUtilities.getCyInstance(parseInt(cyId)).getElementById(id).length>0) {
             let edge  = model.get('_page.doc.cy.' + cyId +'.edges.' + id); //check
 
             if(!edge|| !edge.id){ //edge is deleted
-                appUtilities.getActiveCy().getElementById(id).remove();
+                appUtilities.getCyInstance(parseInt(cyId)).getElementById(id).remove();
 
             }
         }
@@ -627,22 +637,22 @@ app.proto.listenToEdgeOperations = function(model){
     });
 
     model.on('all', '_page.doc.cy.*.edges.*.data', function(cyId, id, op, data,prev, passed){
-        if(docReady && !passed.user && appUtilities.getActiveCy().getElementById(id).length>0) {
-            //appUtilities.getActiveCy().getElementById(id).data(data); //can't call this if cy element does not have a field called "data"
-            appUtilities.getActiveCy().getElementById(id)._private.data = data;
-            appUtilities.getActiveCy().getElementById(id).updateStyle();
+        if(docReady && !passed.user && appUtilities.getCyInstance(parseInt(cyId)).getElementById(id).length>0) {
+            //appUtilities.getCyInstance(parseInt(cyId)).getElementById(id).data(data); //can't call this if cy element does not have a field called "data"
+            appUtilities.getCyInstance(parseInt(cyId)).getElementById(id)._private.data = data;
+            appUtilities.getCyInstance(parseInt(cyId)).getElementById(id).updateStyle();
         }
     });
 
     model.on('all', '_page.doc.cy.*.edges.*.data.*', function(cyId, id, att, op, val,prev, passed){
-        if(docReady && !passed.user && appUtilities.getActiveCy().getElementById(id).length>0)
-            appUtilities.getActiveCy().getElementById(id).data(att, val);
+        if(docReady && !passed.user && appUtilities.getCyInstance(parseInt(cyId)).getElementById(id).length>0)
+            appUtilities.getCyInstance(parseInt(cyId)).getElementById(id).data(att, val);
     });
 
     model.on('all', '_page.doc.cy.*.edges.*.bendPoints', function(cyId, id, op, bendPoints, prev, passed){ //this property must be something that is only changed during insertion
-        if(docReady && !passed.user && appUtilities.getActiveCy().getElementById(id).length>0) {
+        if(docReady && !passed.user && appUtilities.getCyInstance(parseInt(cyId)).getElementById(id).length>0) {
             try{
-                let edge = appUtilities.getActiveCy().getElementById(id);
+                let edge = appUtilities.getCyInstance(parseInt(cyId)).getElementById(id);
                 if(bendPoints.weights && bendPoints.weights.length > 0) {
                     edge.data('cyedgebendeditingWeights', bendPoints.weights);
                     edge.data('cyedgebendeditingDistances', bendPoints.distances);
@@ -655,7 +665,7 @@ app.proto.listenToEdgeOperations = function(model){
                 }
 
                 edge.trigger('cyedgebendediting.changeBendPoints');
-             //   appUtilities.getActiveCy().getElementById(id).updateStyle();
+             //   appUtilities.getCyInstance(parseInt(cyId)).getElementById(id).updateStyle();
 
             }
             catch(e){
@@ -666,13 +676,13 @@ app.proto.listenToEdgeOperations = function(model){
     });
 
     model.on('all', '_page.doc.cy.*.edges.*.highlightStatus', function(cyId, id, op, highlightStatus, prev, passed){ //this property must be something that is only changed during insertion
-        if(docReady && !passed.user && appUtilities.getActiveCy().getElementById(id).length>0) {
-            let viewUtilities = appUtilities.getActiveCy().viewUtilities('get');
+        if(docReady && !passed.user && appUtilities.getCyInstance(parseInt(cyId)).getElementById(id).length>0) {
+            let viewUtilities = appUtilities.getCyInstance(parseInt(cyId)).viewUtilities('get');
             try{
                 if(highlightStatus === "highlighted")
-                    viewUtilities.highlight(appUtilities.getActiveCy().getElementById(id));
+                    viewUtilities.highlight(appUtilities.getCyInstance(parseInt(cyId)).getElementById(id));
                 else
-                    viewUtilities.unhighlight(appUtilities.getActiveCy().getElementById(id));
+                    viewUtilities.unhighlight(appUtilities.getCyInstance(parseInt(cyId)).getElementById(id));
             }
             catch(e){
                 console.log(e);
@@ -681,13 +691,13 @@ app.proto.listenToEdgeOperations = function(model){
     });
 
     model.on('all', '_page.doc.cy.*.edges.*.visibilityStatus', function(cyId, id, op, visibilityStatus, prev, passed){ //this property must be something that is only changed during insertion
-        if(docReady && !passed.user && appUtilities.getActiveCy().getElementById(id).length>0) {
-            let viewUtilities = appUtilities.getActiveCy().viewUtilities('get');
+        if(docReady && !passed.user && appUtilities.getCyInstance(parseInt(cyId)).getElementById(id).length>0) {
+            let viewUtilities = appUtilities.getCyInstance(parseInt(cyId)).viewUtilities('get');
             try{
                 if(visibilityStatus === "hide")
-                    viewUtilities.hide(appUtilities.getActiveCy().getElementById(id));
+                    viewUtilities.hide(appUtilities.getCyInstance(parseInt(cyId)).getElementById(id));
                 else
-                    viewUtilities.show(appUtilities.getActiveCy().getElementById(id));
+                    viewUtilities.show(appUtilities.getCyInstance(parseInt(cyId)).getElementById(id));
             }
             catch(e){
                 console.log(e);
@@ -710,6 +720,40 @@ app.proto.listenToModelOperations = function(model){
             self.factoidHandler.setFactoidModel(val);
         }
     });
+
+
+    //A new tab is open
+    model.on('all', '_page.doc.cy.**', function( val, op, cyId, prev, passed){
+
+        if(docReady && !passed.user && op === 'insert')
+            appUtilities.createNewNetwork(cyId);
+
+    });
+
+    //Tab is closed by another client
+    model.on('all', '_page.doc.closedCy', function(  op, cyId, prev, passed){
+
+        if(docReady) {
+            if(docReady && !passed.user) {
+                appUtilities.setActiveNetwork(cyId);
+                appUtilities.closeActiveNetwork();
+
+            }
+        }
+    });
+
+    // //Tab is closed by another client
+    // model.on('all', '_page.doc.newCy', function(  op, cyId, prev, passed){
+    //
+    //     if(docReady) {
+    //         if(docReady && !passed.user) {
+    //             appUtilities.createNewNetwork(cyId);
+    //
+    //         }
+    //     }
+    // });
+
+
 
     //Cy updated by other clients
     model.on('all', '_page.doc.cy.*.initTime', function( cyId, op, val, prev, passed){
@@ -738,7 +782,7 @@ app.proto.listenToModelOperations = function(model){
 
         // //because window opening takes a while
         setTimeout(function () {
-            var json = appUtilities.getActiveChiseInstance().convertSbgnmlTextToJson(data);
+            var json = appUtilities.getChiseInstance(parseInt(cyId)).convertSbgnmlTextToJson(data);
             w.postMessage(JSON.stringify(json), "*");
 
 
@@ -921,10 +965,10 @@ app.proto.clearHistory = function () {
     this.model.set('_page.clickTime', new Date);
 
     //TODO: silllll
-    // appUtilities.getActiveCy().panzoom().fit();
+    // appUtilities.getCyInstance(parseInt(cyId)).panzoom().fit();
     // var $reset = $('<div class="cy-panzoom-reset cy-panzoom-zoom-button"></div>');
     // $('#cy-panzoom-zoom-button').trigger('mousedown');
-    // appUtilities.getActiveCy().panzoom.reset();
+    // appUtilities.getCyInstance(parseInt(cyId)).panzoom.reset();
     return this.model.filter('_page.doc.messages', 'biggerThanCurrentTime').ref('_page.list');
 };
 

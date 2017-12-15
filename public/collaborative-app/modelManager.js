@@ -22,6 +22,8 @@ class ModelManager{
         return this.model.get('documents.' + this.docId);
     }
 
+
+
     addImage(data, user, noHistUpdate) {
         let self = this;
         let images = this.model.get('documents.' + this.docId + '.images');
@@ -118,7 +120,6 @@ class ModelManager{
                         console.log(users[att].name);
                         if(users[att].name && users[att].name.indexOf('User') > -1) {
                             let idNumber = Number(users[att].name.slice(4));
-                            console.log(idNumber);
                             if (idNumber > maxId)
                                 maxId = idNumber;
                         }
@@ -340,6 +341,40 @@ class ModelManager{
     }
 
 
+    openCy(cyId, user){ //to notify other users that a new tab has been opened
+        let cyPathStr = this.getModelCyPathStr(cyId);
+        // this.model.pass({user: user}).set('documents.' + this.docId + '.newCy', cyId); //let others know
+        this.model.pass({user:user}).set(cyPathStr + '.cyId', cyId);
+    }
+
+    //Does not remove the cy, only lets other users that cy is closed
+    closeCy(cyId, user, noHistUpdate){
+        let cyPathStr = this.getModelCyPathStr(cyId);
+
+        let prevParam = this.model.get(cyPathStr); //because cy indices are integers, cy path is recognized as an array
+        // this.model.pass({user:user}).remove('documents.' + this.docId + '.cy', cyId);
+        // this.model.pass({user:user}).del(cyPathStr);
+
+        // this.model.pass({user:user}).set(cyPathStr, null);
+
+        // notify other users that a new tab has been closed
+        this.model.pass({user: user}).set('documents.' + this.docId + '.closedCy', cyId);
+
+        if (!noHistUpdate)
+            this.updateHistory({opName: 'delete', prevParam: prevParam, param: null, cyId: cyId, opTarget: 'model'});
+    }
+
+
+    getCyIds(){
+        let cyList = this.model.get('documents.' + this.docId + '.cy');
+        let cyIds = [];
+        for(var att in cyList){
+            if(cyList.hasOwnProperty(att))
+                cyIds.push(att);
+        }
+
+        return cyIds;
+    }
 
     getModelCyPathStr(cyId){
         return 'documents.' + this.docId + '.cy.' + cyId ;
@@ -1194,7 +1229,7 @@ class ModelManager{
             this.updateHistory({opName: 'init', cyId: cyId, param: newModelCy, opTarget: 'model'});
         }
 
-        console.log("Init model finished")
+        console.log("Init model finished");
         //notifies other clients to update their cy graphs
         let cyPathStr = this.getModelCyPathStr(cyId);
         this.model.pass({user:"me"}).set(cyPathStr +'.initTime', new Date());

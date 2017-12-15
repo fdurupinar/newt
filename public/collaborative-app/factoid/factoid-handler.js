@@ -83,7 +83,7 @@ module.exports =  function(app) {
 
             appUtilities.getActiveChiseInstance().updateGraph(jsonObj, function(){
 
-                app.modelManager.initModel(cy.nodes(), cy.edges(), appUtilities, "me");
+                app.modelManager.initModel( appUtilities.getActiveCy().nodes(), appUtilities.getActiveCy().edges(), appUtilities, "me");
 
                 //Call layout after init
                 $("#perform-layout").trigger('click');
