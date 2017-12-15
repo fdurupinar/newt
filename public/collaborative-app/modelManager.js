@@ -397,6 +397,7 @@ class ModelManager{
                 nodeArr.push(nodes[att]);
         }
 
+        console.log(nodeArr);
         return nodeArr;
     }
 
@@ -498,6 +499,7 @@ class ModelManager{
         if (this.model.get(nodePathStr) != null)
             return "Node cannot be duplicated";
 
+        this.model.pass({user: user}).set(nodePathStr + '.id', nodeId);
         this.model.pass({user: user}).set(nodePathStr + '.data.id', nodeId);
         this.model.pass({user: user}).set(nodePathStr + '.position', param.position);
         this.model.pass({user: user}).set(nodePathStr + '.data', param.data);
@@ -578,6 +580,7 @@ class ModelManager{
             prevParentList.push(paramList.parent);
         });
         this.addModelNode(compoundId, cyId, compoundAtts, user, true);
+
 
 
         this.changeModelElementGroupAttribute("data", elList, cyId, paramList,  user, true);

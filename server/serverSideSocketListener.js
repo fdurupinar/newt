@@ -542,7 +542,7 @@ module.exports.start = function(io, model, cancerDataOrganizer){
         });
 
         socket.on('agentRunLayoutRequest', function(data, callback){
-            askHuman(data.userId, data.room,  "runLayout", null, function(val){
+            askHuman(data.userId, data.room,  "runLayout", data, function(val){
                 if (callback) callback(val);
             });
         });

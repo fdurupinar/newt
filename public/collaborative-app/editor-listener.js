@@ -518,7 +518,7 @@ module.exports = function(modelManager, socket, userId){
                 var compound = cy.getElementById(compoundId);
 
 
-                var compoundAtts = {position:{x: compound.position("x"), y: compound.position("y")}, data:{class:compound.data("class")}};
+                var compoundAtts = {position:{x: compound.position("x"), y: compound.position("y")}, data:compound.data()};
 
                 modelManager.addModelCompound(compound.id(), cyId, compoundAtts, modelElList,paramListData, "me" ); //handles data field update
 

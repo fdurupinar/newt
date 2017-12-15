@@ -279,7 +279,7 @@ describe('Agent API Test', function () {
                         let parent = modelManager.getModelNode(node.data.parent, cyId);
                         expect(parent.data.class).to.equal(type);
                         done();
-                    },100);
+                    },500);
                 });
             });
         });

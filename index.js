@@ -354,7 +354,7 @@ app.proto.listenToUIOperations = function(model){
     // window.addEventListener('message', function(event) {
     //     if(event.data) { //initialization for a query window
     //         self.modelManager.newModel("me"); //do not delete cytoscape, only the model
-    //         appUtilities.getActiveChiseInstance().updateGraph(JSON.parse(event.data), function(){
+    //         appUtilities.getActiveChiseInstance.updateGraph(JSON.parse(event.data), function(){
     //             self.modelManager.initModel(appUtilities.getActiveCy().nodes(), appUtilities.getActiveCy().edges(),
     //                 appUtilities.getActiveNetworkId(), appUtilities, "me");
     //             $("#perform-layout").trigger('click');
@@ -630,7 +630,7 @@ app.proto.listenToEdgeOperations = function(model){
             let target = model.get('_page.doc.cy.'+ cyId +'.edges.'+ id + '.data.target');
             let sbgnclass = model.get('_page.doc.cy.'+ cyId +'.edges.'+ id + '.data.class');
             let visibility = model.get('_page.doc.cy.' + cyId +'.nodes.'+ id + '.visibility');
-            let newEdge = appUtilities.getActiveChiseInstance().elementUtilities.addEdge(source, target, sbgnclass, id, visibility);
+            let newEdge = appUtilities.getChiseInstance(cyId).elementUtilities.addEdge(source, target, sbgnclass, id, visibility);
 
             self.modelManager.initModelEdge(newEdge, cyId, "me", true);
         }
