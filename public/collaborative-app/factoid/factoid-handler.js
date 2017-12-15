@@ -83,7 +83,7 @@ module.exports =  function(app) {
 
             appUtilities.getActiveChiseInstance().updateGraph(jsonObj, function(){
 
-                app.modelManager.initModel( appUtilities.getActiveCy().nodes(), appUtilities.getActiveCy().edges(), appUtilities, "me");
+                app.modelManager.initModel( appUtilities.getActiveCy().nodes(), appUtilities.getActiveCy().edges(), appUtilities.getActiveNetworkId(), appUtilities, "me");
 
                 //Call layout after init
                 $("#perform-layout").trigger('click');
@@ -191,7 +191,6 @@ module.exports =  function(app) {
             nodeMap = factoidModel.nodeMap;
             jsonGraphs = factoidModel.jsonGraphs;
             text = factoidModel.text;
-
         },
 
 
