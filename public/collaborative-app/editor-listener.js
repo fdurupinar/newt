@@ -181,7 +181,7 @@ module.exports = function(modelManager, socket, userId){
                     paramList.push(ele.data());
 
                 });
-                modelManager.changeModelElementGroupAttribute("data", modelElList, paramList, cyId, "me");
+                modelManager.changeModelElementGroupAttribute("data", modelElList, cyId,paramList,  "me");
 
             }
 
@@ -202,7 +202,7 @@ module.exports = function(modelManager, socket, userId){
                     paramList.push(ele.data());
 
                 });
-                modelManager.changeModelElementGroupAttribute("data", modelElList, paramList,  cyId, "me");
+                modelManager.changeModelElementGroupAttribute("data", modelElList,  cyId,paramList,  "me");
 
             }
             else if(actionName === "resize"){
@@ -212,7 +212,7 @@ module.exports = function(modelManager, socket, userId){
                 var paramList = [res.node.data()];
 
 
-                modelManager.changeModelElementGroupAttribute("data", modelElList, paramList, cyId, "me");
+                modelManager.changeModelElementGroupAttribute("data", modelElList, cyId,paramList,  "me");
             }
 
             else if (actionName === "changeBendPoints") {
@@ -231,7 +231,7 @@ module.exports = function(modelManager, socket, userId){
                 console.log(res.edge.data());
                 paramList.push({weights: args.edge.data('cyedgebendeditingWeights'), distances:res.edge.data('cyedgebendeditingDistances')});
 
-                modelManager.changeModelElementGroupAttribute("bendPoints", modelElList, paramList,  cyId,"me");
+                modelManager.changeModelElementGroupAttribute("bendPoints", modelElList, cyId,paramList,  "me");
 
             }
 
@@ -251,7 +251,7 @@ module.exports = function(modelManager, socket, userId){
                             paramList.push(ele.data());
 
                         });
-                        modelManager.changeModelElementGroupAttribute("data", modelElList, paramList,  cyId,"me");
+                        modelManager.changeModelElementGroupAttribute("data", modelElList, cyId, paramList,  "me");
                     }
                     else if(arg.name === 'hideAndPerformLayout' || arg.name === 'hide'){
                         var modelElList = [];
@@ -273,11 +273,11 @@ module.exports = function(modelManager, socket, userId){
                             });
                         }
 
-                        modelManager.changeModelElementGroupAttribute("data", modelElList, paramListData, cyId, "me");
+                        modelManager.changeModelElementGroupAttribute("data", modelElList, cyId, paramListData,  "me");
 
 
-                        modelManager.changeModelElementGroupAttribute("visibilityStatus", modelElList, paramList,  cyId,"me");
-                        modelManager.changeModelElementGroupAttribute("position", modelElList, paramListPos,  cyId, "me");
+                        modelManager.changeModelElementGroupAttribute("visibilityStatus", modelElList, cyId, paramList, "me");
+                        modelManager.changeModelElementGroupAttribute("position", modelElList, cyId, paramListPos,   "me");
 
                     }
                     else if(arg.name === 'showAndPerformLayout' || arg.name === 'show' ){
@@ -302,9 +302,9 @@ module.exports = function(modelManager, socket, userId){
                             });
                         }
 
-                        modelManager.changeModelElementGroupAttribute("data", modelElList, paramListData,  cyId,"me");
-                        modelManager.changeModelElementGroupAttribute("visibilityStatus", modelElList, paramList,  cyId,"me");
-                        modelManager.changeModelElementGroupAttribute("position", modelElList, paramListPos,  cyId,"me");
+                        modelManager.changeModelElementGroupAttribute("data", modelElList, cyId, paramListData,  "me");
+                        modelManager.changeModelElementGroupAttribute("visibilityStatus", modelElList,  cyId, paramList,"me");
+                        modelManager.changeModelElementGroupAttribute("position", modelElList,  cyId,paramListPos, "me");
 
 
                     }
@@ -322,7 +322,7 @@ module.exports = function(modelManager, socket, userId){
             //
             //     });
             //
-            //     modelManager.changeModelElementGroupAttribute("visibilityStatus", modelElList, paramList, cyId, "me");
+            //     modelManager.changeModelElementGroupAttribute("visibilityStatus", modelElList, cyId,paramList,  "me");
             // }
 
             else if (actionName === "highlight") {
@@ -335,7 +335,7 @@ module.exports = function(modelManager, socket, userId){
                     paramList.push("highlighted");
                 });
 
-                modelManager.changeModelElementGroupAttribute("highlightStatus", modelElList, paramList,  cyId, "me");
+                modelManager.changeModelElementGroupAttribute("highlightStatus", modelElList, cyId,paramList,   "me");
             }
 
             else if(actionName === "removeHighlights"){
@@ -349,7 +349,7 @@ module.exports = function(modelManager, socket, userId){
 
                 });
 
-                modelManager.changeModelElementGroupAttribute("highlightStatus", modelElList, paramList, cyId, "me");
+                modelManager.changeModelElementGroupAttribute("highlightStatus", modelElList,  cyId,paramList, "me");
 
             }
             else if (actionName === "expand" || actionName === "collapse") {
@@ -361,7 +361,7 @@ module.exports = function(modelManager, socket, userId){
                     paramList.push(actionName);
 
                 });
-                modelManager.changeModelElementGroupAttribute("expandCollapseStatus", modelElList, paramList,  cyId,"me");
+                modelManager.changeModelElementGroupAttribute("expandCollapseStatus", modelElList,  cyId,paramList, "me");
             }
 
 
@@ -375,7 +375,7 @@ module.exports = function(modelManager, socket, userId){
                     paramList.push(ele.position());
                 });
 
-                modelManager.changeModelElementGroupAttribute("position", modelElList, paramList, cyId, "me");
+                modelManager.changeModelElementGroupAttribute("position", modelElList, cyId,paramList,  "me");
             }
 
             else if (actionName === "layout") {
@@ -396,8 +396,8 @@ module.exports = function(modelManager, socket, userId){
                         }
                     });
 
-                    modelManager.changeModelElementGroupAttribute("position", modelElList, paramList,  cyId,"me");
-                    // modelManager.changeModelElementGroupAttribute("data", modelElList, paramListData, cyId, "me"); //bounding boxes may change
+                    modelManager.changeModelElementGroupAttribute("position", modelElList, cyId, paramList,  "me");
+                    // modelManager.changeModelElementGroupAttribute("data", modelElList,  cyId,paramListData, "me"); //bounding boxes may change
                 // });
             }
 
@@ -491,8 +491,8 @@ module.exports = function(modelManager, socket, userId){
 
                 });
 
-                modelManager.changeModelElementGroupAttribute("data", modelElList, paramListData, cyId, "me");
-                modelManager.changeModelElementGroupAttribute("position", modelNodeList, paramListPosition,  cyId,"me");
+                modelManager.changeModelElementGroupAttribute("data", modelElList,  cyId,paramListData, "me");
+                modelManager.changeModelElementGroupAttribute("position", modelNodeList,  cyId,paramListPosition, "me");
 
 
             }

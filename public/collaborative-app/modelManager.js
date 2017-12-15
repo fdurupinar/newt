@@ -580,7 +580,7 @@ class ModelManager{
         this.addModelNode(compoundId, cyId, compoundAtts, user, true);
 
 
-        this.changeModelElementGroupAttribute("data", elList, paramList, cyId, user, true);
+        this.changeModelElementGroupAttribute("data", elList, cyId, paramList,  user, true);
 
 
 
@@ -617,7 +617,7 @@ class ModelManager{
         });
 
         //isolate the compound first, then delete
-        this.changeModelElementGroupAttribute("data.parent", childrenList, prevParentList, cyId,  user, true);
+        this.changeModelElementGroupAttribute("data.parent", childrenList, cyId, prevParentList,   user, true);
         this.deleteModelNode(compoundId, cyId, user, true);
 
 
@@ -639,7 +639,7 @@ class ModelManager{
 
     //attStr: attribute namein the model
     //historyData is for  sbgnStatesAndInfos only
-    changeModelElementGroupAttribute (attStr, elList, paramList, cyId,  user, noHistUpdate) { //historyData){
+    changeModelElementGroupAttribute (attStr, elList, cyId, paramList,   user, noHistUpdate) { //historyData){
         let self = this;
         let prevParamList = [];
 
