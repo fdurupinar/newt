@@ -3,9 +3,45 @@
  */
 
 //Listen and respond to cytoscape events triggered by cytoscape-undo-redo.js
-
+let modelMergeFunctions = require('./model-merge-functions.js')();
+// Use mousetrap library to listen keyboard events
+let Mousetrap = require('mousetrap');
 
 module.exports = function(modelManager, socket, userId){
+
+    // get a new mousetrap instance
+    var mt = new Mousetrap();
+
+    // jsons for the last copied elements
+    var lastCopiedElesJsons;
+
+    // the cy from which some elements are copied last time
+    var lastCopiedElesCy;
+
+    // listen to "ctrl/command + m" keyboard event
+    mt.bind(["ctrl+m", "command+m"], function () {
+
+        // TODO perform the merge staff here
+        console.log('to perform merge operation here');
+
+        // get the active chise instance
+        var chiseInstance = appUtilities.getActiveChiseInstance();
+
+        // get the related cy instance
+        var cy = chiseInstance.getCy();
+
+        // If the eles are already copied from this cy instance then merge is meaningless.
+        // Therefore return directly if that is the case.
+        if ( cy == lastCopiedElesCy ) {
+            return;
+        }
+
+        modelMergeFunctions.mergeJsonWithCurrent(lastCopiedElesJsons, appUtilities.getActiveNetworkId(), modelManager);
+
+        // return false to prevent default browser behavior
+        // and stop event from bubbling
+        return false;
+    });
 
 
     //A new sample or file is loaded --update model and inform others
@@ -25,6 +61,18 @@ module.exports = function(modelManager, socket, userId){
         });
     },1000);
     });
+
+    $(document).on("CWC_after_copy", function (event, eleJsons, cy) {
+
+        console.log('common clipboard is updated');
+
+        // update jsons for the last copied elements
+        lastCopiedElesJsons = eleJsons;
+
+        // update the cy from which some elements are copied last time
+        lastCopiedElesCy = cy;
+    } );
+
 
     $("#new-file, #new-file-icon").click(function () {
         modelManager.openCy(appUtilities.getActiveNetworkId(), "me");
