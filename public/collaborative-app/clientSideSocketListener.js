@@ -3,7 +3,7 @@
  * Human listens to agent socket and performs menu operations requested by the agent
 */
 
-let modelMerger = require('./model-merge-functions.js');
+let modelMergeFunctions = require('./model-merge-functions.js')();
 
 module.exports =  function(app) {
 
@@ -340,7 +340,7 @@ module.exports =  function(app) {
                 if(!data.cyId)
                     data.cyId = appUtilities.getActiveNetworkId();
                 // self.mergeJsonWithCurrent(newJson, data.cyId,  app.modelManager, callback);
-                modelMerger.mergeJsonWithCurrent(data.graph, data.cyId, app.modelManager, callback);
+                modelMergeFunctions.mergeJsonWithCurrent(data.graph, data.cyId, app.modelManager, callback);
 
             });
 
@@ -348,7 +348,7 @@ module.exports =  function(app) {
 
                 if(!data.cyId)
                     data.cyId = appUtilities.getActiveNetworkId();
-                modelMerger.mergeJsonWithCurrent(data.graph, data.cyId, app.modelManager, callback);
+                modelMergeFunctions.mergeJsonWithCurrent(data.graph, data.cyId, app.modelManager, callback);
                 // self.mergeJsonWithCurrent(data.graph, data.cyId, app.modelManager, callback);
             });
         },
