@@ -30,7 +30,7 @@ module.exports = function(){
 
                 // Call merge notification after the layout
                 setTimeout(function () {
-                    modelManager.mergeJsons(cyId, "me", true);
+                    modelManager.mergeJsons(cyId, "me");
                     if (callback) callback("success");
                 }, 1000);
 

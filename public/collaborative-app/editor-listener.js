@@ -54,12 +54,12 @@ module.exports = function(modelManager, socket, userId){
         modelManager.newModel( appUtilities.getActiveNetworkId(), "me"); //do not delete cytoscape, only the model
         modelManager.initModel(cy.nodes(), cy.edges(), appUtilities.getActiveNetworkId(),  appUtilities);
 
-    setTimeout(function(){
-            cy.elements().forEach(function(ele){
-            ele.data("annotationsView", null);
-            ele._private.data.annotationsView = null;
-        });
-    },1000);
+        setTimeout(function(){
+                cy.elements().forEach(function(ele){
+                ele.data("annotationsView", null);
+                ele._private.data.annotationsView = null;
+            });
+        },1000);
     });
 
     $(document).on("CWC_after_copy", function (event, eleJsons, cy) {
@@ -99,6 +99,7 @@ module.exports = function(modelManager, socket, userId){
                 reader.onload = function (e) {
 
                     socket.emit('BioPAXRequest', this.result, "sbgn", function(sbgnData){ //convert to sbgn
+
 
                         appUtilites.getActiveSbgnvizInstance().loadSBGNMLText(sbgnData.graph);
                     });
@@ -147,13 +148,7 @@ module.exports = function(modelManager, socket, userId){
     //         appUtilities.getActiveNetworkId(), appUtilities, "me");
     // });
 
-    // $(document).on('updateGraphEnd', function(event) {
-    //     console.log("Graph updated");
-    //     modelManager.initModel(appUtilities.getActiveCy().nodes(), appUtilities.getActiveCy().edges(), appUtilities, "me");
-    //
-    //    $("#perform-layout").trigger('click');
-    //
-    // });
+
 
     $(document).on("createNewNetwork", function (e, cy, cyId) {
 

@@ -582,7 +582,7 @@ module.exports.start = function(io, model, cancerDataOrganizer){
                     }
                     else  {
                         if(response.statusCode === 200) {
-                            askHuman(data.userId, data.room,  "loadFile", data.content, function(val){
+                            askHuman(data.userId, data.room,  "loadFile", data, function(val){
                                 if (callback) callback(val);
                             });
                         }
@@ -591,7 +591,7 @@ module.exports.start = function(io, model, cancerDataOrganizer){
                 });
             }
             else
-                askHuman(data.userId, data.room,  "loadFile", data.content, function(val){
+                askHuman(data.userId, data.room,  "loadFile", data, function(val){
                     if (callback) callback(val);
                 });
 

@@ -90,7 +90,7 @@ module.exports =  function(app) {
 
                 //Call merge notification after the layout
                 setTimeout(function () {
-                    app.modelManager.mergeJsons("me", true);
+                    app.modelManager.mergeJsons(appUtilities.getActiveNetworkId(), "me", true);
 
                     if (callback) callback();
                 }, 1000);

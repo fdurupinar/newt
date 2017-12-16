@@ -13,10 +13,10 @@ module.exports =  function(app) {
             let self = this;
 
 
-            app.socket.on('loadFile', function (txtFile, callback) {
+            app.socket.on('loadFile', function (data, callback) {
                 try {
+                    appUtilities.getChiseInstance(data.cyId).getSbgnvizInstance().loadSBGNMLText(data.content);
 
-                    appUtilities.getActiveSbgnvizInstance().loadSBGNMLText(txtFile);
                     if (callback) callback("success");
                 }
                 catch (e) {
@@ -340,7 +340,7 @@ module.exports =  function(app) {
                 let newJson = appUtilities.getChiseInstance(data.cyId).convertSbgnmlTextToJson(data.graph);
                 if(!data.cyId)
                     data.cyId = appUtilities.getActiveNetworkId();
-                // self.mergeJsonWithCurrent(newJson, data.cyId,  app.modelManager, callback);
+
                 modelMergeFunctions.mergeJsonWithCurrent(newJson, data.cyId, app.modelManager, callback);
 
             });
@@ -350,7 +350,7 @@ module.exports =  function(app) {
                 if(!data.cyId)
                     data.cyId = appUtilities.getActiveNetworkId();
                 modelMergeFunctions.mergeJsonWithCurrent(data.graph, data.cyId, app.modelManager, callback);
-                // self.mergeJsonWithCurrent(data.graph, data.cyId, app.modelManager, callback);
+
             });
         },
 

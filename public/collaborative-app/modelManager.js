@@ -227,6 +227,8 @@ class ModelManager{
         let undoInd = this.model.get('documents.' + this.docId + '.undoIndex');
         let cmd = this.model.get('documents.' + this.docId + '.history.' + undoInd); // cmd: opName, opTarget, opAttr, elId, param
 
+        console.log("undo");
+        console.log(cmd);
 
         if (cmd.opName == "set") {
             if (cmd.opTarget == "element" && cmd.elType == "node")
@@ -267,14 +269,14 @@ class ModelManager{
         //
         // }
         else if (cmd.opName == "init") {
-            this.newModel(cmd.cyId, "me", true);
+            this.newModel(cmd.cyId, null, true);
         }
         else if (cmd.opName == "new") { //delete all
             this.restoreModel( cmd.prevParam, cmd.cyId);
 
         }
         else if (cmd.opName == "merge") {
-            this.newModel(cmd.cyId, "me", true);
+            this.newModel(cmd.cyId, null, true);
             this.restoreModel(cmd.prevParam, cmd.cyId);
         }
 
@@ -293,7 +295,7 @@ class ModelManager{
             else if (cmd.opTarget == "element" && cmd.elType == "edge")
                 this.changeModelEdgeAttribute(cmd.opAttr, cmd.elId, cmd.cyId, cmd.param, null);
             else if (cmd.opTarget == "element group") {
-                this.changeModelElementGroupAttribute(cmd.opAttr, cmd.elId, cmd.cyId, cmd.param);
+                this.changeModelElementGroupAttribute(cmd.opAttr, cmd.elId, cmd.cyId, cmd.param, null);
 
             }
 
@@ -327,13 +329,13 @@ class ModelManager{
         //
         // }
         else if (cmd.opName == "init") {
-            this.restoreModel(cmd.cyId, cmd.param);
+            this.restoreModel(cmd.param, cmd.cyId );
         }
         else if (cmd.opName == "new") { //delete all
             this.newModel(cmd.cyId );
         }
         else if (cmd.opName == "merge") { //delete all
-            this.restoreModel(cmd.cyId, cmd.param);
+            this.restoreModel(cmd.param, cmd.cyId);
         }
 
         undoInd = undoInd < this.model.get('documents.' + this.docId + '.history').length - 1 ? undoInd + 1 : this.model.get('documents.' + this.docId + '.history').length - 1;
@@ -986,7 +988,8 @@ class ModelManager{
     restoreModel (modelCy, cyId, user, noHistUpdate) {
         let cyPathStr = this.getModelCyPathStr(cyId);
         let prevParam = this.model.get(cyPathStr);
-        this.model.set(cyPathStr , modelCy);
+        this.model.pass({user: user}).set(cyPathStr , modelCy);
+
 
         // this.setSampleInd(-1, null, true); //to get a new container
 
@@ -1255,7 +1258,7 @@ class ModelManager{
     mergeJsons (cyId, user, noHistUpdate) {
         let cyPathStr = this.getModelCyPathStr(cyId);
         let modelCy = this.model.get(cyPathStr);
-        let prevModelCy = this.model.get('documents.' + this.docId + '.prevCy.' + cyId);
+        let prevModelCy = this.model.get('documents.' + this.docId + '.prevCy.' + cyId); //updated at rollback point
 
         if (!noHistUpdate) {
 

@@ -601,8 +601,8 @@ appUtilities.defaultLayoutProperties = {
   numIter: 2500,
   tile: true,
   animationEasing: 'cubic-bezier(0.17,0.72,0.41,0.98)',
-  animate: 'end',
-  animationDuration: 2000,
+  animate: false, //funda
+  animationDuration: 0,
   randomize: false,
   tilingPaddingVertical: 20,
   tilingPaddingHorizontal: 20,

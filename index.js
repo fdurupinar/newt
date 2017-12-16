@@ -457,7 +457,6 @@ app.proto.listenToNodeOperations = function(model){
             moveNodeAndChildren(posDiff, appUtilities.getCyInstance(parseInt(cyId)).getElementById(id)); //children need to be updated manually here
 
 
-            console.log("cy: " + cyId + " " + id);
             //parent as well
             // appUtilities.getCyInstance(parseInt(cyId)).panzoom().fit();
 
@@ -476,8 +475,6 @@ app.proto.listenToNodeOperations = function(model){
                     "overlay-opacity": 0
                 });
 
-                console.log("Updated overlay color tp " + appUtilities.getCyInstance(parseInt(cyId)).getElementById().css("overlay-color"));
-                console.log("Updated overlay color tp " + id);
             }
             else {
                 appUtilities.getCyInstance(parseInt(cyId)).getElementById(id).css({
@@ -725,10 +722,20 @@ app.proto.listenToModelOperations = function(model){
     //A new tab is open
     model.on('all', '_page.doc.cy.**', function( val, op, cyId, prev, passed){
 
-        if(docReady && !passed.user && op === 'insert')
-            appUtilities.createNewNetwork(cyId);
+        if(docReady && !passed.user){
+            if( op === 'insert')
+                appUtilities.createNewNetwork(cyId);
 
+        }
     });
+
+    model.on('all', '_page.doc.cy.*', function( val, op, cyId, prev, passed){
+
+        if(docReady && !passed.user){
+                self.loadCyFromModel(val);
+        }
+    });
+
 
     //Tab is closed by another client
     model.on('all', '_page.doc.closedCy', function(  op, cyId, prev, passed){
@@ -760,9 +767,7 @@ app.proto.listenToModelOperations = function(model){
 
         if(docReady) {
             if(docReady && !passed.user) {
-                self.loadCyFromModel(function (cyId) {
-
-                });
+                self.loadCyFromModel(cyId);
             }
             self.notyView.close();
         }
