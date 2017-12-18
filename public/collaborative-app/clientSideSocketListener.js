@@ -28,7 +28,7 @@ module.exports =  function(app) {
             });
 
 
-            app.socket.on('cleanAll', function ( callback) {
+            app.socket.on('cleanAll', function ( data, callback) {
 
                 self.cleanAll(callback);
             });

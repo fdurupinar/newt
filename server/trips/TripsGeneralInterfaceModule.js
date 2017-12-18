@@ -237,7 +237,7 @@ class TripsGeneralInterfaceModule extends TripsInterfaceModule {
         });
 
         //this will clean the image tabs and sbgn model
-        this.askHuman(this.agentId, this.room, "cleanAll", function (val) {
+        this.askHuman(this.agentId, this.room, "cleanAll",{},  function (val) {
         });
 
 

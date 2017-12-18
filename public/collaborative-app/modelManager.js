@@ -225,8 +225,6 @@ class ModelManager{
         let undoInd = this.model.get('documents.' + this.docId + '.undoIndex');
         let cmd = this.model.get('documents.' + this.docId + '.history.' + undoInd); // cmd: opName, opTarget, opAttr, elId, param
 
-        console.log("undo");
-        console.log(cmd);
 
         if (cmd.opName == "set") {
             if (cmd.opTarget == "element" && cmd.elType == "node")
@@ -286,9 +284,6 @@ class ModelManager{
     redoCommand () {
         let undoInd = this.model.get('documents.' + this.docId + '.undoIndex');
         let cmd = this.model.get('documents.' + this.docId + '.history.' + (undoInd + 1)); // cmd: opName, opTarget, opAttr, elId, param
-
-        console.log("redo");
-        console.log(cmd);
 
 
         if (cmd.opName == "set") {

@@ -599,7 +599,7 @@ module.exports.start = function(io, model, cancerDataOrganizer){
         });
 
         socket.on('agentCleanAllRequest',  function(data, callback){
-            askHuman(data.userId, data.room,  "cleanAll", function(val){
+            askHuman(data.userId, data.room,  "cleanAll", data, function(val){
                 if (callback) callback(val);
             });
         });

@@ -580,7 +580,7 @@ describe('Agent API Test', function () {
                 let modelManager = window.testApp.modelManager;
                 let jQuery = window.jQuery;
 
-                agent.sendRequest("agentCleanAllRequest",  function(){
+                agent.sendRequest("agentCleanAllRequest", {}, function(){
                     setTimeout(function () { //should wait here as well
                         let cy = modelManager.getModelCy(cyId);
                         expect(jQuery.isEmptyObject(window.appUtilities.getActiveCy().nodes) && jQuery.isEmptyObject(window.appUtilities.getActiveCy().edges)).to.equal(true);
