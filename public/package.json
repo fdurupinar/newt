@@ -40,7 +40,6 @@
     "libxmljs": "^0.18.4",
     "lodash.get": "^4.4.2",
     "lodash.set": "^4.3.2",
-    "mousetrap": "*",
     "request": "^2.81.0",
     "sbgnviz": "github:iVis-at-Bilkent/sbgnviz.js#unstable",
     "underscore": "1.8.3"
