@@ -64,8 +64,8 @@ module.exports =  function(app) {
 
                     nodeMap = modelMergeFunctions.mergeJsons(jsonGraphs, appUtilities.getActiveNetworkId(), app.modelManager, function(){
 
-                        //save it to the model
-                        app.modelManager.updateFactoidModel({jsonGraphs: jsonGraphs, nodeMap: nodeMap, text: text}, "me");
+                        //save it to the model -- no hist update
+                        app.modelManager.updateFactoidModel({jsonGraphs: jsonGraphs, nodeMap: nodeMap, text: text}, "me", true);
                     }); //mapping between sentences and node labels
                     notyView.close();
 

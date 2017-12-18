@@ -375,7 +375,6 @@ module.exports = function(modelManager, socket, userId){
 
             else if (actionName === "layout") {
                 cy.on('layoutstop', function() {
-                    //TODO
 
                     console.log('Layout stopped');
                     var modelElList = [];

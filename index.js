@@ -390,9 +390,11 @@ app.proto.loadCyFromModel = function(cyId, callback){
             let container = $('#canvas-tab-area');
 
             console.log("Panzoom updated");
-            appUtilities.getCyInstance(parseInt(cyId)).zoom(1); //was 2 before
-            appUtilities.getCyInstance(parseInt(cyId)).pan({x:container.width()/2, y:container.height()/2});
+            // appUtilities.getCyInstance(parseInt(cyId)).zoom(1); //was 2 before
+            // appUtilities.getCyInstance(parseInt(cyId)).pan({x:container.width()/2, y:container.height()/2});
+            //
 
+             // appUtilities.getCyInstance(parseInt(cyId)).panzoom().reset();
 
             if(callback) callback(false);
 
@@ -458,8 +460,7 @@ app.proto.listenToNodeOperations = function(model){
             let posDiff = {x: (pos.x - appUtilities.getCyInstance(parseInt(cyId)).getElementById(id).position("x")), y:(pos.y - appUtilities.getCyInstance(parseInt(cyId)).getElementById(id).position("y"))} ;
             moveNodeAndChildren(posDiff, appUtilities.getCyInstance(parseInt(cyId)).getElementById(id)); //children need to be updated manually here
 
-            console.log(cyId  + " " + id + " moved to ");
-            console.log(pos);
+
             appUtilities.getCyInstance(parseInt(cyId)).getElementById(id).updateStyle();
 
             //parent as well
