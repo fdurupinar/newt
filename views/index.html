@@ -2246,7 +2246,7 @@
                     <ul id = "provenance-messages">
                         {{each _page.doc.provenance as #message}}
                             {{if #message.pc}}
-                                <li class = "message"> <b>{{#message.userName}}: </b> <button on-click = "openPCQueryWindow(#message.pc)">PC Query View</button>{{unescaped #message.html}}</li>
+                                <li class = "message"> <b>{{#message.userName}}: </b> <button on-click = "openPCQueryWindow(#message.pc)">Open query</button>{{unescaped #message.html}}</li>
                             {{else}}
                                 <li class = "message"> <b>{{#message.userName}}: </b> {{unescaped #message.html}}</li>
                             {{/if}}

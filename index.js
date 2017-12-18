@@ -169,14 +169,6 @@ app.proto.changeDuration = function () {
     return this.model.filter('_page.doc.messages', 'biggerTime').ref('_page.list');
 };
 
-/***
- * Query windows always include the "query" string appended to regular docId
- * @returns {boolean}
- */
-app.proto.isQueryWindow = function(){
-    var docId = this.model.get('_page.doc.id');
-    return (docId.indexOf("_query_") > -1);
-};
 
 /***
  * Called only once in a browser after the first page rendering
@@ -189,7 +181,7 @@ app.proto.create = function (model) {
     docReady = true;
 
     self.socket = io();
-    self.notyView = noty({layout: "bottom",theme:"bootstrapTheme", text: "Please wait while model is loading."});
+    self.notyView = window.noty({layout: "bottom",theme:"bootstrapTheme", text: "Please wait while model is loading."});
 
     self.listenToUIOperations(model);
 
@@ -223,23 +215,20 @@ app.proto.create = function (model) {
 
 
     //Loading cytoscape and clients
-    //TODO: remove isquyerywindow and do queries in a new tab
-    if(!self.isQueryWindow()) { //initialization for a regular window
 
-        let cyIds = self.modelManager.getCyIds();
+    let cyIds = self.modelManager.getCyIds();
 
-        cyIds.forEach(function(cyId) {
-            if(parseInt(cyId) !== parseInt(appUtilities.getActiveNetworkId())) //tab 0: initial tab
-                appUtilities.createNewNetwork(parseInt(cyId)); //opens a new tab
-            self.loadCyFromModel(cyId, function (isModelEmpty) {
-            });
+    cyIds.forEach(function(cyId) {
+        if(parseInt(cyId) !== parseInt(appUtilities.getActiveNetworkId())) //tab 0: initial tab
+            appUtilities.createNewNetwork(parseInt(cyId)); //opens a new tab
+        self.loadCyFromModel(cyId, function (isModelEmpty) {
         });
+    });
 
-        if(cyIds.length === 0) //no previous model -- first time loading the document
-            self.modelManager.openCy(appUtilities.getActiveNetworkId(), "me");
+    if(cyIds.length === 0) //no previous model -- first time loading the document
+        self.modelManager.openCy(appUtilities.getActiveNetworkId(), "me");
 
-        self.notyView.close();
-    }
+    self.notyView.close();
 
 
     self.editorListener = require('./public/collaborative-app/editor-listener.js')(self.modelManager,self.socket, id);
@@ -254,7 +243,7 @@ app.proto.create = function (model) {
     setTimeout(()=>{
         let userIds = self.modelManager.getUserIds();
         let noTrips = model.get('_page.doc.noTrips');
-        if(!noTrips && !self.isQueryWindow() &&  userIds.indexOf(BobId) < 0) {
+        if(!noTrips &&  userIds.indexOf(BobId) < 0) {
 
             // console.log("Connection requested " + noTrips + " " + op);
             self.connectTripsAgent();
@@ -755,17 +744,6 @@ app.proto.listenToModelOperations = function(model){
         }
     });
 
-    // //Tab is closed by another client
-    // model.on('all', '_page.doc.newCy', function(  op, cyId, prev, passed){
-    //
-    //     if(docReady) {
-    //         if(docReady && !passed.user) {
-    //             appUtilities.createNewNetwork(cyId);
-    //
-    //         }
-    //     }
-    // });
-
 
 
     //Cy updated by other clients
@@ -780,24 +758,18 @@ app.proto.listenToModelOperations = function(model){
     });
 
     model.on('change', '_page.doc.pcQuery.*.graph', function(ind, data){
-        var loc = window.location.href;
-        if (loc[loc.length - 1] === "#") {
-            loc = loc.slice(0, -1);
-        }
-        if (loc[loc.length - 1] === "?") {
-            loc = loc.slice(0, -1);
-        }
+        let chiseInst = appUtilities.createNewNetwork(); //opens a new tab
+        let cyId = appUtilities.nextNetworkId -1;
 
-        let w = window.open((loc + "_query_" + ind ), function(){
+
+        let jsonObj = chiseInst.convertSbgnmlTextToJson(data);
+
+        chiseInst.updateGraph(jsonObj, function() {
+            self.modelManager.initModel(chiseInst.getCy().nodes(), chiseInst.getCy().edges(), cyId , appUtilities, "me");
+            $("#perform-layout").trigger('click');
+
         });
 
-        // //because window opening takes a while
-        setTimeout(function () {
-            var json = appUtilities.getChiseInstance(parseInt(cyId)).convertSbgnmlTextToJson(data);
-            w.postMessage(JSON.stringify(json), "*");
-
-
-        }, 3000);
     });
 
     //Sometimes works
@@ -880,7 +852,7 @@ app.proto.updateTripsMessage = function(){
 app.proto.resetConversationOnTrips = function(){
     //directly ask the server as this client may not have a tripsAgent
     this.socket.emit('resetConversationRequest');
-    this.agentSocket.newFile();
+    this.agentSocket.cleanAll();
 
 };
 

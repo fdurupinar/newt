@@ -598,8 +598,8 @@ module.exports.start = function(io, model, cancerDataOrganizer){
             if(callback) callback();
         });
 
-        socket.on('agentNewFileRequest',  function(data, callback){
-            askHuman(data.userId, data.room,  "newFile", data, function(val){
+        socket.on('agentCleanAllRequest',  function(data, callback){
+            askHuman(data.userId, data.room,  "cleanAll", function(val){
                 if (callback) callback(val);
             });
         });

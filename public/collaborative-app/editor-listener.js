@@ -54,12 +54,12 @@ module.exports = function(modelManager, socket, userId){
         modelManager.newModel( appUtilities.getActiveNetworkId(), "me"); //do not delete cytoscape, only the model
         modelManager.initModel(cy.nodes(), cy.edges(), appUtilities.getActiveNetworkId(),  appUtilities);
 
-        setTimeout(function(){
-                cy.elements().forEach(function(ele){
-                ele.data("annotationsView", null);
-                ele._private.data.annotationsView = null;
-            });
-        },1000);
+        // setTimeout(function(){
+        //         cy.elements().forEach(function(ele){
+        //         ele.data("annotationsView", null);
+        //         ele._private.data.annotationsView = null;
+        //     });
+        // },1000);
     });
 
     $(document).on("CWC_after_copy", function (event, eleJsons, cy) {
@@ -112,10 +112,10 @@ module.exports = function(modelManager, socket, userId){
 
         setTimeout(function () {
             //remove annotations view first
-            appUtilities.getActiveCy().elements().forEach(function(ele){
-                ele.data("annotationsView", null);
-                ele._private.data.annotationsView = null;
-            });
+            // appUtilities.getActiveCy().elements().forEach(function(ele){
+            //     ele.data("annotationsView", null);
+            //     ele._private.data.annotationsView = null;
+            // });
             modelManager.initModel(appUtilities.getActiveCy().nodes(), appUtilities.getActiveCy().edges(),
                 appUtilities.getActiveNetworkId(), appUtilities, "me");
 
@@ -124,29 +124,6 @@ module.exports = function(modelManager, socket, userId){
         }, 1000);
 
     });
-
-    // $(document).on("saveLayout", function (evt) {
-    //     var layoutProperties = appUtilities.currentLayoutProperties;
-    //     modelManager.updateLayoutProperties(layoutProperties, "me");
-    // });
-    //
-    // $(document).on("saveGeneralProperties", function (evt) {
-    //     var generalProperties = appUtilities.currentGeneralProperties;
-    //     modelManager.updateGeneralProperties(generalProperties, "me");
-    // });
-    //
-    // $(document).on("saveGridProperties", function (evt) {
-    //     var gridProperties = appUtilities.currentGridProperties;
-    //     modelManager.updateGridProperties(gridProperties, "me");
-    // });
-
-    //done previously no need
-    // $(document).on("newFile", function (evt) {
-    //     // appUtilities.getActiveCy().remove(appUtilities.getActiveCy().elements());
-    //     modelManager.newModel( appUtilities.getActiveNetworkId(), "me"); //do not delete cytoscape, only the model
-    //     modelManager.initModel(appUtilities.getActiveCy().nodes(), appUtilities.getActiveCy().edges(),
-    //         appUtilities.getActiveNetworkId(), appUtilities, "me");
-    // });
 
 
 

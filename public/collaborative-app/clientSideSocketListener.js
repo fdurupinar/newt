@@ -27,9 +27,10 @@ module.exports =  function(app) {
 
             });
 
-            app.socket.on('newFile', function (data, callback) {
 
-                self.newFile(data, data.cyId,  callback);
+            app.socket.on('cleanAll', function ( callback) {
+
+                self.cleanAll(callback);
             });
 
             app.socket.on('runLayout', function (data, callback) {
@@ -297,26 +298,28 @@ module.exports =  function(app) {
                 }
             });
 
-            //Open in another window
+            //Open in another tab
             app.socket.on('openPCQueryWindow', function(data, callback){
-                let loc = window.location.href;
-                if (loc[loc.length - 1] === "#") {
-                    loc = loc.slice(0, -1);
-                }
-                let w = window.open((loc + "_query"), function () {
 
+                let chiseInst = appUtilities.createNewNetwork(); //opens a new tab
+
+                let json = chiseInst.convertSbgnmlTextToJson(data.graph);
+
+                chiseInst.updateGraph(jsonObj, function(){
+                    app.modelManager.initModel(appUtilities.getCyInstance(data.cyId).nodes(), appUtilities.getCyInstance(data.cyId).edges(), appUtilities, "me");
+
+                    appUtilities.setActiveNetwork(data.cyId);
+
+                    $("#perform-layout").trigger('click');
+
+                    if (callback) callback("success");
                 });
 
-                // //because window opening takes a while
-                setTimeout(function () {
-
-                    let json = appUtilities.getChiseInstance(data.cyId).convertSbgnmlTextToJson(data.graph);
-                    w.postMessage(JSON.stringify(json), "*");
-                }, 2000);
 
             });
 
             app.socket.on("displaySbgn", function(data, callback){
+
 
                 let jsonObj = appUtilities.getChiseInstance(data.cyId).convertSbgnmlTextToJson(data.sbgn);
 
@@ -355,16 +358,27 @@ module.exports =  function(app) {
         },
 
 
-        newFile: function(data, cyId,  callback){
+        cleanAll: function( callback){
             try {
-                appUtilities.getCyInstance(cyId).remove(appUtilities.getCyInstance(cyId).elements());
-                app.modelManager.newModel(cyId, "me"); //do not delete cytoscape, only the model
+
+                let cyIds = app.modelManager.getCyIds();
+
+                cyIds.forEach(function(cyId) {
+                    appUtilities.getCyInstance(cyId).remove(appUtilities.getCyInstance(cyId).elements());
+                    app.modelManager.newModel(cyId, "me"); //do not delete cytoscape, only the model
+
+                });
+
+
+                //TODO: actually closing the tab will be handled later
                 //close all the other tabs
                 app.model.set('_page.doc.images', null);
 
                 app.dynamicResize(); //to clean the canvas
 
                 app.model.set('_page.doc.provenance', null);
+
+
 
                 if (callback) callback("success");
             }
