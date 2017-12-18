@@ -169,8 +169,6 @@ class ModelManager{
         return this.model.get('documents.' + this.docId + '.factoid');
     }
 
-
-
     /***
      *
      * @param cmd  {opName, opTarget,  elType, elId, opAttr,param, prevParam}
@@ -288,6 +286,10 @@ class ModelManager{
     redoCommand () {
         let undoInd = this.model.get('documents.' + this.docId + '.undoIndex');
         let cmd = this.model.get('documents.' + this.docId + '.history.' + (undoInd + 1)); // cmd: opName, opTarget, opAttr, elId, param
+
+        console.log("redo");
+        console.log(cmd);
+
 
         if (cmd.opName == "set") {
             if (cmd.opTarget == "element" && cmd.elType == "node")
@@ -988,6 +990,7 @@ class ModelManager{
     restoreModel (modelCy, cyId, user, noHistUpdate) {
         let cyPathStr = this.getModelCyPathStr(cyId);
         let prevParam = this.model.get(cyPathStr);
+        console.log(prevParam);
         this.model.pass({user: user}).set(cyPathStr , modelCy);
 
 

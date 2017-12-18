@@ -35,6 +35,40 @@ module.exports = function(){
                 }, 1000);
 
             });
-        }
+        },
+
+        //Merge an array of json objects to output a single json object.
+        mergeJsons: function (jsonGraph, cyId, modelManager, callback) {
+            let idxCardNodeMap = {};
+            let sentenceNodeMap = {};
+
+            modelManager.setRollbackPoint(cyId); //before merging.. for undo
+
+            let jsonObj = jsonMerger.mergeJsons(jsonGraph, sentenceNodeMap, idxCardNodeMap);
+
+            modelManager.newModel("me", true);
+
+            appUtilities.getChiseInstance(cyId).updateGraph(jsonObj, function(){
+
+                modelManager.initModel( appUtilities.getCyInstance(cyId).nodes(), appUtilities.getCyInstance(cyId).edges(), cyId, appUtilities, "me");
+
+                //Call layout after init
+                $("#perform-layout").trigger('click');
+
+
+                //Call merge notification after the layout
+                setTimeout(function () {
+                    modelManager.mergeJsons(cyId, "me", true);
+
+                    if (callback) callback();
+                }, 1000);
+
+            });
+
+            return {sentences: sentenceNodeMap, idxCards: idxCardNodeMap};
+        },
+
+
+
     }
 }

@@ -374,7 +374,7 @@ module.exports = function(modelManager, socket, userId){
             }
 
             else if (actionName === "layout") {
-                // cy.on('layoutstop', function() {
+                cy.on('layoutstop', function() {
                     //TODO
 
                     console.log('Layout stopped');
@@ -386,14 +386,13 @@ module.exports = function(modelManager, socket, userId){
                             modelElList.push({id: ele.id(), isNode: true});
                             ele.data("annotationsView", null);
                             paramList.push(ele.position());
-                            //ele.data("annotationsView", null);
                             //paramListData.push(ele.data());
                         }
                     });
 
                     modelManager.changeModelElementGroupAttribute("position", modelElList, cyId, paramList,  "me");
                     // modelManager.changeModelElementGroupAttribute("data", modelElList,  cyId,paramListData, "me"); //bounding boxes may change
-                // });
+                });
             }
 
 

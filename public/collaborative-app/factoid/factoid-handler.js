@@ -1,7 +1,8 @@
 /**
  * Created by durupina on 11/14/16.
  */
-let jsonMerger = require('../merger/json-merger.js');
+
+let modelMergeFunctions = require('../model-merge-functions.js')();
 
 module.exports =  function(app) {
 
@@ -61,7 +62,8 @@ module.exports =  function(app) {
 
                     notyView.setText( "Merging graphs...");
 
-                    nodeMap = self.mergeJsons(jsonGraphs, function(){
+                    nodeMap = modelMergeFunctions.mergeJsons(jsonGraphs, appUtilities.getActiveNetworkId(), app.modelManager, function(){
+
                         //save it to the model
                         app.modelManager.updateFactoidModel({jsonGraphs: jsonGraphs, nodeMap: nodeMap, text: text}, "me");
                     }); //mapping between sentences and node labels
@@ -72,33 +74,6 @@ module.exports =  function(app) {
         },
 
 
-        //Merge an array of json objects to output a single json object.
-        mergeJsons: function (jsonGraph, callback) {
-            let idxCardNodeMap = {};
-            let sentenceNodeMap = {};
-
-            let jsonObj = jsonMerger.mergeJsons(jsonGraph, sentenceNodeMap, idxCardNodeMap);
-
-            app.modelManager.newModel("me", true);
-
-            appUtilities.getActiveChiseInstance().updateGraph(jsonObj, function(){
-
-                app.modelManager.initModel( appUtilities.getActiveCy().nodes(), appUtilities.getActiveCy().edges(), appUtilities.getActiveNetworkId(), appUtilities, "me");
-
-                //Call layout after init
-                $("#perform-layout").trigger('click');
-
-                //Call merge notification after the layout
-                setTimeout(function () {
-                    app.modelManager.mergeJsons(appUtilities.getActiveNetworkId(), "me", true);
-
-                    if (callback) callback();
-                }, 1000);
-
-            });
-
-            return {sentences: sentenceNodeMap, idxCards: idxCardNodeMap};
-        },
 
         highlightSentenceInText: function(nodeId, highlightColor){
 
