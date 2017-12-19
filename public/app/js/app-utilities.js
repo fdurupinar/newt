@@ -434,28 +434,6 @@ appUtilities.createNewNetwork = function (networkIdParam) {
   return newInst;
 };
 
-//
-// //FUNDA TODO: close will be handled later
-// appUtilities.closeAllButOne = function(){
-//
-//
-//     while(this.networkIdsStack.length > 1){
-//         // active network id is the one that is at the top of the stack
-//         // pop and get it
-//         var activeNetworkId = this.networkIdsStack.pop();
-//
-//         console.log(activeNetworkId);
-//         // remove the chise instance mapped to the actual network id from the chise instances map
-//         this.removeFromChiseInstances(activeNetworkId);
-//
-//         // remove physical html components for networkId
-//         this.removePhysicalNetworkComponents(activeNetworkId);
-//
-//
-//     }
-//
-// }
-
 // CWC change
 // remove the networks other than the one having the given networkId
 // if networkId is not given then use the active networkId by default
