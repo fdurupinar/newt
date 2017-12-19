@@ -364,11 +364,14 @@ module.exports =  function(app) {
                 let cyIds = app.modelManager.getCyIds();
 
                 cyIds.forEach(function(cyId) {
+                    console.log(cyId);
                     appUtilities.getCyInstance(cyId).remove(appUtilities.getCyInstance(cyId).elements());
                     app.modelManager.newModel(cyId, "me"); //do not delete cytoscape, only the model
 
                 });
 
+
+                appUtilities.closeOtherNetworks(0);
 
                 //TODO: actually closing the tab will be handled later
                 //close all the other tabs
@@ -380,6 +383,7 @@ module.exports =  function(app) {
 
 
 
+                console.log(appUtilities.getActiveNetworkId());
                 if (callback) callback("success");
             }
             catch (e) {

@@ -852,7 +852,6 @@ app.proto.updateTripsMessage = function(){
 app.proto.resetConversationOnTrips = function(){
     //directly ask the server as this client may not have a tripsAgent
     this.socket.emit('resetConversationRequest');
-    this.agentSocket.cleanAll();
 
 };
 

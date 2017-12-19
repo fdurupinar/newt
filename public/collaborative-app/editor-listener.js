@@ -80,6 +80,7 @@ module.exports = function(modelManager, socket, userId){
 
 
     $(document).on("closeActiveNetwork", function (e, cyId) {
+        console.log("close cy is called");
         modelManager.closeCy(cyId, "me");
     });
 
