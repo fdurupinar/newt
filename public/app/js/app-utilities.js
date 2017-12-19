@@ -456,6 +456,60 @@ appUtilities.createNewNetwork = function (networkIdParam) {
 //
 // }
 
+// CWC change
+// remove the networks other than the one having the given networkId
+// if networkId is not given then use the active networkId by default
+appUtilities.closeOtherNetworks = function (networkId) {
+
+  var networkIdsStack = this.networkIdsStack;
+
+  // if there is already at most one network then we have nothing to do here
+  if ( networkIdsStack.length <= 1 ) {
+    return;
+  }
+
+  // the id of active network before the operation
+  var activeNetworkId = this.getActiveNetworkId();
+
+  // if networkId is not defined use the active one by default
+  if ( !networkId ) {
+    networkId = activeNetworkId;
+  }
+
+  // check if we are already using the active network
+  var wasActiveNetwork = ( networkId === activeNetworkId);
+
+  for ( var i = 0; i <  networkIdsStack.length; i++) {
+
+    // get the current network id to close
+    var currentNetworkId = networkIdsStack[i];
+
+    // pass the parametrized networkId
+    if (currentNetworkId === networkId) {
+      continue;
+    }
+
+    // remove the chise instance mapped to the network id from the chise instances map
+    this.removeFromChiseInstances(currentNetworkId);
+
+    // remove physical html components for networkId
+    this.removePhysicalNetworkComponents(currentNetworkId);
+  }
+
+  // the remaining network is the new active network if it was not so before the operation
+  // then we need to choose it as the new active network here
+  if ( !wasActiveNetwork ) {
+    // choose the network tab for the new active network
+    this.chooseNetworkTab(networkId);
+  }
+
+  // adjust the visibility of network tabs
+  this.adjustVisibilityOfNetworkTabs();
+
+  // update the network ids stack accordingly
+  this.networkIdsStack = [ networkId ];
+};
+
 // close the active network
 appUtilities.closeActiveNetwork = function () {
 
