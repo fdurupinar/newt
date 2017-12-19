@@ -426,9 +426,11 @@ appUtilities.createNewNetwork = function (networkIdParam) {
   appUtilities.adjustVisibilityOfNetworkTabs();
 
 
-
+  //funda
+  newInst.cyId = networkId;
     //FUNDA
     $(document).trigger('createNewNetwork', [newInst.getCy(), networkId]);
+
 
   // return the new instance
   return newInst;
