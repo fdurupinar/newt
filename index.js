@@ -759,7 +759,7 @@ app.proto.listenToModelOperations = function(model){
 
     model.on('change', '_page.doc.pcQuery.*.graph', function(ind, data){
         let chiseInst = appUtilities.createNewNetwork(); //opens a new tab
-        let cyId = appUtilities.nextNetworkId -1;
+        // let cyId = appUtilities.nextNetworkId -1;
 
 
         let jsonObj = chiseInst.convertSbgnmlTextToJson(data);
